@@ -48,23 +48,17 @@ export default function DashboardPage() {
 
     useEffect(() => {
         const loadData = async () => {
-            console.log('[Dashboard] Starting to load...');
             try {
                 const currentUser = await getCurrentUser();
-                console.log('[Dashboard] Current user:', currentUser);
                 if (!currentUser) {
-                    console.log('[Dashboard] No user found, redirecting to login');
                     router.push('/login');
                     return;
                 }
                 setUser(currentUser);
-                console.log('[Dashboard] Loading dashboard data for user:', currentUser.id);
                 await loadDashboardData(currentUser.id);
-                console.log('[Dashboard] Dashboard data loaded successfully');
             } catch (error) {
                 console.error('[Dashboard] Error loading dashboard:', error);
             } finally {
-                console.log('[Dashboard] Setting loading to false');
                 setLoading(false);
             }
         };
