@@ -47,7 +47,7 @@ export async function getUserMotorPolicies(userId: string): Promise<MotorPolicy[
             id: row.id,
             user_id: row.user_id,
         })) as MotorPolicy[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching motor policies:', error.message, error.details, error.hint);
         return [];
     }
@@ -67,7 +67,7 @@ export async function getUserGMCPolicies(userId: string): Promise<GMCPolicy[]> {
         if (error) throw error;
 
         return (data || []).map((row) => convertDates(row)) as GMCPolicy[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching GMC policies:', error.message, error.details, error.hint);
         return [];
     }
@@ -95,7 +95,7 @@ export async function getUserCommercialPolicies(
         if (error) throw error;
 
         return (data || []).map((row) => convertDates(row)) as CommercialPolicy[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching commercial policies:', error.message, error.details, error.hint);
         return [];
     }
@@ -115,7 +115,7 @@ export async function getUserClaims(userId: string): Promise<Claim[]> {
         if (error) throw error;
 
         return (data || []).map((row) => convertDates(row)) as Claim[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching claims:', error.message, error.details, error.hint);
         return [];
     }
@@ -135,7 +135,7 @@ export async function getUserQuoteRequests(userId: string): Promise<QuoteRequest
         if (error) throw error;
 
         return (data || []).map((row) => convertDates(row)) as QuoteRequest[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching quote requests:', error);
         return [];
     }
@@ -440,7 +440,7 @@ export async function getUserReferrals(userId: string): Promise<Referral[]> {
         if (error) throw error;
 
         return (data || []).map((row) => convertDates(row)) as Referral[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching referrals:', error.message, error.details, error.hint);
         return [];
     }
@@ -491,7 +491,7 @@ export async function logUserChange(
             });
 
         if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error logging user change:', error);
     }
 }

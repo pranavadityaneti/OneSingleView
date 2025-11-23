@@ -23,7 +23,7 @@ export default function ReferralForm({ userId, onClose, onSuccess }: ReferralFor
         notes: ''
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         setFormData(prev => ({
