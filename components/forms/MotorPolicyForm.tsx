@@ -121,7 +121,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
             if (initialData?.id) {
                 await updateMotorPolicy(initialData.id, policyData);
             } else {
-                await addMotorPolicy(policyData);
+                await addMotorPolicy(policyData as any);
             }
 
             onSuccess();

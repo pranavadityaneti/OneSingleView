@@ -9,7 +9,7 @@ import { MotorPolicy } from '@/types';
 export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
-    const [policy, setPolicy] = useState<MotorPolicy | null>(null);
+    const [policy, setPolicy] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

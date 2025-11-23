@@ -43,20 +43,20 @@ export default function CommercialPoliciesPage() {
                 return;
             }
             setUser(currentUser);
-            loadPolicies(currentUser.uid);
+            loadPolicies(currentUser.id);
         };
         init();
     }, [router]);
 
     const handleDelete = async (id: string) => {
-        if (confirm('Are you sure you want to delete this policy?')) {
-            try {
-                await deleteCommercialPolicy(id);
-                await loadPolicies();
-            } catch (error) {
-                console.error('Error deleting policy:', error);
-                alert('Failed to delete policy');
-            }
+        if (!confirm('Are you sure you want to delete this policy?')) return;
+        if (!user) return;
+        try {
+            await deleteCommercialPolicy(id);
+            await loadPolicies(user.id);
+        } catch (error) {
+            console.error('Error deleting policy:', error);
+            alert('Failed to delete policy');
         }
     };
 
@@ -204,10 +204,10 @@ export default function CommercialPoliciesPage() {
             {/* Policy Form Modal */}
             {showAddForm && user && (
                 <CommercialPolicyForm
-                    userId={user.uid}
+                    userId={user.id}
                     initialData={editingPolicy}
                     onClose={handleCloseForm}
-                    onSuccess={() => loadPolicies(user.uid)}
+                    onSuccess={() => loadPolicies(user.id)}
                 />
             )}
         </div>

@@ -9,7 +9,7 @@ import { CommercialPolicy } from '@/types';
 export default function CommercialPolicyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
-    const [policy, setPolicy] = useState<CommercialPolicy | null>(null);
+    const [policy, setPolicy] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

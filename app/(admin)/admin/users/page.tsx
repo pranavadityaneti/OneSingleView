@@ -43,7 +43,7 @@ export default function UsersPage() {
         const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
         await updateUserStatus(userId, newStatus);
         // Optimistic update
-        setUsers(users.map(u => u.uid === userId ? { ...u, status: newStatus } : u) as any);
+        setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u) as any);
     };
 
     const filteredUsers = users.filter(user => {
@@ -120,7 +120,7 @@ export default function UsersPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filteredUsers.map((user) => (
-                                <tr key={user.uid} className="hover:bg-gray-50 transition-colors">
+                                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-primary-700 font-bold mr-3">
@@ -134,8 +134,8 @@ export default function UsersPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'corporate'
-                                                ? 'bg-purple-100 text-purple-800'
-                                                : 'bg-blue-100 text-blue-800'
+                                            ? 'bg-purple-100 text-purple-800'
+                                            : 'bg-blue-100 text-blue-800'
                                             }`}>
                                             {user.role === 'corporate' ? <Building className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
                                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
@@ -162,7 +162,7 @@ export default function UsersPage() {
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <Link
-                                                href={`/admin/users/${user.uid}`}
+                                                href={`/admin/users/${user.id}`}
                                                 className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                                 title="View Profile"
                                             >

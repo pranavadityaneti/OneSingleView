@@ -17,7 +17,7 @@ export default function ReferralsPage() {
         if (!user) return;
         setLoading(true);
         try {
-            const data = await getUserReferrals(user.uid);
+            const data = await getUserReferrals(user.id);
             setReferrals(data);
         } catch (error) {
             console.error('Error fetching referrals:', error);
@@ -110,7 +110,7 @@ export default function ReferralsPage() {
 
             {showForm && user && (
                 <ReferralForm
-                    userId={user.uid}
+                    userId={user.id}
                     onClose={() => setShowForm(false)}
                     onSuccess={fetchReferrals}
                 />

@@ -18,7 +18,7 @@ export default function ClaimsPage() {
         if (!user) return;
         setLoading(true);
         try {
-            const data = await getUserClaims(user.uid);
+            const data = await getUserClaims(user.id);
             setClaims(data);
         } catch (error) {
             console.error('Error fetching claims:', error);
@@ -151,7 +151,7 @@ export default function ClaimsPage() {
 
             {showForm && user && (
                 <ClaimForm
-                    userId={user.uid}
+                    userId={user.id}
                     onClose={() => setShowForm(false)}
                     onSuccess={fetchClaims}
                 />

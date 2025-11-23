@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
 
+export type BucketName = 'policy-documents' | 'claim-documents' | 'rc-copies' | 'quote-documents';
+
 /**
  * Upload file to Supabase Storage
  * @param file - File to upload
@@ -41,7 +43,7 @@ export async function uploadMultipleFiles(
 ): Promise<string[]> {
     try {
         const uploadPromises = files.map((file, index) => {
-            const fileName = `${Date.now()}_${index}_${file.name}`;
+            const fileName = `${Date.now()}_${index}_${file.name} `;
             const path = `${basePath}/${fileName}`;
             return uploadFile(file, path);
         });

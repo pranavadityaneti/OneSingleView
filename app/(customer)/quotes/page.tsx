@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, FileText, Clock, CheckCircle, MessageSquare } from 'lucide-react';
 import { QuoteRequest } from '@/types';
 import { getUserQuoteRequests } from '@/lib/db';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/hooks/useAuth';
 import QuoteRequestForm from '@/components/forms/QuoteRequestForm';
 
 export default function QuotesPage() {
@@ -17,7 +17,7 @@ export default function QuotesPage() {
         if (!user) return;
         setLoading(true);
         try {
-            const data = await getUserQuoteRequests(user.uid);
+            const data = await getUserQuoteRequests(user.id);
             setQuotes(data);
         } catch (error) {
             console.error('Error fetching quotes:', error);
@@ -121,7 +121,7 @@ export default function QuotesPage() {
 
             {showForm && user && (
                 <QuoteRequestForm
-                    userId={user.uid}
+                    userId={user.id}
                     onClose={() => setShowForm(false)}
                     onSuccess={fetchQuotes}
                 />

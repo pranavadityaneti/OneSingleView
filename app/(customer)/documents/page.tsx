@@ -33,10 +33,10 @@ export default function DocumentsPage() {
             setLoading(true);
             try {
                 const [motor, gmc, commercial, claims] = await Promise.all([
-                    getUserMotorPolicies(user.uid),
-                    getUserGMCPolicies(user.uid),
-                    getUserCommercialPolicies(user.uid),
-                    getUserClaims(user.uid)
+                    getUserMotorPolicies(user.id),
+                    getUserGMCPolicies(user.id),
+                    getUserCommercialPolicies(user.id),
+                    getUserClaims(user.id)
                 ]);
 
                 const docs: DocumentItem[] = [];

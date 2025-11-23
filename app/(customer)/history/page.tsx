@@ -25,9 +25,9 @@ export default function HistoryPage() {
                 setUser(currentUser);
 
                 const [motor, gmc, commercial] = await Promise.all([
-                    getUserMotorPolicies(currentUser.uid),
-                    getUserGMCPolicies(currentUser.uid),
-                    getUserCommercialPolicies(currentUser.uid)
+                    getUserMotorPolicies(currentUser.id),
+                    getUserGMCPolicies(currentUser.id),
+                    getUserCommercialPolicies(currentUser.id)
                 ]);
 
                 const now = new Date();

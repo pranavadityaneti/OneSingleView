@@ -10,7 +10,7 @@ export default function ProfilePage() {
     useEffect(() => {
         // Mock user for development
         const mockUser: User = {
-            uid: 'mock-user-id',
+            id: 'mock-user-id',
             email: 'pranav.n@ideaye.in',
             name: 'Pranav N',
             mobile: '+91 9959777027',
