@@ -2,13 +2,13 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, X, File, CheckCircle } from 'lucide-react';
-import { uploadFile } from '@/lib/storage';
+import { uploadFile, BucketName } from '@/lib/storage';
 
 interface FileUploadProps {
     label: string;
     name: string;
     accept?: string;
-    bucket: 'policy-documents' | 'claim-documents' | 'rc-copies';
+    bucket: BucketName;
     onUploadComplete: (url: string, fileName: string) => void;
     existingFile?: { url: string; name: string };
     required?: boolean;
