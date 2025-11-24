@@ -46,7 +46,7 @@ export interface MotorPolicy {
     premium_amount: number;
     policy_start_date: Date;
     policy_end_date: Date;
-    status: PolicyStatus;
+    status?: PolicyStatus; // Optional since database doesn't have this column yet
     rc_docs: string[];
     previous_policy_docs: string[];
     dl_docs?: string[];
@@ -67,7 +67,7 @@ export interface HealthPolicy {
     expiry_date: Date;
     policy_docs: string[];
     no_of_lives?: number;
-    status: PolicyStatus;
+    status?: PolicyStatus; // Optional since database doesn't have this column yet
     created_at: Date;
     updated_at: Date;
 }
@@ -86,7 +86,7 @@ export interface CommercialPolicy {
     sum_insured?: number;
     expiry_date: Date;
     policy_docs: string[];
-    status: PolicyStatus;
+    status?: PolicyStatus; // Optional since database doesn't have this column yet
     created_at: Date;
     updated_at: Date;
 }
