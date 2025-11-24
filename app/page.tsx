@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Shield, FileText, Bell, Users, TrendingUp, Lock } from 'lucide-react';
+import InsuranceLogoTicker from '@/components/landing/InsuranceLogoTicker';
 
 export default function LandingPage() {
     const benefits = [
@@ -33,11 +34,6 @@ export default function LandingPage() {
             title: "Secure & Compliant",
             description: "Enterprise-grade security with role-based access and audit trails"
         }
-    ];
-
-    const clientLogos = [
-        "ICICI Lombard", "HDFC ERGO", "Bajaj Allianz", "Reliance General",
-        "TATA AIG", "Future Generali", "SBI General", "New India"
     ];
 
     return (
@@ -89,24 +85,8 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Client Logos Section */}
-            <section className="py-12 bg-white/60 backdrop-blur-sm">
-                <div className="container">
-                    <h3 className="text-center text-sm font-medium text-gray-500 uppercase tracking-wide mb-8">
-                        Trusted by Customers with Policies from
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8">
-                        {clientLogos.map((logo, index) => (
-                            <div
-                                key={index}
-                                className="flex items-center justify-center p-4 rounded-lg bg-white shadow-soft hover:shadow-card transition-shadow"
-                            >
-                                <span className="text-xs font-medium text-gray-600 text-center">{logo}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            {/* Insurance Companies Ticker */}
+            <InsuranceLogoTicker />
 
             {/* Benefits Section */}
             <section className="py-20">
