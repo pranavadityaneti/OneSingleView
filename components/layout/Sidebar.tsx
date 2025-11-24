@@ -23,6 +23,7 @@ import {
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/auth';
+import InsuranceTipsCarousel from './InsuranceTipsCarousel';
 
 interface SidebarProps {
     user: User;
@@ -41,10 +42,11 @@ type NavGroup = {
     icon?: any;
 };
 
-export default function Sidebar({ user }: SidebarProps) {
+export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [openGroups, setOpenGroups] = useState<string[]>(['Overview', 'Policies', 'Claims', 'Documents', 'Community', 'Admin']);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
     const toggleGroup = (label: string) => {
         setOpenGroups(prev =>
@@ -162,33 +164,63 @@ export default function Sidebar({ user }: SidebarProps) {
                     ))}
                 </nav>
 
-                {/* User Info (Bottom) */}
-                <div className="p-4 border-t border-gray-50">
-                    <Link href="/profile" className="flex items-center gap-3 px-2 hover:bg-gray-50 p-2 rounded-xl transition-colors group">
+                {/* Insurance Tips Carousel */}
+                <div className="mt-auto">
+                    <InsuranceTipsCarousel />
+                </div>
+
+                {/* User Info (Bottom) with Dropdown */}
+                <div className="p-4 border-t border-gray-50 relative">
+                    <button
+                        onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                        className="flex items-center gap-3 px-2 hover:bg-gray-50 p-2 rounded-xl transition-colors group w-full"
+                    >
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:shadow-lg transition-all">
                             {user.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="overflow-hidden">
+                        <div className="overflow-hidden flex-1 text-left">
                             <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">{user.name}</p>
                             <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
                         </div>
-                    </Link>
-
-                    <button
-                        onClick={async () => {
-                            try {
-                                await signOut();
-                                router.push('/login');
-                                router.refresh();
-                            } catch (error) {
-                                console.error('Error signing out:', error);
-                            }
-                        }}
-                        className="flex items-center w-full px-2 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
+                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
+
+                    {/* Dropdown Menu */}
+                    {isProfileDropdownOpen && (
+                        <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                            <Link
+                                href="/profile"
+                                onClick={() => setIsProfileDropdownOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                            >
+                                <UserCircle className="w-4 h-4 text-gray-600" />
+                                <span className="text-sm font-medium text-gray-900">My Profile</span>
+                            </Link>
+                            <Link
+                                href="/support"
+                                onClick={() => setIsProfileDropdownOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                            >
+                                <MessageSquare className="w-4 h-4 text-gray-600" />
+                                <span className="text-sm font-medium text-gray-900">Support & FAQs</span>
+                            </Link>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await signOut();
+                                        router.push('/login');
+                                        router.refresh();
+                                    } catch (error) {
+                                        console.error('Error signing out:', error);
+                                    }
+                                }}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full border-t border-gray-100"
+                            >
+                                <LogOut className="w-4 h-4 text-red-600" />
+                                <span className="text-sm font-medium text-red-600">Sign Out</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -94,7 +94,6 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
                 premium_amount: formData.premium_amount || 0,
                 lob_type: formData.lob_type || 'GPA',
                 policy_docs: formData.policy_docs || [],
-                status: 'Active' as const
             };
 
             if (initialData?.id) {

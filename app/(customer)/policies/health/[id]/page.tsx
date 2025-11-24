@@ -146,6 +146,35 @@ export default function HealthPolicyDetailPage({ params }: { params: Promise<{ i
                     )}
                 </div>
             </div>
+
+            {/* Documents */}
+            <div className="bg-white rounded-2xl p-6 shadow-soft">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-purple-600" />
+                    Documents
+                </h2>
+                <div className="grid gap-3">
+                    {policy.policy_docs && policy.policy_docs.length > 0 ? (
+                        policy.policy_docs.map((doc: string, index: number) => (
+                            <a
+                                key={`policy-doc-${index}`}
+                                href={doc}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                                <span className="flex items-center text-gray-700">
+                                    <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                                    Policy Document {index + 1}
+                                </span>
+                                <span className="text-sm text-primary-600 font-medium">View</span>
+                            </a>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 italic">No documents uploaded</p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

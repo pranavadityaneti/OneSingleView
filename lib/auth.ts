@@ -22,8 +22,8 @@ export async function signUp(
         if (authError) throw authError;
         if (!authData.user) throw new Error('No user returned from signup');
 
-        // Generate unique customer ID (OSV + 6 random alphanumeric characters)
-        const customerId = 'OSV' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        // Generate unique customer ID (1SV- + 6 random alphanumeric characters)
+        const customerId = '1SV-' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
         // Create user profile object
         const newUser: Omit<User, 'created_at' | 'updated_at'> = {

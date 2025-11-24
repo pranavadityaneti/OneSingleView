@@ -91,8 +91,7 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
                 policy_number: formData.policy_number || '',
                 insurer_name: formData.insurer_name || '',
                 premium_amount: formData.premium_amount || 0,
-                policy_docs: formData.policy_docs || [],
-                status: 'Active' as const
+                policy_docs: formData.policy_docs || []
             };
 
             if (initialData?.id) {

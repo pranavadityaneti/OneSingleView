@@ -10,9 +10,10 @@ import {
 } from '@/lib/db';
 import { User, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
-import { Car, Heart, Briefcase, Search, Filter, Plus } from 'lucide-react';
+import { Car, Heart, Briefcase, Search, Filter, Plus, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import AddPolicyModal from '@/components/policies/AddPolicyModal';
+import EditPolicyModal from '@/components/policies/EditPolicyModal';
 
 function PoliciesContent() {
     const searchParams = useSearchParams();
@@ -23,6 +24,8 @@ function PoliciesContent() {
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [allPolicies, setAllPolicies] = useState<(MotorPolicy | HealthPolicy | CommercialPolicy)[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
 
     const refreshData = async () => {
         if (!user) return;
@@ -119,43 +122,62 @@ function PoliciesContent() {
                         const status = calculatePolicyStatus(expiryDate);
 
                         return (
-                            <Link
+                            <div
                                 key={policy.id}
-                                href={`/policies/${isMotor ? 'motor' : isHealth ? 'health' : 'commercial'}/${policy.id}`}
-                                className="block bg-white rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all p-5"
+                                className="bg-white rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all p-5 relative"
                             >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-2 rounded-lg ${colorClass}`}>
-                                        <Icon className="w-6 h-6" />
-                                    </div>
-                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Active' ? 'bg-green-100 text-green-800' :
-                                        status === 'Expiring Soon' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
-                                        {status}
-                                    </span>
-                                </div>
+                                {/* Edit Button */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedPolicy(policy);
+                                        setIsEditModalOpen(true);
+                                    }}
+                                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors z-10"
+                                    title="Edit Policy"
+                                >
+                                    <Pencil className="w-4 h-4" />
+                                </button>
 
-                                <h3 className="font-bold text-gray-900 mb-1">{policy.insurer_name}</h3>
-                                <p className="text-sm text-gray-500 mb-4">{policy.policy_number}</p>
-
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Premium</span>
-                                        <span className="font-medium">{formatCurrency(policy.premium_amount)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Valid Till</span>
-                                        <span className="font-medium">{expiryDate.toLocaleDateString()}</span>
-                                    </div>
-                                    {isMotor && (
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">Vehicle</span>
-                                            <span className="font-medium">{(policy as MotorPolicy).vehicle_number}</span>
+                                {/* Clickable area for viewing */}
+                                <Link
+                                    href={`/policies/${isMotor ? 'motor' : isHealth ? 'health' : 'commercial'}/${policy.id}`}
+                                    className="block"
+                                >
+                                    <div className="flex justify-between items-start mb-4 pr-8">
+                                        <div className={`p-2 rounded-lg ${colorClass}`}>
+                                            <Icon className="w-6 h-6" />
                                         </div>
-                                    )}
-                                </div>
-                            </Link>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Active' ? 'bg-green-100 text-green-800' :
+                                            status === 'Expiring Soon' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'
+                                            }`}>
+                                            {status}
+                                        </span>
+                                    </div>
+
+                                    <h3 className="font-bold text-gray-900 mb-1">{policy.insurer_name}</h3>
+                                    <p className="text-sm text-gray-500 mb-1">{policy.policy_number}</p>
+                                    <p className="text-xs font-medium text-gray-600 mb-3">{policy.type} Insurance</p>
+
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Premium</span>
+                                            <span className="font-medium">{formatCurrency(policy.premium_amount)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Valid Till</span>
+                                            <span className="font-medium">{expiryDate.toLocaleDateString()}</span>
+                                        </div>
+                                        {isMotor && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Vehicle</span>
+                                                <span className="font-medium">{(policy as MotorPolicy).vehicle_number}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Link>
+                            </div>
                         );
                     })}
                 </div>
@@ -165,6 +187,16 @@ function PoliciesContent() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 userId={user?.id || ''}
+                onSuccess={refreshData}
+            />
+
+            <EditPolicyModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedPolicy(null);
+                }}
+                policy={selectedPolicy}
                 onSuccess={refreshData}
             />
         </div>

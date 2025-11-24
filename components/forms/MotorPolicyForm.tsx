@@ -114,8 +114,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                 policy_end_date: new Date(formData.policy_end_date!),
                 rc_docs: formData.rc_docs || [],
                 previous_policy_docs: formData.previous_policy_docs || [],
-                dl_docs: formData.dl_docs || [],
-                status: 'Active' as const // Default status, will be calculated by backend/frontend logic usually
+                dl_docs: formData.dl_docs || []
             };
 
             if (initialData?.id) {
