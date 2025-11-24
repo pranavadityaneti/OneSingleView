@@ -1,25 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { formatDate, daysUntil, formatCurrency } from '@/lib/utils';
 import { AlertCircle, Car, Heart, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ExpiryAlertsProps {
     motorPolicies: MotorPolicy[];
-    gmcPolicies: GMCPolicy[];
+    healthPolicies: HealthPolicy[];
     commercialPolicies: CommercialPolicy[];
 }
 
-export default function ExpiryAlerts({ motorPolicies, gmcPolicies, commercialPolicies }: ExpiryAlertsProps) {
+export default function ExpiryAlerts({ motorPolicies, healthPolicies, commercialPolicies }: ExpiryAlertsProps) {
     const [expanded, setExpanded] = useState(false);
 
     // Filter expiring soon policies
     const expiringMotor = motorPolicies.filter((p) => p.status === 'Expiring Soon');
-    const expiringGMC = gmcPolicies.filter((p) => p.status === 'Expiring Soon');
+    const expiringHealth = healthPolicies.filter((p) => p.status === 'Expiring Soon');
     const expiringCommercial = commercialPolicies.filter((p) => p.status === 'Expiring Soon');
 
-    const totalExpiring = expiringMotor.length + expiringGMC.length + expiringCommercial.length;
+    const totalExpiring = expiringMotor.length + expiringHealth.length + expiringCommercial.length;
 
     if (totalExpiring === 0) {
         return (
@@ -100,15 +100,15 @@ export default function ExpiryAlerts({ motorPolicies, gmcPolicies, commercialPol
                         </div>
                     ))}
 
-                    {/* GMC Policies */}
-                    {expiringGMC.map((policy) => (
+                    {/* Health Policies */}
+                    {expiringHealth.map((policy) => (
                         <div key={policy.id} className="bg-white rounded-lg p-4 shadow-sm">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start space-x-3">
                                     <Heart className="w-5 h-5 text-secondary-600 mt-0.5" />
                                     <div>
                                         <p className="font-medium text-gray-900">
-                                            {policy.company_name || 'GMC Policy'}
+                                            {policy.company_name || 'Health Policy'}
                                         </p>
                                         <p className="text-sm text-gray-600">{policy.insurer_name}</p>
                                         <p className="text-xs text-gray-500 mt-1">

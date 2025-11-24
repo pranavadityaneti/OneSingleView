@@ -1,176 +1,184 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, AlertCircle, TrendingUp, Search, Filter, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { getAllUsers } from '@/lib/db';
-import { User } from '@/types';
+import {
+    getAdminDashboardMetrics,
+    getExpiringPoliciesAdmin,
+    getRecentActivity,
+    getPoliciesByLOB,
+    getDuplicateAlerts,
+    getDocumentVerificationPending,
+    getRMPerformance,
+    AdminMetrics,
+    ExpiryOverview,
+    ActivityLog
+} from '@/lib/admin-db';
+
+import KPIGrid from '@/components/admin/dashboard/KPIGrid';
+import ExpiringPoliciesWidget from '@/components/admin/dashboard/ExpiringPoliciesWidget';
+import ActivityFeed from '@/components/admin/dashboard/ActivityFeed';
+import LOBChart from '@/components/admin/dashboard/LOBChart';
+import OperationalWidgets from '@/components/admin/dashboard/OperationalWidgets';
+import { AlertTriangle, Users, RefreshCw } from 'lucide-react';
 
 export default function AdminDashboardPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const [stats, setStats] = useState({
-        totalUsers: 0,
-        activePolicies: 0,
-        pendingClaims: 0,
-        revenue: 0
-    });
-    const [recentUsers, setRecentUsers] = useState<User[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+
+    const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
+    const [expiryData, setExpiryData] = useState<ExpiryOverview | null>(null);
+    const [activities, setActivities] = useState<ActivityLog[]>([]);
+    const [lobData, setLobData] = useState<any[]>([]);
+    const [duplicates, setDuplicates] = useState<any[]>([]);
+    const [docPending, setDocPending] = useState<any[]>([]);
+    const [rmPerformance, setRmPerformance] = useState<any>(null);
 
     useEffect(() => {
+        console.log('[AdminDashboard] useEffect triggered', { loading, user: user?.role });
         if (!loading && (!user || user.role !== 'admin')) {
+            console.log('[AdminDashboard] Redirecting to login');
             router.push('/login');
         } else if (user?.role === 'admin') {
-            loadDashboardData();
+            console.log('[AdminDashboard] Loading data...');
+            loadData();
         }
-    }, [user, loading, router]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, loading]);
 
-    const loadDashboardData = async () => {
+    const loadData = async () => {
         try {
-            const users = await getAllUsers();
-            setRecentUsers(users.slice(0, 5));
-            setStats({
-                totalUsers: users.length,
-                activePolicies: 856, // Mock for now
-                pendingClaims: 12,   // Mock for now
-                revenue: 4520000     // Mock for now
-            });
+            const [metricsData, expiry, activity, lob, dups, docs, rm] = await Promise.all([
+                getAdminDashboardMetrics(),
+                getExpiringPoliciesAdmin(),
+                getRecentActivity(),
+                getPoliciesByLOB(),
+                getDuplicateAlerts(),
+                getDocumentVerificationPending(),
+                getRMPerformance()
+            ]);
+
+            setMetrics(metricsData);
+            setExpiryData(expiry);
+            setActivities(activity);
+            setLobData(lob);
+            setDuplicates(dups);
+            setDocPending(docs);
+            setRmPerformance(rm);
         } catch (error) {
-            console.error('Failed to load admin dashboard data:', error);
+            console.error('Failed to load admin dashboard:', error);
+        } finally {
+            setIsLoadingData(false);
         }
     };
 
-    if (loading) {
+    if (loading || isLoadingData || !metrics || !expiryData) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
         );
     }
 
-    if (!user || user.role !== 'admin') return null;
+    const handleRefresh = async () => {
+        setIsLoadingData(true);
+        await loadData();
+    };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6 pb-10">
+            {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
-                    <p className="text-gray-500 mt-1 font-medium">Overview of platform activity and users</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Control Tower</h1>
+                    <p className="text-sm text-gray-500">System Overview & Health</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
+                        Last updated: {new Date().toLocaleTimeString()}
+                    </div>
+                    <button
+                        onClick={handleRefresh}
+                        className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Refresh Data"
+                    >
+                        <RefreshCw className={`w-5 h-5 ${isLoadingData ? 'animate-spin' : ''}`} />
+                    </button>
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Link href="/admin/users" className="card bg-white p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
-                            <Users className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full">+12%</span>
-                    </div>
-                    <p className="text-gray-500 text-sm font-medium">Total Users</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalUsers}</h3>
-                </Link>
+            {/* 1. KPI Cards */}
+            <KPIGrid metrics={metrics} />
 
-                <div className="card bg-white p-6 border border-gray-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-purple-50 rounded-xl">
-                            <FileText className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full">+5%</span>
-                    </div>
-                    <p className="text-gray-500 text-sm font-medium">Active Policies</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.activePolicies}</h3>
+            {/* 2. Main Grid: Expiry & Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <ExpiringPoliciesWidget data={expiryData} />
                 </div>
-
-                <div className="card bg-white p-6 border border-gray-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-orange-50 rounded-xl">
-                            <AlertCircle className="w-6 h-6 text-orange-600" />
-                        </div>
-                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">+2</span>
-                    </div>
-                    <p className="text-gray-500 text-sm font-medium">Pending Claims</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingClaims}</h3>
-                </div>
-
-                <div className="card bg-white p-6 border border-gray-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-green-50 rounded-xl">
-                            <TrendingUp className="w-6 h-6 text-green-600" />
-                        </div>
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full">+8%</span>
-                    </div>
-                    <p className="text-gray-500 text-sm font-medium">Total Revenue</p>
-                    <h3 className="text-2xl font-bold text-gray-900 mt-1">₹{(stats.revenue / 100000).toFixed(1)}L</h3>
+                <div className="lg:col-span-1">
+                    <ActivityFeed activities={activities} />
                 </div>
             </div>
 
-            {/* Recent Users Table */}
-            <div className="card bg-white shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-gray-900">Recent Users</h3>
-                    <Link href="/admin/users" className="text-sm text-primary-600 font-medium hover:text-primary-700 flex items-center">
-                        View All <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
+            {/* 3. Charts & Operations */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                    <LOBChart data={lobData} />
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {recentUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs">
-                                                {user.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'corporate' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                                            }`}>
-                                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(user.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link href={`/admin/users/${user.id}`} className="text-primary-600 hover:text-primary-900">View</Link>
-                                    </td>
-                                </tr>
-                            ))}
-                            {recentUsers.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                        No users found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="lg:col-span-2">
+                    <OperationalWidgets metrics={metrics} docVerificationData={docPending} />
                 </div>
+            </div>
+
+            {/* 4. Alerts & RM Performance (Row 4) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Duplicate Alerts */}
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-4">
+                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                        <AlertTriangle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-red-900">Duplicate Detection</h3>
+                        {duplicates.length > 0 ? (
+                            <>
+                                <p className="text-sm text-red-700 mb-2">{duplicates.length} possible duplicate policies detected.</p>
+                                <button className="text-xs bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 transition-colors">
+                                    Review Duplicates
+                                </button>
+                            </>
+                        ) : (
+                            <p className="text-sm text-red-700">No duplicates detected. System healthy.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* RM Performance Snapshot */}
+                {rmPerformance && (
+                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                <Users className="w-5 h-5 text-blue-600" />
+                                RM Performance
+                            </h3>
+                            <span className="text-xs text-gray-500">Top Performer</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700">
+                                {rmPerformance.topPerformer.initials}
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-gray-900">{rmPerformance.topPerformer.name}</p>
+                                <p className="text-xs text-gray-500">
+                                    {rmPerformance.topPerformer.policies} Policies • {rmPerformance.topPerformer.claims} Claims
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
+

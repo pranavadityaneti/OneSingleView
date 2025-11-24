@@ -2,9 +2,13 @@
 
 import React from 'react';
 import { Shield, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 
-export default function ProtectFamilyCard() {
+
+interface ProtectFamilyCardProps {
+    onGetQuote?: () => void;
+}
+
+export default function ProtectFamilyCard({ onGetQuote }: ProtectFamilyCardProps) {
     return (
         <div className="bg-white p-6 rounded-3xl shadow-card border border-gray-100 h-full flex flex-col justify-between relative overflow-hidden group">
             <div>
@@ -29,10 +33,13 @@ export default function ProtectFamilyCard() {
                     <p className="text-lg font-bold text-gray-900">₹500<span className="text-sm text-gray-400 font-medium">/mo</span></p>
                 </div>
 
-                <Link href="/gmc" className="flex items-center text-primary-600 text-sm font-bold hover:text-primary-700 transition-colors group-hover:translate-x-1 duration-300">
+                <button
+                    onClick={onGetQuote}
+                    className="flex items-center text-primary-600 text-sm font-bold hover:text-primary-700 transition-colors group-hover:translate-x-1 duration-300"
+                >
                     Get a Quote
                     <ArrowRight className="w-4 h-4 ml-1.5" />
-                </Link>
+                </button>
             </div>
 
             {/* subtle decoration */}

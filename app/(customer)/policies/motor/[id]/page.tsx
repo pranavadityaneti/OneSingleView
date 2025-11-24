@@ -118,20 +118,24 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                     </div>
                     <div className="p-4 bg-gray-50 rounded-xl">
                         <p className="text-sm text-gray-600 mb-1">Make & Model</p>
-                        <p className="text-lg font-semibold text-gray-900">{policy.vehicle_make} {policy.vehicle_model}</p>
+                        <p className="text-lg font-semibold text-gray-900">{policy.manufacturer} {policy.model}</p>
                     </div>
-                    {policy.vehicle_variant && (
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-600 mb-1">Variant</p>
-                            <p className="text-lg font-semibold text-gray-900">{policy.vehicle_variant}</p>
-                        </div>
-                    )}
-                    {policy.year_of_manufacture && (
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-600 mb-1">Year of Manufacture</p>
-                            <p className="text-lg font-semibold text-gray-900">{policy.year_of_manufacture}</p>
-                        </div>
-                    )}
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-1">Vehicle Type</p>
+                        <p className="text-lg font-semibold text-gray-900">{policy.vehicle_type}</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-1">Fuel Type</p>
+                        <p className="text-lg font-semibold text-gray-900">{policy.fuel_type}</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-1">Manufacturing Year</p>
+                        <p className="text-lg font-semibold text-gray-900">{policy.manufacturing_year}</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                        <p className="text-sm text-gray-600 mb-1">Number Plate</p>
+                        <p className="text-lg font-semibold text-gray-900">{policy.number_plate_type}</p>
+                    </div>
                 </div>
             </div>
 
@@ -176,23 +180,62 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
             </div>
 
             {/* Documents */}
-            {policy.document_url && (
-                <div className="bg-white rounded-2xl p-6 shadow-soft">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                        <FileText className="w-5 h-5 mr-2 text-purple-600" />
-                        Documents
-                    </h2>
-                    <a
-                        href={policy.document_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                    >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Policy Document
-                    </a>
+            <div className="bg-white rounded-2xl p-6 shadow-soft">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-purple-600" />
+                    Documents
+                </h2>
+                <div className="grid gap-3">
+                    {policy.rc_docs && policy.rc_docs.map((doc: string, index: number) => (
+                        <a
+                            key={`rc-${index}`}
+                            href={doc}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="flex items-center text-gray-700">
+                                <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                                RC Document {index + 1}
+                            </span>
+                            <span className="text-sm text-primary-600 font-medium">View</span>
+                        </a>
+                    ))}
+                    {policy.previous_policy_docs && policy.previous_policy_docs.map((doc: string, index: number) => (
+                        <a
+                            key={`prev-${index}`}
+                            href={doc}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="flex items-center text-gray-700">
+                                <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                                Previous Policy {index + 1}
+                            </span>
+                            <span className="text-sm text-primary-600 font-medium">View</span>
+                        </a>
+                    ))}
+                    {policy.dl_docs && policy.dl_docs.map((doc: string, index: number) => (
+                        <a
+                            key={`dl-${index}`}
+                            href={doc}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="flex items-center text-gray-700">
+                                <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                                Driving License {index + 1}
+                            </span>
+                            <span className="text-sm text-primary-600 font-medium">View</span>
+                        </a>
+                    ))}
+                    {!policy.rc_docs?.length && !policy.previous_policy_docs?.length && !policy.dl_docs?.length && (
+                        <p className="text-gray-500 italic">No documents uploaded</p>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

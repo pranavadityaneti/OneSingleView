@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import {
     getAllMotorPolicies,
-    getAllGMCPolicies,
+    getAllHealthPolicies,
     getAllCommercialPolicies
 } from '@/lib/db';
 import Link from 'next/link';
@@ -28,18 +28,20 @@ export default function DuplicatesPage() {
     const scanForDuplicates = async () => {
         setLoading(true);
         try {
-            const [motor, gmc, commercial] = await Promise.all([
+            const [motor, health, commercial] = await Promise.all([
                 getAllMotorPolicies(),
-                getAllGMCPolicies(),
+                getAllHealthPolicies(),
                 getAllCommercialPolicies()
             ]);
 
-            // Simple duplicate detection logic (mock)
-            // In a real app, this would be more sophisticated and likely server-side
+            // Filter for duplicates by policy number across all policy types
+            const policyNumbers = new Map();
+            const duplicateGroups = [];
+
             const allPolicies = [
-                ...motor.map(p => ({ ...p, type: 'Motor', key: p.policy_number })),
-                ...gmc.map(p => ({ ...p, type: 'Health', key: p.policy_number })),
-                ...commercial.map(p => ({ ...p, type: 'Commercial', key: p.policy_number }))
+                ...motor.map((p: any) => ({ ...p, type: 'Motor', key: p.policy_number })),
+                ...health.map((p: any) => ({ ...p, type: 'Health', key: p.policy_number })),
+                ...commercial.map((p: any) => ({ ...p, type: 'Commercial', key: p.policy_number }))
             ];
 
             const lookup: Record<string, any[]> = {};

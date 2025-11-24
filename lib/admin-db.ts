@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import { User, MotorPolicy, GMCPolicy, CommercialPolicy, Claim, QuoteRequest } from '@/types';
+import { User, MotorPolicy, HealthPolicy, CommercialPolicy, Claim, QuoteRequest } from '@/types';
+import { getAllUsers, getAllMotorPolicies, getAllHealthPolicies, getAllCommercialPolicies, getAllClaims, getAllQuoteRequests } from './db';
 
 // --- Types for Admin Dashboard ---
 
@@ -65,10 +66,10 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
 
         // 2. Policies (Aggregate from all tables)
         const { data: motor } = await supabase.from('motor_policies').select('status, policy_end_date');
-        const { data: gmc } = await supabase.from('gmc_policies').select('status, policy_end_date');
+        const { data: health } = await supabase.from('health_policies').select('status, policy_end_date');
         const { data: commercial } = await supabase.from('commercial_policies').select('status, policy_end_date');
 
-        const allPolicies = [...(motor || []), ...(gmc || []), ...(commercial || [])];
+        const allPolicies = [...(motor || []), ...(health || []), ...(commercial || [])];
         const totalPolicies = allPolicies.length;
         const active = allPolicies.filter(p => p.status === 'Active').length;
         const expired = allPolicies.filter(p => p.status === 'Expired').length;
@@ -121,7 +122,7 @@ export async function getExpiringPoliciesAdmin(): Promise<ExpiryOverview> {
     try {
         // Fetch all active policies with end dates
         const { data: motor } = await supabase.from('motor_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
-        const { data: gmc } = await supabase.from('gmc_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
+        const { data: health } = await supabase.from('health_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
         const { data: commercial } = await supabase.from('commercial_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
 
         // Fetch all users to map names
@@ -139,7 +140,7 @@ export async function getExpiringPoliciesAdmin(): Promise<ExpiryOverview> {
 
         const allPolicies = [
             ...(motor || []).map((p: any) => formatPolicy(p, 'Motor')),
-            ...(gmc || []).map((p: any) => formatPolicy(p, 'GMC')),
+            ...(health || []).map((p: any) => formatPolicy(p, 'Health')),
             ...(commercial || []).map((p: any) => formatPolicy(p, 'Commercial'))
         ];
 
@@ -205,12 +206,12 @@ export async function getRecentActivity(): Promise<ActivityLog[]> {
 export async function getPoliciesByLOB() {
     try {
         const { count: motor } = await supabase.from('motor_policies').select('*', { count: 'exact', head: true });
-        const { count: gmc } = await supabase.from('gmc_policies').select('*', { count: 'exact', head: true });
+        const { count: health } = await supabase.from('health_policies').select('*', { count: 'exact', head: true });
         const { count: commercial } = await supabase.from('commercial_policies').select('*', { count: 'exact', head: true });
 
         return [
             { name: 'Motor', value: motor || 0, fill: '#3B82F6' },
-            { name: 'GMC', value: gmc || 0, fill: '#10B981' },
+            { name: 'Health', value: health || 0, fill: '#10B981' },
             { name: 'Commercial', value: commercial || 0, fill: '#F59E0B' },
             { name: 'Others', value: 0, fill: '#6366F1' }
         ];

@@ -17,7 +17,7 @@ import {
 import {
     getUserById,
     getUserMotorPolicies,
-    getUserGMCPolicies,
+    getUserHealthPolicies,
     getUserCommercialPolicies,
     getUserAuditLogs
 } from '@/lib/db';
@@ -45,7 +45,7 @@ export default function UserProfilePage() {
             const [userData, motor, gmc, commercial, logs] = await Promise.all([
                 getUserById(userId),
                 getUserMotorPolicies(userId),
-                getUserGMCPolicies(userId),
+                getUserHealthPolicies(userId),
                 getUserCommercialPolicies(userId),
                 getUserAuditLogs(userId)
             ]);

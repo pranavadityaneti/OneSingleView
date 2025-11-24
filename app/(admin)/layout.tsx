@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             label: 'Operations',
             items: [
                 { icon: AlertCircle, label: 'Claims Console', href: '/admin/claims' },
-                { icon: FileText, label: 'Quote Requests', href: '/admin/quotes' },
+                { icon: FileText, label: 'Quote Requests', href: '/admin/quote-requests' },
                 { icon: Copy, label: 'Deduplication', href: '/admin/duplicates' }
             ]
         },

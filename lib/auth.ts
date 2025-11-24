@@ -138,7 +138,7 @@ export async function signUp(
 export async function resetPassword(email: string): Promise<void> {
     try {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/update-password`,
+            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/update-password` : 'http://localhost:3000/update-password',
         });
         if (error) throw error;
     } catch (error: any) {
@@ -248,7 +248,7 @@ export async function getCurrentUser(): Promise<User | null> {
  * Get Supabase auth state change listener
  */
 export function onAuthStateChange(callback: (user: User | null) => void) {
-    return supabase.auth.onAuthStateChange(async (event, session) => {
+    return supabase.auth.onAuthStateChange(async (event: string, session: any) => {
         if (session?.user) {
             const user = await getCurrentUser();
             callback(user);

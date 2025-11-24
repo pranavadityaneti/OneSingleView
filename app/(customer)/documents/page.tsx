@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Search, Filter, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserMotorPolicies, getUserGMCPolicies, getUserCommercialPolicies, getUserClaims } from '@/lib/db';
+import { getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getUserClaims } from '@/lib/db';
 
 interface DocumentItem {
     id: string;
@@ -34,7 +34,7 @@ export default function DocumentsPage() {
             try {
                 const [motor, gmc, commercial, claims] = await Promise.all([
                     getUserMotorPolicies(user.id),
-                    getUserGMCPolicies(user.id),
+                    getUserHealthPolicies(user.id),
                     getUserCommercialPolicies(user.id),
                     getUserClaims(user.id)
                 ]);

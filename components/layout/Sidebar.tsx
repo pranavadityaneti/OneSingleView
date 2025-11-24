@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     FileText,
@@ -17,7 +17,8 @@ import {
     PieChart,
     Files,
     MessageSquare,
-    Calculator
+    Calculator,
+    UserCircle
 } from 'lucide-react';
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ import { signOut } from '@/lib/auth';
 
 interface SidebarProps {
     user: User;
+    onClose?: () => void;
 }
 
 type NavItem = {
@@ -111,6 +113,8 @@ export default function Sidebar({ user }: SidebarProps) {
                     </span>
                 </div>
 
+
+
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto scrollbar-hide">
                     {navGroups.map((group) => (
@@ -160,15 +164,15 @@ export default function Sidebar({ user }: SidebarProps) {
 
                 {/* User Info (Bottom) */}
                 <div className="p-4 border-t border-gray-50">
-                    <div className="flex items-center gap-3 mb-3 px-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                    <Link href="/profile" className="flex items-center gap-3 px-2 hover:bg-gray-50 p-2 rounded-xl transition-colors group">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:shadow-lg transition-all">
                             {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">{user.name}</p>
                             <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
                         </div>
-                    </div>
+                    </Link>
 
                     <button
                         onClick={async () => {

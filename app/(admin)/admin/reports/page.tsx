@@ -49,7 +49,7 @@ export default function AdminReportsPage() {
             let allPolicies: PolicyData[] = [];
 
             // Transform motor policies
-            (motorData || []).forEach(p => {
+            (motorData || []).forEach((p: any) => {
                 allPolicies.push({
                     type: 'Motor',
                     policy_number: p.policy_number,
@@ -67,7 +67,7 @@ export default function AdminReportsPage() {
             });
 
             // Transform GMC policies
-            (gmcData || []).forEach(p => {
+            (gmcData || []).forEach((p: any) => {
                 allPolicies.push({
                     type: 'Health',
                     policy_number: p.policy_number,
@@ -85,7 +85,7 @@ export default function AdminReportsPage() {
             });
 
             // Transform commercial policies
-            (commercialData || []).forEach(p => {
+            (commercialData || []).forEach((p: any) => {
                 allPolicies.push({
                     type: 'Commercial',
                     policy_number: p.policy_number,

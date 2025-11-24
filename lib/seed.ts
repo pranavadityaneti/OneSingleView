@@ -1,5 +1,5 @@
-import { addMotorPolicy, addGMCPolicy, addCommercialPolicy } from '@/lib/db';
-import { MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { addMotorPolicy, addHealthPolicy, addCommercialPolicy } from '@/lib/db';
+import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 const MANUFACTURERS = ['Maruti Suzuki', 'Hyundai', 'Tata Motors', 'Mahindra', 'Honda', 'Toyota'];
 const MODELS = ['Swift', 'Creta', 'Nexon', 'Thar', 'City', 'Fortuner'];
@@ -54,7 +54,7 @@ export async function seedUserData(userId: string) {
     for (let i = 0; i < healthCount; i++) {
         const expiryDate = randomDate(new Date(), new Date(2025, 11, 31));
 
-        await addGMCPolicy({
+        await addHealthPolicy({
             user_id: userId,
             policy_number: `HLT-${randomNumber(100000, 999999)}`,
             insurer_name: randomItem(INSURERS),

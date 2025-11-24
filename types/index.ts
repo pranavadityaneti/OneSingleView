@@ -9,6 +9,7 @@ export interface User {
     company_name?: string;
     role: UserRole;
     customer_id?: string;
+    address?: string;
     created_at: Date;
     updated_at: Date;
     rm_id?: string;
@@ -26,7 +27,7 @@ export interface UserAuditLog {
 export type PolicyStatus = 'Active' | 'Expiring Soon' | 'Expired';
 export type VehicleType = 'Car' | 'Bike' | 'Bus' | 'GCV' | 'Misc';
 export type NumberPlateType = 'White' | 'Yellow' | 'EV';
-export type LOBType = 'Motor' | 'GMC' | 'GPA' | 'Fire' | 'Other';
+export type LOBType = 'Motor' | 'Health' | 'GPA' | 'Fire' | 'Other';
 
 export interface MotorPolicy {
     id: string;
@@ -53,7 +54,7 @@ export interface MotorPolicy {
     updated_at: Date;
 }
 
-export interface GMCPolicy {
+export interface HealthPolicy {
     id: string;
     user_id: string;
     user_name?: string; // For Admin View
@@ -143,10 +144,28 @@ export interface AppSettings {
     updated_at: Date;
 }
 
+// User Preferences Types
+export interface UserPreferences {
+    id: string;
+    user_id: string;
+    email_notifications: boolean;
+    sms_notifications: boolean;
+    policy_expiry_alerts: boolean;
+    claim_updates: boolean;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export interface RMInfo {
+    name: string;
+    email: string;
+    mobile: string;
+}
+
 // Dashboard Types
 export interface PortfolioStats {
     motor: number;
-    gmc: number;
+    health: number;
     gpa: number;
     fire: number;
     others: number;
@@ -166,7 +185,7 @@ export interface MotorPolicyFormData extends Partial<MotorPolicy> {
     dl_files?: File[];
 }
 
-export interface GMCPolicyFormData extends Partial<GMCPolicy> {
+export interface HealthPolicyFormData extends Partial<HealthPolicy> {
     policy_files?: File[];
 }
 
@@ -238,4 +257,23 @@ export interface RMProfile {
     rating: number;
     created_at: Date;
     updated_at: Date;
+}
+
+export interface UserPreferences {
+    id: string;
+    user_id: string;
+    email_notifications: boolean;
+    sms_notifications: boolean;
+    whatsapp_notifications: boolean;
+    marketing_emails: boolean;
+    policy_expiry_alerts: boolean;
+    claim_updates: boolean;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export interface RMInfo {
+    name: string;
+    email: string;
+    mobile: string;
 }

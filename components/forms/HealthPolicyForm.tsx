@@ -2,28 +2,28 @@
 
 import React, { useState } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
-import { GMCPolicy, GMCPolicyFormData } from '@/types';
+import { HealthPolicy, HealthPolicyFormData } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
-import { addGMCPolicy, updateGMCPolicy } from '@/lib/db';
+import { addHealthPolicy, updateHealthPolicy } from '@/lib/db';
 import {
     validatePolicyNumber,
     validatePremiumAmount,
     validateDateRange
 } from '@/lib/validation';
 
-interface GMCPolicyFormProps {
+interface HealthPolicyFormProps {
     userId: string;
-    initialData?: GMCPolicy;
+    initialData?: HealthPolicy;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function GMCPolicyForm({ userId, initialData, onClose, onSuccess }: GMCPolicyFormProps) {
+export default function HealthPolicyForm({ userId, initialData, onClose, onSuccess }: HealthPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const [formData, setFormData] = useState<GMCPolicyFormData>({
+    const [formData, setFormData] = useState<HealthPolicyFormData>({
         company_name: initialData?.company_name || '',
         policy_number: initialData?.policy_number || '',
         insurer_name: initialData?.insurer_name || '',
@@ -96,9 +96,9 @@ export default function GMCPolicyForm({ userId, initialData, onClose, onSuccess 
             };
 
             if (initialData?.id) {
-                await updateGMCPolicy(initialData.id, policyData);
+                await updateHealthPolicy(initialData.id, policyData);
             } else {
-                await addGMCPolicy(policyData);
+                await addHealthPolicy(policyData);
             }
 
             onSuccess();
@@ -123,7 +123,7 @@ export default function GMCPolicyForm({ userId, initialData, onClose, onSuccess 
             <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
                     <h2 className="text-xl font-bold text-gray-900">
-                        {initialData ? 'Edit GMC Policy' : 'Add New GMC Policy'}
+                        {initialData ? 'Edit Health Insurance Policy' : 'Add New Health Insurance Policy'}
                     </h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
                         <X className="w-6 h-6" />

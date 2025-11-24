@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import { getUserMotorPolicies, getUserGMCPolicies, getUserCommercialPolicies, getUserClaims, getUserReferrals } from '@/lib/db';
-import { User, MotorPolicy, GMCPolicy, CommercialPolicy, DashboardSummary, Claim, Referral } from '@/types';
+import { getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getUserClaims, getUserReferrals } from '@/lib/db';
+import { User, MotorPolicy, HealthPolicy, CommercialPolicy, DashboardSummary, Claim, Referral } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
-import { Car, Heart, Briefcase, Plane, Shield, Umbrella, FileText, TrendingUp, AlertCircle } from 'lucide-react';
+import { Car, Heart, Briefcase, Plane, Shield, Umbrella, FileText, TrendingUp, AlertCircle, Calculator, ChevronRight } from 'lucide-react';
 import PortfolioPieChart from '@/components/dashboard/PortfolioPieChart';
 import PolicyCategoryCard from '@/components/dashboard/PolicyCategoryCard';
 import ClaimsOverview from '@/components/dashboard/ClaimsOverview';
@@ -19,6 +19,8 @@ import AnalyticsBarChart from '@/components/dashboard/AnalyticsBarChart';
 import ProtectFamilyCard from '@/components/dashboard/ProtectFamilyCard';
 import ReportsModal from '@/components/dashboard/ReportsModal';
 import PolicyDetailModal from '@/components/dashboard/PolicyDetailModal';
+import StickyAddPolicy from '@/components/dashboard/StickyAddPolicy';
+import AddPolicyModal from '@/components/policies/AddPolicyModal';
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -34,15 +36,19 @@ export default function DashboardPage() {
     const [policyDetailType, setPolicyDetailType] = useState<'total' | 'premium' | 'expiring'>('total');
     const [policyDetailTitle, setPolicyDetailTitle] = useState('');
 
+    // Add Policy Modal State
+    const [selectedType, setSelectedType] = useState<'total' | 'premium' | 'expiring'>('total');
+    const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+
     // Store actual policy data
     const [motorPolicies, setMotorPolicies] = useState<MotorPolicy[]>([]);
-    const [gmcPolicies, setGmcPolicies] = useState<GMCPolicy[]>([]);
+    const [healthPolicies, setHealthPolicies] = useState<HealthPolicy[]>([]);
     const [commercialPolicies, setCommercialPolicies] = useState<CommercialPolicy[]>([]);
 
     // Policy Counts for Cards
     const [policyCounts, setPolicyCounts] = useState({
         motor: 0,
-        gmc: 0,
+        health: 0,
         commercial: 0
     });
 
@@ -68,30 +74,40 @@ export default function DashboardPage() {
 
     const loadDashboardData = async (userId: string) => {
         try {
-            const [motor, gmc, commercial, userClaims, userReferrals] = await Promise.all([
+            const [motor, healthData, commercial, userClaims, userReferrals] = await Promise.all([
                 getUserMotorPolicies(userId),
-                getUserGMCPolicies(userId),
+                getUserHealthPolicies(userId),
                 getUserCommercialPolicies(userId),
                 getUserClaims(userId),
                 getUserReferrals(userId)
             ]);
 
-            // Store policy data for modal
-            setMotorPolicies(motor);
-            setGmcPolicies(gmc);
-            setCommercialPolicies(commercial);
+            // Store policy data for modal with calculated status
+            const processPolicy = (p: any) => {
+                const endDate = new Date('policy_end_date' in p ? p.policy_end_date : p.expiry_date);
+                const status = calculatePolicyStatus(endDate);
+                return { ...p, status };
+            };
+
+            const processedMotor = motor.map(processPolicy);
+            const processedHealth = healthData.map(processPolicy);
+            const processedCommercial = commercial.map(processPolicy);
+
+            setMotorPolicies(processedMotor);
+            setHealthPolicies(processedHealth);
+            setCommercialPolicies(processedCommercial);
 
             setClaims(userClaims);
             setReferrals(userReferrals);
             setPolicyCounts({
                 motor: motor.length,
-                gmc: gmc.length,
+                health: healthData.length,
                 commercial: commercial.length
             });
 
             // Calculate portfolio summary
             const motorPremium = motor.reduce((sum, p) => sum + Number(p.premium_amount), 0);
-            const gmcPremium = gmc.reduce((sum, p) => sum + Number(p.premium_amount), 0);
+            const healthPremium = healthData.reduce((sum, p) => sum + Number(p.premium_amount), 0);
 
             const gpaPolicies = commercial.filter((p) => p.lob_type === 'GPA');
             const firePolicies = commercial.filter((p) => p.lob_type === 'Fire');
@@ -101,18 +117,10 @@ export default function DashboardPage() {
             const firePremium = firePolicies.reduce((sum, p) => sum + Number(p.premium_amount), 0);
             const othersPremium = otherPolicies.reduce((sum, p) => sum + Number(p.premium_amount), 0);
 
-            const allPolicies = [...motor, ...gmc, ...commercial];
+            const allPolicies = [...processedMotor, ...processedHealth, ...processedCommercial];
 
-            // Calculate expiring soon (mock logic for now as db returns strings)
-            const now = new Date();
-            const twentyDaysFromNow = new Date();
-            twentyDaysFromNow.setDate(now.getDate() + 20);
-
-            let expiringCount = 0;
-            allPolicies.forEach(p => {
-                const date = new Date('policy_end_date' in p ? p.policy_end_date : p.expiry_date);
-                if (date > now && date <= twentyDaysFromNow) expiringCount++;
-            });
+            // Calculate expiring soon count based on calculated status
+            const expiringCount = allPolicies.filter(p => p.status === 'Expiring Soon').length;
 
             // Calculate Monthly Premium Trend (Area Chart)
             const monthlyPremium = Array(12).fill(0);
@@ -147,11 +155,11 @@ export default function DashboardPage() {
 
             setSummary({
                 total_policies: allPolicies.length,
-                total_premium: motorPremium + gmcPremium + gpaPremium + firePremium + othersPremium,
+                total_premium: motorPremium + healthPremium + gpaPremium + firePremium + othersPremium,
                 expiring_soon_count: expiringCount,
                 portfolio_by_lob: {
                     motor: motorPremium,
-                    gmc: gmcPremium,
+                    health: healthPremium,
                     gpa: gpaPremium,
                     fire: firePremium,
                     others: othersPremium,
@@ -213,7 +221,7 @@ export default function DashboardPage() {
                 title={policyDetailTitle}
                 type={policyDetailType}
                 motorPolicies={motorPolicies}
-                gmcPolicies={gmcPolicies}
+                healthPolicies={healthPolicies}
                 commercialPolicies={commercialPolicies}
             />
 
@@ -277,6 +285,54 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            {/* Quick Access */}
+            <div>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Access</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div onClick={() => router.push('/policies?type=Motor')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+                            <Car className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Motor</p>
+                    </div>
+
+                    <div onClick={() => router.push('/policies?type=Health')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
+                            <Heart className="w-5 h-5 text-green-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Health</p>
+                    </div>
+
+                    <div onClick={() => router.push('/policies?type=Travel')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
+                            <Plane className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Travel</p>
+                    </div>
+
+                    <div onClick={() => router.push('/policies?type=Commercial')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-colors">
+                            <Briefcase className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Commercial</p>
+                    </div>
+
+                    <div onClick={() => router.push('/policies?type=Life')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-pink-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-pink-100 transition-colors">
+                            <Umbrella className="w-5 h-5 text-pink-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Life</p>
+                    </div>
+
+                    <div onClick={() => router.push('/policies?type=Cyber')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
+                        <div className="w-10 h-10 mx-auto bg-cyan-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-cyan-100 transition-colors">
+                            <Shield className="w-5 h-5 text-cyan-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900">Cyber</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Main Content Grid - Charts First */}
             <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column (2/3 width) */}
@@ -305,57 +361,8 @@ export default function DashboardPage() {
                     </div>
                     {/* Protect Family Card */}
                     <div className="h-[320px]">
-                        <ProtectFamilyCard />
+                        <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
                     </div>
-                </div>
-            </div>
-
-            {/* Policy Categories */}
-            <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Access</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <PolicyCategoryCard
-                        title="Motor"
-                        count={policyCounts.motor}
-                        icon={Car}
-                        href="/motor"
-                        color="blue"
-                    />
-                    <PolicyCategoryCard
-                        title="Health"
-                        count={policyCounts.gmc}
-                        icon={Heart}
-                        href="/gmc"
-                        color="green"
-                    />
-                    <PolicyCategoryCard
-                        title="Commercial"
-                        count={policyCounts.commercial}
-                        icon={Briefcase}
-                        href="/commercial"
-                        color="purple"
-                    />
-                    <PolicyCategoryCard
-                        title="Life"
-                        count={0}
-                        icon={Umbrella}
-                        href="/quotes?type=Life"
-                        color="pink"
-                    />
-                    <PolicyCategoryCard
-                        title="Travel"
-                        count={0}
-                        icon={Plane}
-                        href="/quotes?type=Travel"
-                        color="orange"
-                    />
-                    <PolicyCategoryCard
-                        title="Cyber"
-                        count={0}
-                        icon={Shield}
-                        href="/quotes?type=Cyber"
-                        color="indigo"
-                    />
                 </div>
             </div>
 
@@ -363,13 +370,31 @@ export default function DashboardPage() {
             <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Exclusive Offers & Rewards</h2>
                 <div className="grid md:grid-cols-3 gap-4">
-                </div>
-
-                {/* Advertising */}
-                <div>
-                    <AdvertisingBanner />
+                    {/* Offers content would go here */}
                 </div>
             </div>
-        </div >
+
+            {/* Advertising */}
+            <div>
+                <AdvertisingBanner />
+            </div>
+
+            <StickyAddPolicy userId={user.id} />
+
+            <AddPolicyModal
+                isOpen={isHealthModalOpen}
+                onClose={() => setIsHealthModalOpen(false)}
+                userId={user.id}
+                initialType="Health"
+                onSuccess={() => {
+                    setIsHealthModalOpen(false);
+                    // Trigger a reload by toggling a state or re-fetching
+                    // Since loadDashboardData is not accessible here (it's inside useEffect),
+                    // we should probably move it out or just reload the page.
+                    // For now, let's reload the page as a simple fix.
+                    window.location.reload();
+                }}
+            />
+        </div>
     );
 }

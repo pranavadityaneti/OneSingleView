@@ -95,7 +95,7 @@ export default function LandingPage() {
                     <h3 className="text-center text-sm font-medium text-gray-500 uppercase tracking-wide mb-8">
                         Trusted by Customers with Policies from
                     </h3>
-                    <div className="grid grid-cols-2 MD:grid-cols-4 lg:grid-cols-8 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8">
                         {clientLogos.map((logo, index) => (
                             <div
                                 key={index}

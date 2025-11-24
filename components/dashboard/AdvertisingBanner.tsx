@@ -5,7 +5,7 @@ import { ArrowRight, Stethoscope } from 'lucide-react';
 
 export default function AdvertisingBanner() {
     return (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-8 text-white shadow-lg shadow-blue-500/25 relative overflow-hidden transition-transform hover:-translate-y-1 h-full flex flex-col justify-center">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-8 text-white shadow-lg shadow-blue-500/25 relative overflow-hidden transition-transform hover:-translate-y-1 h-full flex flex-col justify-center" style={{ width: 'calc(100% + 96px)', maxWidth: '100%' }}>
             <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">

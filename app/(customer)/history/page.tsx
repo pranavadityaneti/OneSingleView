@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { History, Calendar, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
-import { getUserMotorPolicies, getUserGMCPolicies, getUserCommercialPolicies } from '@/lib/db';
-import { MotorPolicy, GMCPolicy, CommercialPolicy, User } from '@/types';
+import { getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies } from '@/lib/db';
+import { MotorPolicy, HealthPolicy, CommercialPolicy, User } from '@/types';
 
-type AnyPolicy = (MotorPolicy | GMCPolicy | CommercialPolicy) & { type: 'Motor' | 'GMC' | 'Commercial' };
+type AnyPolicy = (MotorPolicy | HealthPolicy | CommercialPolicy) & { type: 'Motor' | 'Health' | 'Commercial' };
 
 export default function HistoryPage() {
     const [user, setUser] = useState<User | null>(null);
@@ -26,14 +26,14 @@ export default function HistoryPage() {
 
                 const [motor, gmc, commercial] = await Promise.all([
                     getUserMotorPolicies(currentUser.id),
-                    getUserGMCPolicies(currentUser.id),
+                    getUserHealthPolicies(currentUser.id),
                     getUserCommercialPolicies(currentUser.id)
                 ]);
 
                 const now = new Date();
                 const allPolicies: AnyPolicy[] = [
                     ...motor.map(p => ({ ...p, type: 'Motor' as const })),
-                    ...gmc.map(p => ({ ...p, type: 'GMC' as const })),
+                    ...gmc.map(p => ({ ...p, type: 'Health' as const })),
                     ...commercial.map(p => ({ ...p, type: 'Commercial' as const }))
                 ];
 
@@ -61,7 +61,7 @@ export default function HistoryPage() {
 
     const getPolicyTitle = (policy: AnyPolicy) => {
         if (policy.type === 'Motor') return `${(policy as MotorPolicy).vehicle_number} - ${(policy as MotorPolicy).model}`;
-        if (policy.type === 'GMC') return `${(policy as GMCPolicy).company_name} GMC`;
+        if (policy.type === 'Health') return `${(policy as HealthPolicy).company_name} Health`;
         return `${(policy as CommercialPolicy).lob_type} Policy`;
     };
 

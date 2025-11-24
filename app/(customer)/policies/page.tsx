@@ -5,10 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import {
     getUserMotorPolicies,
-    getUserGMCPolicies,
+    getUserHealthPolicies,
     getUserCommercialPolicies,
 } from '@/lib/db';
-import { User, MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { User, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
 import { Car, Heart, Briefcase, Search, Filter, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ function PoliciesContent() {
 
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState(initialQuery);
-    const [allPolicies, setAllPolicies] = useState<(MotorPolicy | GMCPolicy | CommercialPolicy)[]>([]);
+    const [allPolicies, setAllPolicies] = useState<(MotorPolicy | HealthPolicy | CommercialPolicy)[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const refreshData = async () => {
@@ -30,7 +30,7 @@ function PoliciesContent() {
         try {
             const [motor, gmc, commercial] = await Promise.all([
                 getUserMotorPolicies(user.id),
-                getUserGMCPolicies(user.id),
+                getUserHealthPolicies(user.id),
                 getUserCommercialPolicies(user.id),
             ]);
 

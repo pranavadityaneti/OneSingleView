@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import {
     MotorPolicy,
-    GMCPolicy,
+    HealthPolicy,
     CommercialPolicy,
     Claim,
     QuoteRequest,
@@ -12,6 +12,8 @@ import {
     AppSetting,
     Banner,
     Garage,
+    UserPreferences,
+    RMInfo,
 } from '@/types';
 
 // Helper to convert database rows to app types
@@ -42,7 +44,7 @@ export async function getUserMotorPolicies(userId: string): Promise<MotorPolicy[
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             id: row.id,
             user_id: row.user_id,
@@ -56,19 +58,19 @@ export async function getUserMotorPolicies(userId: string): Promise<MotorPolicy[
 /**
  * Get all GMC policies for a user
  */
-export async function getUserGMCPolicies(userId: string): Promise<GMCPolicy[]> {
+export async function getUserHealthPolicies(userId: string): Promise<HealthPolicy[]> {
     try {
         const { data, error } = await supabase
-            .from('gmc_policies')
+            .from('health_policies')
             .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as GMCPolicy[];
+        return (data || []).map((row: any) => convertDates(row)) as HealthPolicy[];
     } catch (error: any) {
-        console.error('Error fetching GMC policies:', error.message, error.details, error.hint);
+        console.error('Error fetching health policies:', error.message, error.details, error.hint);
         return [];
     }
 }
@@ -94,7 +96,7 @@ export async function getUserCommercialPolicies(
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as CommercialPolicy[];
+        return (data || []).map((row: any) => convertDates(row)) as CommercialPolicy[];
     } catch (error: any) {
         console.error('Error fetching commercial policies:', error.message, error.details, error.hint);
         return [];
@@ -114,7 +116,7 @@ export async function getUserClaims(userId: string): Promise<Claim[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as Claim[];
+        return (data || []).map((row: any) => convertDates(row)) as Claim[];
     } catch (error: any) {
         console.error('Error fetching claims:', error.message, error.details, error.hint);
         return [];
@@ -134,7 +136,7 @@ export async function getUserQuoteRequests(userId: string): Promise<QuoteRequest
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as QuoteRequest[];
+        return (data || []).map((row: any) => convertDates(row)) as QuoteRequest[];
     } catch (error: any) {
         console.error('Error fetching quote requests:', error);
         return [];
@@ -180,10 +182,10 @@ export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_a
 /**
  * Add a GMC policy
  */
-export async function addGMCPolicy(policy: Omit<GMCPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
+export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
     try {
         const { data, error } = await supabase
-            .from('gmc_policies')
+            .from('health_policies')
             .insert({
                 user_id: policy.user_id,
                 company_name: policy.company_name,
@@ -201,8 +203,8 @@ export async function addGMCPolicy(policy: Omit<GMCPolicy, 'id' | 'created_at' |
         if (error) throw error;
         return data.id;
     } catch (error: any) {
-        console.error('Error adding GMC policy:', error);
-        throw new Error(error.message || 'Failed to add GMC policy');
+        console.error('Error adding health policy:', error);
+        throw new Error(error.message || 'Failed to add health policy');
     }
 }
 
@@ -273,34 +275,34 @@ export async function deleteMotorPolicy(id: string): Promise<void> {
 /**
  * Update a GMC policy
  */
-export async function updateGMCPolicy(id: string, updates: Partial<GMCPolicy>): Promise<void> {
+export async function updateHealthPolicy(id: string, updates: Partial<HealthPolicy>): Promise<void> {
     try {
         const { error } = await supabase
-            .from('gmc_policies')
+            .from('health_policies')
             .update(updates)
             .eq('id', id);
 
         if (error) throw error;
     } catch (error: any) {
-        console.error('Error updating GMC policy:', error);
-        throw new Error(error.message || 'Failed to update GMC policy');
+        console.error('Error updating health policy:', error);
+        throw new Error(error.message || 'Failed to update health policy');
     }
 }
 
 /**
  * Delete a GMC policy
  */
-export async function deleteGMCPolicy(id: string): Promise<void> {
+export async function deleteHealthPolicy(id: string): Promise<void> {
     try {
         const { error } = await supabase
-            .from('gmc_policies')
+            .from('health_policies')
             .delete()
             .eq('id', id);
 
         if (error) throw error;
     } catch (error: any) {
-        console.error('Error deleting GMC policy:', error);
-        throw new Error(error.message || 'Failed to delete GMC policy');
+        console.error('Error deleting health policy:', error);
+        throw new Error(error.message || 'Failed to delete health policy');
     }
 }
 
@@ -439,7 +441,7 @@ export async function getUserReferrals(userId: string): Promise<Referral[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as Referral[];
+        return (data || []).map((row: any) => convertDates(row)) as Referral[];
     } catch (error: any) {
         console.error('Error fetching referrals:', error.message, error.details, error.hint);
         return [];
@@ -510,7 +512,7 @@ export async function getAllUsers(): Promise<User[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as User[];
+        return (data || []).map((row: any) => convertDates(row)) as User[];
     } catch (error: any) {
         console.error('Error fetching all users:', error);
         return [];
@@ -535,6 +537,8 @@ export async function getUserById(userId: string): Promise<User | null> {
         return null;
     }
 }
+
+
 
 /**
  * Update user status (Disable/Enable) - Mock implementation as 'status' field might not exist yet
@@ -575,7 +579,7 @@ export async function getUserAuditLogs(userId: string): Promise<AuditLog[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as AuditLog[];
+        return (data || []).map((row: any) => convertDates(row)) as AuditLog[];
     } catch (error: any) {
         console.error('Error fetching audit logs:', error);
         return [];
@@ -596,7 +600,7 @@ export async function getAllMotorPolicies(): Promise<MotorPolicy[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             user_name: row.users?.name,
             user_email: row.users?.email
@@ -610,22 +614,22 @@ export async function getAllMotorPolicies(): Promise<MotorPolicy[]> {
 /**
  * Get all GMC policies (Admin)
  */
-export async function getAllGMCPolicies(): Promise<GMCPolicy[]> {
+export async function getAllHealthPolicies(): Promise<HealthPolicy[]> {
     try {
         const { data, error } = await supabase
-            .from('gmc_policies')
+            .from('health_policies')
             .select('*, users(name, email)')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             user_name: row.users?.name,
             user_email: row.users?.email
-        })) as GMCPolicy[];
+        })) as HealthPolicy[];
     } catch (error: any) {
-        console.error('Error fetching all GMC policies:', error);
+        console.error('Error fetching all health policies:', error);
         return [];
     }
 }
@@ -642,7 +646,7 @@ export async function getAllCommercialPolicies(): Promise<CommercialPolicy[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             user_name: row.users?.name,
             user_email: row.users?.email
@@ -667,7 +671,7 @@ export async function getAllClaims(): Promise<Claim[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             user_name: row.users?.name,
             user_email: row.users?.email
@@ -690,7 +694,7 @@ export async function getAllQuoteRequests(): Promise<QuoteRequest[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => ({
+        return (data || []).map((row: any) => ({
             ...convertDates(row),
             user_name: row.users?.name,
             user_email: row.users?.email
@@ -715,7 +719,7 @@ export async function getAppSettings(): Promise<AppSetting[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as AppSetting[];
+        return (data || []).map((row: any) => convertDates(row)) as AppSetting[];
     } catch (error: any) {
         console.error('Error fetching app settings:', error);
         return [];
@@ -750,7 +754,7 @@ export async function getAllBanners(): Promise<Banner[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as Banner[];
+        return (data || []).map((row: any) => convertDates(row)) as Banner[];
     } catch (error: any) {
         console.error('Error fetching banners:', error);
         return [];
@@ -802,7 +806,7 @@ export async function getAllGarages(): Promise<Garage[]> {
 
         if (error) throw error;
 
-        return (data || []).map((row) => convertDates(row)) as Garage[];
+        return (data || []).map((row: any) => convertDates(row)) as Garage[];
     } catch (error: any) {
         console.error('Error fetching garages:', error);
         return [];
@@ -828,6 +832,9 @@ export async function addGarage(garage: Omit<Garage, 'id' | 'created_at' | 'upda
 /**
  * Delete a garage
  */
+/**
+ * Delete a garage
+ */
 export async function deleteGarage(id: string): Promise<void> {
     try {
         const { error } = await supabase
@@ -840,4 +847,265 @@ export async function deleteGarage(id: string): Promise<void> {
         console.error('Error deleting garage:', error);
         throw error;
     }
+}
+
+// ============================================
+// PROFILE MANAGEMENT FUNCTIONS
+// ============================================
+
+/**
+ * Update user profile information
+ */
+export async function updateUserProfile(
+    userId: string,
+    updates: {
+        name?: string;
+        mobile?: string;
+        company_name?: string;
+        address?: string;
+    }
+): Promise<User> {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .update(updates)
+            .eq('id', userId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return convertDates(data) as User;
+    } catch (error: any) {
+        console.error('Error updating user profile:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get Relationship Manager (RM) details for a user
+ */
+export async function getUserRM(userId: string): Promise<RMInfo | null> {
+    try {
+        // First get the user's rm_id
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('rm_id')
+            .eq('id', userId)
+            .single();
+
+        if (userError) {
+            // If user not found or error, return default RM for demo
+            console.log('Error fetching user for RM, returning default:', userError);
+            return {
+                name: 'Amit Sharma',
+                email: 'amit.sharma@onesingleview.com',
+                mobile: '+91 98765 43210'
+            };
+        }
+
+        if (!user?.rm_id) {
+            // Return default RM if none assigned
+            return {
+                name: 'Amit Sharma',
+                email: 'amit.sharma@onesingleview.com',
+                mobile: '+91 98765 43210'
+            };
+        }
+
+        // Then get the RM's details
+        const { data: rm, error: rmError } = await supabase
+            .from('users')
+            .select('name, email, mobile')
+            .eq('id', user.rm_id)
+            .single();
+
+        if (rmError) throw rmError;
+        return rm as RMInfo;
+    } catch (error: any) {
+        console.error('Error fetching user RM:', error);
+        // Return default RM on error to ensure UI shows something
+        return {
+            name: 'Amit Sharma',
+            email: 'amit.sharma@onesingleview.com',
+            mobile: '+91 98765 43210'
+        };
+    }
+}
+
+/**
+ * Get user preferences, creating defaults if none exist
+ */
+export async function getUserPreferences(userId: string): Promise<UserPreferences> {
+    try {
+        const { data, error } = await supabase
+            .from('user_preferences')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+
+        if (error && error.code === 'PGRST116') {
+            // No preferences yet, create default
+            return await createDefaultPreferences(userId);
+        }
+
+        if (error) throw error;
+        return convertDates(data) as UserPreferences;
+    } catch (error: any) {
+        console.error('Error fetching user preferences:', error);
+        throw error;
+    }
+}
+
+/**
+ * Create default preferences for a user
+ */
+async function createDefaultPreferences(userId: string): Promise<UserPreferences> {
+    try {
+        const defaultPrefs = {
+            user_id: userId,
+            email_notifications: true,
+            sms_notifications: false,
+            policy_expiry_alerts: true,
+            claim_updates: true,
+        };
+
+        const { data, error } = await supabase
+            .from('user_preferences')
+            .insert(defaultPrefs)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return convertDates(data) as UserPreferences;
+    } catch (error: any) {
+        console.error('Error creating default preferences:', error);
+        throw error;
+    }
+}
+
+/**
+ * Update user preferences
+ */
+export async function updateUserPreferences(
+    userId: string,
+    preferences: Partial<Omit<UserPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+): Promise<UserPreferences> {
+    try {
+        const { data, error } = await supabase
+            .from('user_preferences')
+            .upsert({
+                user_id: userId,
+                ...preferences,
+                updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return convertDates(data) as UserPreferences;
+    } catch (error: any) {
+        console.error('Error updating user preferences:', error);
+        throw error;
+    }
+}
+
+// Life Policies
+export async function getUserLifePolicies(userId: string) {
+    const { data, error } = await supabase
+        .from('life_policies')
+        .select('*')
+        .eq('user_id', userId)
+        .order('policy_end_date', { ascending: true });
+
+    if (error) throw error;
+    return convertDates(data);
+}
+
+export async function addLifePolicy(policy: any) {
+    const { data, error } = await supabase
+        .from('life_policies')
+        .insert([policy])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+// Travel Policies
+export async function getUserTravelPolicies(userId: string) {
+    const { data, error } = await supabase
+        .from('travel_policies')
+        .select('*')
+        .eq('user_id', userId)
+        .order('policy_end_date', { ascending: true });
+
+    if (error) throw error;
+    return convertDates(data);
+}
+
+export async function addTravelPolicy(policy: any) {
+    const { data, error } = await supabase
+        .from('travel_policies')
+        .insert([policy])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+// Cyber Policies
+export async function getUserCyberPolicies(userId: string) {
+    const { data, error } = await supabase
+        .from('cyber_policies')
+        .select('*')
+        .eq('user_id', userId)
+        .order('policy_end_date', { ascending: true });
+
+    if (error) throw error;
+    return convertDates(data);
+}
+
+export async function addCyberPolicy(policy: any) {
+    const { data, error } = await supabase
+        .from('cyber_policies')
+        .insert([policy])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+// Notifications
+export async function getUserNotifications(userId: string) {
+    const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) throw error;
+    return convertDates(data);
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+    if (error) throw error;
+}
+
+export async function markAllNotificationsAsRead(userId: string) {
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+
+    if (error) throw error;
 }

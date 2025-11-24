@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
-import { Claim, ClaimFormData, MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { Claim, ClaimFormData, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
-import { addClaim, getUserMotorPolicies, getUserGMCPolicies, getUserCommercialPolicies } from '@/lib/db';
+import { addClaim, getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies } from '@/lib/db';
 
 interface ClaimFormProps {
     userId: string;
@@ -35,13 +35,13 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
             try {
                 const [motor, gmc, commercial] = await Promise.all([
                     getUserMotorPolicies(userId),
-                    getUserGMCPolicies(userId),
+                    getUserHealthPolicies(userId),
                     getUserCommercialPolicies(userId)
                 ]);
 
                 const policyOptions = [
                     ...motor.map(p => ({ id: p.id, label: `Motor - ${p.vehicle_number} (${p.policy_number})`, type: 'Motor' })),
-                    ...gmc.map(p => ({ id: p.id, label: `GMC - ${p.policy_number}`, type: 'GMC' })),
+                    ...gmc.map(p => ({ id: p.id, label: `Health - ${p.policy_number}`, type: 'Health' })),
                     ...commercial.map(p => ({ id: p.id, label: `Commercial - ${p.policy_number}`, type: p.lob_type }))
                 ];
 

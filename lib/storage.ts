@@ -5,23 +5,29 @@ export type BucketName = 'policy-documents' | 'claim-documents' | 'rc-copies' | 
 /**
  * Upload file to Supabase Storage
  * @param file - File to upload
- * @param path - Storage path (e.g., 'motor_policies/user123/rc_docs/file.pdf')
+ * @param bucket - Storage bucket name
  * @returns Promise<string> - Public URL of uploaded file
  */
-export async function uploadFile(file: File, path: string): Promise<string> {
+export async function uploadFile(file: File, bucket: BucketName): Promise<string> {
     try {
+        // Generate unique filename to prevent duplicates
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${timestamp}_${randomStr}.${fileExt}`;
+
         const { data, error } = await supabase.storage
-            .from('policy-documents')
-            .upload(path, file, {
+            .from(bucket)
+            .upload(fileName, file, {
                 cacheControl: '3600',
-                upsert: false,
+                upsert: true, // Allow overwriting if file exists
             });
 
         if (error) throw error;
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-            .from('policy-documents')
+            .from(bucket)
             .getPublicUrl(data.path);
 
         return publicUrl;
@@ -34,18 +40,16 @@ export async function uploadFile(file: File, path: string): Promise<string> {
 /**
  * Upload multiple files to Supabase Storage
  * @param files - Array of files to upload
- * @param basePath - Base storage path (e.g., 'motor_policies/user123/rc_docs')
+ * @param bucket - Storage bucket name
  * @returns Promise<string[]> - Array of public URLs
  */
 export async function uploadMultipleFiles(
     files: File[],
-    basePath: string
+    bucket: BucketName
 ): Promise<string[]> {
     try {
-        const uploadPromises = files.map((file, index) => {
-            const fileName = `${Date.now()}_${index}_${file.name} `;
-            const path = `${basePath}/${fileName}`;
-            return uploadFile(file, path);
+        const uploadPromises = files.map((file) => {
+            return uploadFile(file, bucket);
         });
 
         return await Promise.all(uploadPromises);
@@ -91,7 +95,7 @@ export async function initializeStorage(): Promise<void> {
         // Check if bucket exists
         const { data: buckets } = await supabase.storage.listBuckets();
 
-        const bucketExists = buckets?.some(bucket => bucket.name === 'policy-documents');
+        const bucketExists = buckets?.some((bucket: any) => bucket.name === 'policy-documents');
 
         if (!bucketExists) {
             // Create bucket

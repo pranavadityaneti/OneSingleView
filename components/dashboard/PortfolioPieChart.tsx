@@ -10,7 +10,7 @@ interface PortfolioPieChartProps {
 
 const COLORS = {
     motor: '#6366f1',      // Primary blue
-    gmc: '#8b5cf6',        // Secondary purple
+    health: '#8b5cf6',     // Secondary purple
     gpa: '#06b6d4',        // Cyan
     fire: '#f59e0b',       // Orange
     others: '#10b981',     // Green
@@ -18,7 +18,7 @@ const COLORS = {
 
 const LABELS = {
     motor: 'Motor/Vehicle',
-    gmc: 'GMC',
+    health: 'Health',
     gpa: 'GPA',
     fire: 'Fire',
     others: 'Others',
@@ -34,7 +34,7 @@ export default function PortfolioPieChart({ data }: PortfolioPieChartProps) {
     // Convert data to chart format
     const chartData = [
         { name: LABELS.motor, value: data.motor, color: COLORS.motor, path: '/motor' },
-        { name: LABELS.gmc, value: data.gmc, color: COLORS.gmc, path: '/gmc' },
+        { name: LABELS.health, value: data.health, color: COLORS.health, path: '/health' },
         { name: LABELS.gpa, value: data.gpa, color: COLORS.gpa, path: '/commercial' },
         { name: LABELS.fire, value: data.fire, color: COLORS.fire, path: '/commercial' },
         { name: LABELS.others, value: data.others, color: COLORS.others, path: '/commercial' },

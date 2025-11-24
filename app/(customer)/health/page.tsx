@@ -3,24 +3,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Eye, Upload, Trash2 } from 'lucide-react';
-import { getUserGMCPolicies, deleteGMCPolicy } from '@/lib/db';
+import { getUserHealthPolicies, deleteHealthPolicy } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-import { GMCPolicy, User } from '@/types';
+import { HealthPolicy, User } from '@/types';
 import { calculatePolicyStatus, formatCurrency, formatDate } from '@/lib/utils';
-import GMCPolicyForm from '@/components/forms/GMCPolicyForm';
+import HealthPolicyForm from '@/components/forms/HealthPolicyForm';
 
-export default function GMCPoliciesPage() {
+export default function HealthPoliciesPage() {
     const router = useRouter();
-    const [policies, setPolicies] = useState<GMCPolicy[]>([]);
+    const [policies, setPolicies] = useState<HealthPolicy[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [editingPolicy, setEditingPolicy] = useState<GMCPolicy | undefined>(undefined);
+    const [editingPolicy, setEditingPolicy] = useState<HealthPolicy | undefined>(undefined);
     const [user, setUser] = useState<User | null>(null);
 
     const loadPolicies = async (userId: string) => {
         setLoading(true);
         try {
-            const data = await getUserGMCPolicies(userId);
+            const data = await getUserHealthPolicies(userId);
 
             const policiesWithStatus = data.map(p => ({
                 ...p,
@@ -52,7 +52,7 @@ export default function GMCPoliciesPage() {
         if (!confirm('Are you sure you want to delete this policy?')) return;
         if (!user) return;
         try {
-            await deleteGMCPolicy(id);
+            await deleteHealthPolicy(id);
             await loadPolicies(user.id);
         } catch (error) {
             console.error('Error deleting policy:', error);
@@ -60,7 +60,7 @@ export default function GMCPoliciesPage() {
         }
     };
 
-    const handleEdit = (policy: GMCPolicy) => {
+    const handleEdit = (policy: HealthPolicy) => {
         setEditingPolicy(policy);
         setShowAddForm(true);
     };
@@ -100,8 +100,8 @@ export default function GMCPoliciesPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">GMC Policies</h1>
-                    <p className="text-gray-600 mt-1">Manage your Group Medical Cover policies</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Health Insurance Policies</h1>
+                    <p className="text-gray-600 mt-1">Manage your Health Insurance policies</p>
                 </div>
                 <button
                     onClick={() => setShowAddForm(true)}
@@ -132,8 +132,8 @@ export default function GMCPoliciesPage() {
             {policies.length === 0 ? (
                 <div className="card text-center py-12">
                     <div className="text-gray-500">
-                        <p className="text-lg font-medium mb-2">No GMC policies yet</p>
-                        <p className="mb-6">Add your first GMC policy to get started</p>
+                        <p className="text-lg font-medium mb-2">No health insurance policies yet</p>
+                        <p className="mb-6">Add your first health insurance policy to get started</p>
                         <button
                             onClick={() => setShowAddForm(true)}
                             className="btn-primary mx-auto"
@@ -201,7 +201,7 @@ export default function GMCPoliciesPage() {
 
             {/* Policy Form Modal */}
             {showAddForm && user && (
-                <GMCPolicyForm
+                <HealthPolicyForm
                     userId={user.id}
                     initialData={editingPolicy}
                     onClose={handleCloseForm}

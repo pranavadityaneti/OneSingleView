@@ -172,7 +172,7 @@ export default function FileUpload({
                             <button
                                 type="button"
                                 onClick={handleRemove}
-                                className="text-red-600 hover:text-red-800 p-1"
+                                className="text-red-600 hover:text-red-800 p-1 ml-4 hover:bg-red-50 rounded-full transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>

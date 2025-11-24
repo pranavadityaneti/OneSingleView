@@ -15,10 +15,10 @@ import {
 } from 'lucide-react';
 import {
     getAllMotorPolicies,
-    getAllGMCPolicies,
+    getAllHealthPolicies,
     getAllCommercialPolicies
 } from '@/lib/db';
-import { MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 type PolicyType = 'motor' | 'health' | 'commercial';
 
@@ -28,7 +28,7 @@ export default function PoliciesPage() {
     const [searchTerm, setSearchTerm] = useState('');
 
     const [motorPolicies, setMotorPolicies] = useState<MotorPolicy[]>([]);
-    const [gmcPolicies, setGmcPolicies] = useState<GMCPolicy[]>([]);
+    const [healthPolicies, setHealthPolicies] = useState<HealthPolicy[]>([]);
     const [commercialPolicies, setCommercialPolicies] = useState<CommercialPolicy[]>([]);
 
     useEffect(() => {
@@ -37,13 +37,13 @@ export default function PoliciesPage() {
 
     const loadPolicies = async () => {
         try {
-            const [motor, gmc, commercial] = await Promise.all([
+            const [motor, healthData, commercial] = await Promise.all([
                 getAllMotorPolicies(),
-                getAllGMCPolicies(),
+                getAllHealthPolicies(),
                 getAllCommercialPolicies()
             ]);
             setMotorPolicies(motor);
-            setGmcPolicies(gmc);
+            setHealthPolicies(healthData);
             setCommercialPolicies(commercial);
         } catch (error) {
             console.error('Failed to load policies:', error);
@@ -55,7 +55,7 @@ export default function PoliciesPage() {
     const getActivePolicies = () => {
         switch (activeTab) {
             case 'motor': return motorPolicies;
-            case 'health': return gmcPolicies;
+            case 'health': return healthPolicies;
             case 'commercial': return commercialPolicies;
             default: return [];
         }

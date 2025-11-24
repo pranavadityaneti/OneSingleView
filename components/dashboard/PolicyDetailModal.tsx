@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { MotorPolicy, GMCPolicy, CommercialPolicy } from '@/types';
+import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 interface PolicyDetailModalProps {
     isOpen: boolean;
@@ -10,7 +10,7 @@ interface PolicyDetailModalProps {
     title: string;
     type: 'total' | 'premium' | 'expiring';
     motorPolicies?: MotorPolicy[];
-    gmcPolicies?: GMCPolicy[];
+    healthPolicies: HealthPolicy[];
     commercialPolicies?: CommercialPolicy[];
 }
 
@@ -20,7 +20,7 @@ export default function PolicyDetailModal({
     title,
     type,
     motorPolicies = [],
-    gmcPolicies = [],
+    healthPolicies,
     commercialPolicies = []
 }: PolicyDetailModalProps) {
     const router = useRouter();
@@ -66,8 +66,9 @@ export default function PolicyDetailModal({
                 </td>
                 <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${policy.status === 'Active' ? 'bg-green-100 text-green-700' :
+                        policy.status === 'Expiring Soon' ? 'bg-orange-100 text-orange-700' :
                             policy.status === 'Expired' ? 'bg-red-100 text-red-700' :
-                                'bg-orange-100 text-orange-700'
+                                'bg-gray-100 text-gray-700'
                         }`}>
                         {policy.status}
                     </span>
@@ -81,23 +82,14 @@ export default function PolicyDetailModal({
 
     const allPolicies = [
         ...motorPolicies.map(p => ({ ...p, policyType: 'Motor' })),
-        ...gmcPolicies.map(p => ({ ...p, policyType: 'Health' })),
+        ...healthPolicies.map((p: any) => ({ ...p, policyType: 'Health' })),
         ...commercialPolicies.map(p => ({ ...p, policyType: 'Commercial' }))
     ];
 
     // Filter based on type
     let displayPolicies = allPolicies;
     if (type === 'expiring') {
-        const now = new Date();
-        const twentyDaysFromNow = new Date();
-        twentyDaysFromNow.setDate(now.getDate() + 20);
-
-        displayPolicies = allPolicies.filter(p => {
-            const endDate = 'policy_end_date' in p ? p.policy_end_date : p.expiry_date;
-            if (!endDate) return false;
-            const date = new Date(endDate);
-            return date > now && date <= twentyDaysFromNow;
-        });
+        displayPolicies = allPolicies.filter(p => p.status === 'Expiring Soon');
     }
 
     // Calculate total premium for premium view
@@ -123,6 +115,22 @@ export default function PolicyDetailModal({
                     >
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
+                </div>
+
+                {/* Status Legend */}
+                <div className="px-6 py-2 bg-gray-50 border-b border-gray-200 flex gap-4 text-xs">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        <span className="text-gray-600">Active</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        <span className="text-gray-600">Expiring Soon (&lt;20 days)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span className="text-gray-600">Expired</span>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -161,9 +169,9 @@ export default function PolicyDetailModal({
                                         displayPolicies.filter(p => p.policyType === 'Motor').map(p => renderPolicyRow(p, 'Motor')) :
                                         motorPolicies.map(p => renderPolicyRow(p, 'Motor'))
                                     )}
-                                    {gmcPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
+                                    {healthPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
                                         displayPolicies.filter(p => p.policyType === 'Health').map(p => renderPolicyRow(p, 'Health')) :
-                                        gmcPolicies.map(p => renderPolicyRow(p, 'Health'))
+                                        healthPolicies.map((p: any) => renderPolicyRow(p, 'Health'))
                                     )}
                                     {commercialPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
                                         displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial')) :
