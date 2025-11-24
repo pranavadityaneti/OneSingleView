@@ -8,22 +8,23 @@ import { addLifePolicy } from '@/lib/db';
 
 interface LifePolicyFormProps {
     userId: string;
+    initialData?: any;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function LifePolicyForm({ userId, onClose, onSuccess }: LifePolicyFormProps) {
+export default function LifePolicyForm({ userId, initialData, onClose, onSuccess }: LifePolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
-        policy_number: '',
-        insurer_name: '',
-        premium_amount: 0,
-        sum_assured: 0,
-        nominee_name: '',
-        policy_start_date: new Date(),
-        policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
-        document_url: '',
+        policy_number: initialData?.policy_number || '',
+        insurer_name: initialData?.insurer_name || '',
+        premium_amount: initialData?.premium_amount || 0,
+        sum_assured: initialData?.sum_assured || 0,
+        nominee_name: initialData?.nominee_name || '',
+        policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
+        policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
+        document_url: initialData?.document_url || '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

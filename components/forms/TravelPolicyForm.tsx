@@ -8,22 +8,23 @@ import { addTravelPolicy } from '@/lib/db';
 
 interface TravelPolicyFormProps {
     userId: string;
+    initialData?: any;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function TravelPolicyForm({ userId, onClose, onSuccess }: TravelPolicyFormProps) {
+export default function TravelPolicyForm({ userId, initialData, onClose, onSuccess }: TravelPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
-        policy_number: '',
-        insurer_name: '',
-        premium_amount: 0,
-        destination: '',
-        trip_type: 'Single Trip',
-        policy_start_date: new Date(),
-        policy_end_date: new Date(new Date().setDate(new Date().getDate() + 7)),
-        document_url: '',
+        policy_number: initialData?.policy_number || '',
+        insurer_name: initialData?.insurer_name || '',
+        premium_amount: initialData?.premium_amount || 0,
+        destination: initialData?.destination || '',
+        trip_type: initialData?.trip_type || 'Single Trip',
+        policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
+        policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setDate(new Date().getDate() + 7)),
+        document_url: initialData?.document_url || '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
