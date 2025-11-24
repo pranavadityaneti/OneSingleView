@@ -170,8 +170,8 @@ export default function MotorPoliciesPage() {
                                         <td className="table-cell">{formatDate(policy.policy_end_date)}</td>
                                         <td className="table-cell">{formatCurrency(policy.premium_amount)}</td>
                                         <td className="table-cell">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(policy.status)}`}>
-                                                {policy.status}
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(policy.status || 'Active')}`}>
+                                                {policy.status || 'Active'}
                                             </span>
                                         </td>
                                         <td className="table-cell">
