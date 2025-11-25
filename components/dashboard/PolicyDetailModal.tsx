@@ -140,8 +140,8 @@ export default function PolicyDetailModal({
                             <p className="text-gray-500">No policies found</p>
                         </div>
                     ) : (
-                        <div className="border border-gray-200 rounded-xl overflow-hidden">
-                            <table className="w-full">
+                        <div className="border border-gray-200 rounded-xl overflow-x-auto">
+                            <table className="w-full min-w-[600px]">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">

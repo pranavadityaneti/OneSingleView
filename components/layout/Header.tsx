@@ -117,9 +117,9 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
                     </div>
                 )}
 
-                {/* RM Info - Tablet (medium screens) */}
+                {/* RM Info - Mobile & Tablet */}
                 {rmInfo && (
-                    <div className="hidden md:flex lg:hidden items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
+                    <div className="flex lg:hidden items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
                         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                             <span className="text-xs font-bold text-blue-600">RM</span>
                         </div>

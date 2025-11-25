@@ -337,31 +337,36 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column (2/3 width) */}
                 <div className="lg:col-span-2 space-y-4 md:space-y-6">
-                    {/* Area Chart Section */}
+                    {/* Mon thly Activity - Full Width */}
                     <div className="h-[400px]">
                         <AnalyticsAreaChart data={(summary as any).areaChartData} />
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 h-[320px]">
-                        <ClaimsOverview
-                            activeCount={activeClaims}
-                            settledCount={settledClaims}
-                            rejectedCount={rejectedClaims}
-                        />
-                        <div className="h-full">
-                            <AnalyticsBarChart data={(summary as any).barChartData} />
-                        </div>
+                    {/* Bar Chart - Full Width */}
+                    <div className="h-[320px]">
+                        <AnalyticsBarChart data={(summary as any).barChartData} />
                     </div>
                 </div>
 
                 {/* Right Column (1/3 width) */}
                 <div className="space-y-6">
+                    {/* Source of Premium */}
                     <div className="h-[400px]">
                         <AnalyticsDonutChart data={summary.portfolio_by_lob} />
                     </div>
+
                     {/* Protect Family Card */}
                     <div className="h-[320px]">
                         <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
+                    </div>
+
+                    {/* Claims Overview - Below Protect Family Card */}
+                    <div className="h-[320px]">
+                        <ClaimsOverview
+                            activeCount={activeClaims}
+                            settledCount={settledClaims}
+                            rejectedCount={rejectedClaims}
+                        />
                     </div>
                 </div>
             </div>
