@@ -207,7 +207,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                             onClick={async () => {
                                 try {
                                     await signOut();
-                                    router.push('/login');
+                                    router.push('/');
                                     router.refresh();
                                 } catch (error) {
                                     console.error('Error signing out:', error);
