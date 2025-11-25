@@ -103,126 +103,125 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
     }
 
     return (
-        <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col z-50">
-            <div className="flex flex-col flex-grow bg-white border-r border-gray-100 shadow-soft">
-                {/* Logo */}
-                <div className="flex items-center flex-shrink-0 px-6 py-6 border-b border-gray-50">
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
-                        <Shield className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="ml-3 text-lg font-bold text-gray-900 tracking-tight">
-                        PolicyPilot
-                    </span>
+        <aside className="w-72 h-full bg-white border-r border-gray-100 flex flex-col overflow-y-auto">
+            {/* Logo */}
+            <div className="flex items-center flex-shrink-0 px-6 py-6 border-b border-gray-50">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <Shield className="w-5 h-5 text-white" />
                 </div>
-
-
-
-                {/* Navigation */}
-                <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto scrollbar-hide">
-                    {navGroups.map((group) => (
-                        <div key={group.label}>
-                            <button
-                                onClick={() => toggleGroup(group.label)}
-                                className="flex items-center justify-between w-full px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
-                            >
-                                <span>{group.label}</span>
-                                {openGroups.includes(group.label) ? (
-                                    <ChevronDown className="w-3 h-3" />
-                                ) : (
-                                    <ChevronRight className="w-3 h-3" />
-                                )}
-                            </button>
-
-                            {openGroups.includes(group.label) && (
-                                <div className="space-y-0.5">
-                                    {group.items.map((item) => {
-                                        const isActive = pathname === item.href;
-                                        const Icon = item.icon;
-
-                                        return (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                className={cn(
-                                                    'flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 group',
-                                                    isActive
-                                                        ? 'bg-primary-50 text-primary-700'
-                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                                )}
-                                            >
-                                                <Icon className={cn(
-                                                    "w-4 h-4 mr-3 transition-colors",
-                                                    isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
-                                                )} />
-                                                {item.label}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </nav>
-
-                {/* Insurance Tips Carousel */}
-                <div className="mt-auto">
-                    <InsuranceTipsCarousel />
-                </div>
-
-                {/* User Info (Bottom) with Dropdown */}
-                <div className="p-4 border-t border-gray-50 relative">
-                    <button
-                        onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                        className="flex items-center gap-3 px-2 hover:bg-gray-50 p-2 rounded-xl transition-colors group w-full"
-                    >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:shadow-lg transition-all">
-                            {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="overflow-hidden flex-1 text-left">
-                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">{user.name}</p>
-                            <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
-                        </div>
-                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {isProfileDropdownOpen && (
-                        <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                            <Link
-                                href="/profile"
-                                onClick={() => setIsProfileDropdownOpen(false)}
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                            >
-                                <UserCircle className="w-4 h-4 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-900">My Profile</span>
-                            </Link>
-                            <Link
-                                href="/support"
-                                onClick={() => setIsProfileDropdownOpen(false)}
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
-                            >
-                                <MessageSquare className="w-4 h-4 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-900">Support & FAQs</span>
-                            </Link>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        await signOut();
-                                        router.push('/login');
-                                        router.refresh();
-                                    } catch (error) {
-                                        console.error('Error signing out:', error);
-                                    }
-                                }}
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full border-t border-gray-100"
-                            >
-                                <LogOut className="w-4 h-4 text-red-600" />
-                                <span className="text-sm font-medium text-red-600">Sign Out</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
+                <span className="ml-3 text-lg font-bold text-gray-900 tracking-tight">
+                    PolicyPilot
+                </span>
             </div>
-        </div>
+
+
+
+            {/* Navigation */}
+            <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto scrollbar-hide">
+                {navGroups.map((group) => (
+                    <div key={group.label}>
+                        <button
+                            onClick={() => toggleGroup(group.label)}
+                            className="flex items-center justify-between w-full px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+                        >
+                            <span>{group.label}</span>
+                            {openGroups.includes(group.label) ? (
+                                <ChevronDown className="w-3 h-3" />
+                            ) : (
+                                <ChevronRight className="w-3 h-3" />
+                            )}
+                        </button>
+
+                        {openGroups.includes(group.label) && (
+                            <div className="space-y-0.5">
+                                {group.items.map((item) => {
+                                    const isActive = pathname === item.href;
+                                    const Icon = item.icon;
+
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={item.href}
+                                            className={cn(
+                                                'flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 group',
+                                                isActive
+                                                    ? 'bg-primary-50 text-primary-700'
+                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            )}
+                                        >
+                                            <Icon className={cn(
+                                                "w-4 h-4 mr-3 transition-colors",
+                                                isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
+                                            )} />
+                                            {item.label}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </nav>
+
+            {/* Insurance Tips Carousel */}
+            <div className="mt-auto">
+                <InsuranceTipsCarousel />
+            </div>
+
+            {/* User Info (Bottom) with Dropdown */}
+            <div className="p-4 border-t border-gray-50 relative">
+                <button
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center gap-3 px-2 hover:bg-gray-50 p-2 rounded-xl transition-colors group w-full"
+                >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:shadow-lg transition-all">
+                        {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">{user.name}</p>
+                        <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                    <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                        <Link
+                            href="/profile"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                        >
+                            <UserCircle className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm font-medium text-gray-900">My Profile</span>
+                        </Link>
+                        <Link
+                            href="/support"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                        >
+                            <MessageSquare className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm font-medium text-gray-900">Support & FAQs</span>
+                        </Link>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await signOut();
+                                    router.push('/login');
+                                    router.refresh();
+                                } catch (error) {
+                                    console.error('Error signing out:', error);
+                                }
+                            }}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full border-t border-gray-100"
+                        >
+                            <LogOut className="w-4 h-4 text-red-600" />
+                            <span className="text-sm font-medium text-red-600">Sign Out</span>
+                        </button>
+                    </div>
+                )}
+            </div>
+        </aside>
     );
 }
+```
