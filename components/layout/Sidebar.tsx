@@ -224,4 +224,3 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         </aside>
     );
 }
-```
