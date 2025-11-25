@@ -333,24 +333,31 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Main Content Grid - Charts First */}
+            {/* Analytics & Insights Section */}
             <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Left Column (2/3 width) */}
+                {/* Left Column (2/3 width on desktop) */}
                 <div className="lg:col-span-2 space-y-4 md:space-y-6">
-                    {/* Mon thly Activity - Full Width */}
+                    {/* Monthly Activity - Area Chart */}
                     <div className="h-[400px]">
                         <AnalyticsAreaChart data={(summary as any).areaChartData} />
                     </div>
 
-                    {/* Bar Chart - Full Width */}
-                    <div className="h-[320px]">
-                        <AnalyticsBarChart data={(summary as any).barChartData} />
+                    {/* Claims Overview and Bar Chart - Side by side on desktop, stacked on mobile */}
+                    <div className="grid md:grid-cols-2 gap-6 h-[320px]">
+                        <ClaimsOverview
+                            activeCount={activeClaims}
+                            settledCount={settledClaims}
+                            rejectedCount={rejectedClaims}
+                        />
+                        <div className="h-full">
+                            <AnalyticsBarChart data={(summary as any).barChartData} />
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Column (1/3 width) */}
+                {/* Right Column (1/3 width on desktop) */}
                 <div className="space-y-6">
-                    {/* Source of Premium */}
+                    {/* Source of Premium - Donut Chart */}
                     <div className="h-[400px]">
                         <AnalyticsDonutChart data={summary.portfolio_by_lob} />
                     </div>
@@ -358,15 +365,6 @@ export default function DashboardPage() {
                     {/* Protect Family Card */}
                     <div className="h-[320px]">
                         <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
-                    </div>
-
-                    {/* Claims Overview - Below Protect Family Card */}
-                    <div className="h-[320px]">
-                        <ClaimsOverview
-                            activeCount={activeClaims}
-                            settledCount={settledClaims}
-                            rejectedCount={rejectedClaims}
-                        />
                     </div>
                 </div>
             </div>
