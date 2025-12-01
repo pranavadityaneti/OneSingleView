@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import { CommercialPolicy, CommercialPolicyFormData } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addCommercialPolicy, updateCommercialPolicy } from '@/lib/db';
+import { INSURANCE_COMPANIES } from '@/lib/constants';
 import {
     validatePolicyNumber,
     validatePremiumAmount,
@@ -34,6 +35,20 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
         expiry_date: initialData?.expiry_date ? new Date(initialData.expiry_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         policy_docs: initialData?.policy_docs || [],
     });
+
+    // Auto-calculate expiry date when it's a new policy (1 year from today - 1 day)
+    useEffect(() => {
+        if (!initialData) {
+            const today = new Date();
+            const expiryDate = new Date(today);
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            expiryDate.setDate(expiryDate.getDate() - 1); // 1 day before
+            setFormData(prev => ({
+                ...prev,
+                expiry_date: expiryDate
+            }));
+        }
+    }, [initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -181,9 +196,10 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
                             <FormInput
                                 label="Insurer Name"
                                 name="insurer_name"
+                                type="select"
                                 value={formData.insurer_name || ''}
                                 onChange={handleChange}
-                                placeholder="e.g. ICICI Lombard"
+                                options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                                 error={errors.insurer_name}
                                 required
                             />

@@ -5,7 +5,8 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { Claim, ClaimFormData, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
-import { addClaim, getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies } from '@/lib/db';
+import { addClaim, getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getCompanyGMCPolicy } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 interface ClaimFormProps {
     userId: string;
@@ -19,6 +20,8 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [policies, setPolicies] = useState<{ id: string; label: string; type: string }[]>([]);
     const [loadingPolicies, setLoadingPolicies] = useState(true);
+    const [isCorporateUser, setIsCorporateUser] = useState(false);
+    const [gmcPolicyId, setGmcPolicyId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<ClaimFormData>({
         policy_id: initialData?.policy_id || '',
@@ -33,6 +36,21 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
     useEffect(() => {
         const fetchPolicies = async () => {
             try {
+                // Check if user is corporate employee/admin
+                const currentUser = await getCurrentUser();
+                const isCorporate = currentUser?.role === 'corporate_employee' || currentUser?.role === 'corporate_admin';
+                setIsCorporateUser(isCorporate);
+
+                let gmcPolicy = null;
+
+                // If corporate user, fetch their company GMC policy
+                if (isCorporate && currentUser?.company_name) {
+                    gmcPolicy = await getCompanyGMCPolicy(currentUser.company_name);
+                    if (gmcPolicy) {
+                        setGmcPolicyId(gmcPolicy.id);
+                    }
+                }
+
                 const [motor, gmc, commercial] = await Promise.all([
                     getUserMotorPolicies(userId),
                     getUserHealthPolicies(userId),
@@ -41,11 +59,22 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
 
                 const policyOptions = [
                     ...motor.map(p => ({ id: p.id, label: `Motor - ${p.vehicle_number} (${p.policy_number})`, type: 'Motor' })),
-                    ...gmc.map(p => ({ id: p.id, label: `Health - ${p.policy_number}`, type: 'Health' })),
+                    // For corporate users, prioritize GMC policy
+                    ...(gmcPolicy ? [{ id: gmcPolicy.id, label: `GMC - ${gmcPolicy.policy_number} (Your Company Policy)`, type: 'Health' }] : []),
+                    ...gmc.filter(p => p.id !== gmcPolicy?.id).map(p => ({ id: p.id, label: `Health - ${p.policy_number}`, type: 'Health' })),
                     ...commercial.map(p => ({ id: p.id, label: `Commercial - ${p.policy_number}`, type: p.lob_type }))
                 ];
 
                 setPolicies(policyOptions);
+
+                // Auto-select GMC policy for corporate users if no policy is initially selected
+                if (isCorporate && gmcPolicy && !initialData?.policy_id) {
+                    setFormData(prev => ({
+                        ...prev,
+                        policy_id: gmcPolicy.id,
+                        lob_type: 'Health'
+                    }));
+                }
             } catch (error) {
                 console.error('Error fetching policies:', error);
             } finally {
@@ -168,25 +197,33 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Select Policy
+                                Select Policy {isCorporateUser && gmcPolicyId && <span className="text-xs text-green-600">(Auto-selected GMC Policy)</span>}
                             </label>
                             {loadingPolicies ? (
                                 <div className="text-sm text-gray-500">Loading policies...</div>
                             ) : (
-                                <select
-                                    name="policy_id"
-                                    value={formData.policy_id}
-                                    onChange={handleChange}
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all ${errors.policy_id ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                        }`}
-                                >
-                                    <option value="">Select a policy</option>
-                                    {policies.map(policy => (
-                                        <option key={policy.id} value={policy.id}>
-                                            {policy.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <>
+                                    <select
+                                        name="policy_id"
+                                        value={formData.policy_id}
+                                        onChange={handleChange}
+                                        disabled={isCorporateUser && gmcPolicyId !== null}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all ${isCorporateUser && gmcPolicyId ? 'bg-green-50 border-green-300' : errors.policy_id ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                            }`}
+                                    >
+                                        <option value="">Select a policy</option>
+                                        {policies.map(policy => (
+                                            <option key={policy.id} value={policy.id}>
+                                                {policy.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {isCorporateUser && gmcPolicyId && (
+                                        <p className="text-xs text-green-600 mt-1 flex items-center">
+                                            ✓ Claims will be automatically linked to your company's GMC policy
+                                        </p>
+                                    )}
+                                </>
                             )}
                             {errors.policy_id && <p className="text-red-500 text-xs mt-1">{errors.policy_id}</p>}
                         </div>

@@ -1,5 +1,5 @@
 // User & Authentication Types
-export type UserRole = 'individual' | 'corporate' | 'admin' | 'rm';
+export type UserRole = 'individual' | 'corporate_employee' | 'corporate_admin' | 'admin' | 'rm';
 
 export interface User {
     id: string;
@@ -27,6 +27,7 @@ export interface UserAuditLog {
 export type PolicyStatus = 'Active' | 'Expiring Soon' | 'Expired';
 export type VehicleType = 'Car' | 'Bike' | 'Bus' | 'GCV' | 'Misc';
 export type NumberPlateType = 'White' | 'Yellow' | 'EV';
+export type OwnershipType = 'Individual' | 'Company';
 export type LOBType = 'Motor' | 'Health' | 'GPA' | 'Fire' | 'Other';
 
 export interface MotorPolicy {
@@ -42,6 +43,7 @@ export interface MotorPolicy {
     fuel_type: string;
     manufacturing_year: number;
     number_plate_type: NumberPlateType;
+    ownership_type?: OwnershipType;
     insurer_name: string;
     premium_amount: number;
     policy_start_date: Date;
@@ -99,7 +101,7 @@ export interface Claim {
     user_id: string;
     user_name?: string; // For Admin View
     user_email?: string; // For Admin View
-    policy_id: string;
+    policy_id?: string; // Link to health_policies.id for GMC
     lob_type: LOBType;
     claim_type: string;
     incident_date: Date;

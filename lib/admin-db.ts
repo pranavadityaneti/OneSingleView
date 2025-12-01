@@ -54,6 +54,22 @@ export interface ActivityLog {
     userName: string;
 }
 
+export interface PremiumBreakdown {
+    name: string;
+    value: number;
+    percentage: number;
+    fill: string;
+}
+
+export interface PremiumTrend {
+    date: string;
+    total: number;
+    motor?: number;
+    health?: number;
+    commercial?: number;
+}
+
+
 // --- Data Fetching Functions ---
 
 export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
@@ -65,24 +81,80 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
         const corporate = users?.filter((u: any) => u.role === 'corporate').length || 0;
 
         // 2. Policies (Aggregate from all tables)
-        const { data: motor } = await supabase.from('motor_policies').select('status, policy_end_date');
-        const { data: health } = await supabase.from('health_policies').select('status, policy_end_date');
-        const { data: commercial } = await supabase.from('commercial_policies').select('status, policy_end_date');
+        // Note: motor_policies uses 'policy_end_date', health/commercial use 'expiry_date'
+        const { data: motor } = await supabase.from('motor_policies').select('policy_start_date, policy_end_date');
+        const { data: health } = await supabase.from('health_policies').select('expiry_date');
+        const { data: commercial } = await supabase.from('commercial_policies').select('expiry_date');
 
-        const allPolicies = [...(motor || []), ...(health || []), ...(commercial || [])];
-        const totalPolicies = allPolicies.length;
-        const active = allPolicies.filter(p => p.status === 'Active').length;
-        const expired = allPolicies.filter(p => p.status === 'Expired').length;
+        console.log('[AdminMetrics] Raw policy counts:', {
+            motor: motor?.length || 0,
+            health: health?.length || 0,
+            commercial: commercial?.length || 0
+        });
 
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today
+
+        // Calculate active/expired based on expiry/end dates
+        const motorActive = motor?.filter(p => {
+            if (!p.policy_end_date) return false;
+            const endDate = new Date(p.policy_end_date);
+            return endDate >= today;
+        }).length || 0;
+
+        const healthActive = health?.filter(p => {
+            if (!p.expiry_date) return false;
+            const endDate = new Date(p.expiry_date);
+            return endDate >= today;
+        }).length || 0;
+
+        const commercialActive = commercial?.filter(p => {
+            if (!p.expiry_date) return false;
+            const endDate = new Date(p.expiry_date);
+            return endDate >= today;
+        }).length || 0;
+
+        const totalPolicies = (motor?.length || 0) + (health?.length || 0) + (commercial?.length || 0);
+        const active = motorActive + healthActive + commercialActive;
+        const expired = totalPolicies - active;
+
+        console.log('[AdminMetrics] Policy breakdown:', {
+            total: totalPolicies,
+            active,
+            expired,
+            motorActive,
+            healthActive,
+            commercialActive
+        });
+
         const twentyDaysFromNow = new Date();
         twentyDaysFromNow.setDate(today.getDate() + 20);
 
-        const expiringSoon = allPolicies.filter(p => {
+        // Count expiring soon across all policy types
+        const motorExpiring = motor?.filter(p => {
             if (!p.policy_end_date) return false;
             const endDate = new Date(p.policy_end_date);
             return endDate >= today && endDate <= twentyDaysFromNow;
-        }).length;
+        }).length || 0;
+
+        const healthExpiring = health?.filter(p => {
+            if (!p.expiry_date) return false;
+            const endDate = new Date(p.expiry_date);
+            return endDate >= today && endDate <= twentyDaysFromNow;
+        }).length || 0;
+
+        const commercialExpiring = commercial?.filter(p => {
+            if (!p.expiry_date) return false;
+            const endDate = new Date(p.expiry_date);
+            return endDate >= today && endDate <= twentyDaysFromNow;
+        }).length || 0;
+
+        const expiringSoon = motorExpiring + healthExpiring + commercialExpiring;
+
+        console.log('[AdminMetrics] Expiring soon calculation:', {
+            expiringSoon,
+            dateRange: `${today.toLocaleDateString()} to ${twentyDaysFromNow.toLocaleDateString()}`
+        });
 
         // 3. Claims
         const { data: claims } = await supabase.from('claims').select('status, created_at');
@@ -120,31 +192,56 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
 
 export async function getExpiringPoliciesAdmin(): Promise<ExpiryOverview> {
     try {
-        // Fetch all active policies with end dates
-        const { data: motor } = await supabase.from('motor_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
-        const { data: health } = await supabase.from('health_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
-        const { data: commercial } = await supabase.from('commercial_policies').select('id, policy_number, policy_end_date, user_id').eq('status', 'Active');
+        // Fetch all policies with their respective end date fields
+        const { data: motor } = await supabase.from('motor_policies').select('id, policy_number, policy_end_date, user_id');
+        const { data: health } = await supabase.from('health_policies').select('id, policy_number, expiry_date, user_id');
+        const { data: commercial } = await supabase.from('commercial_policies').select('id, policy_number, expiry_date, user_id');
 
         // Fetch all users to map names
         const { data: users } = await supabase.from('users').select('id, name');
         const userMap = new Map(users?.map((u: any) => [u.id, u.name]) || []);
 
-        const formatPolicy = (p: any, type: string) => ({
-            id: p.id,
-            policyNumber: p.policy_number,
-            customerName: userMap.get(p.user_id) || 'Unknown',
-            lob: type,
-            expiryDate: p.policy_end_date,
-            rmName: 'Unassigned' // Mock for now
-        });
-
-        const allPolicies = [
-            ...(motor || []).map((p: any) => formatPolicy(p, 'Motor')),
-            ...(health || []).map((p: any) => formatPolicy(p, 'Health')),
-            ...(commercial || []).map((p: any) => formatPolicy(p, 'Commercial'))
-        ];
-
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Format motor policies (use policy_end_date)
+        const motorPolicies = (motor || [])
+            .filter((p: any) => p.policy_end_date)
+            .map((p: any) => ({
+                id: p.id,
+                policyNumber: p.policy_number,
+                customerName: userMap.get(p.user_id) || 'Unknown',
+                lob: 'Motor',
+                expiryDate: p.policy_end_date,
+                rmName: 'Unassigned'
+            }));
+
+        // Format health policies (use expiry_date)
+        const healthPolicies = (health || [])
+            .filter((p: any) => p.expiry_date)
+            .map((p: any) => ({
+                id: p.id,
+                policyNumber: p.policy_number,
+                customerName: userMap.get(p.user_id) || 'Unknown',
+                lob: 'Health',
+                expiryDate: p.expiry_date,
+                rmName: 'Unassigned'
+            }));
+
+        // Format commercial policies  (use expiry_date)
+        const commercialPolicies = (commercial || [])
+            .filter((p: any) => p.expiry_date)
+            .map((p: any) => ({
+                id: p.id,
+                policyNumber: p.policy_number,
+                customerName: userMap.get(p.user_id) || 'Unknown',
+                lob: 'Commercial',
+                expiryDate: p.expiry_date,
+                rmName: 'Unassigned'
+            }));
+
+        const allPolicies = [...motorPolicies, ...healthPolicies, ...commercialPolicies];
+
         const day7 = new Date(today); day7.setDate(today.getDate() + 7);
         const day15 = new Date(today); day15.setDate(today.getDate() + 15);
         const day20 = new Date(today); day20.setDate(today.getDate() + 20);
@@ -166,8 +263,8 @@ export async function getExpiringPoliciesAdmin(): Promise<ExpiryOverview> {
 
         // Top 5 expiring soon
         const topExpiring = allPolicies
-            .filter(p => new Date(p.expiryDate) >= today)
-            .sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime())
+            .filter((p: any) => new Date(p.expiryDate) >= today)
+            .sort((a: any, b: any) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime())
             .slice(0, 5);
 
         return { range0to7, range8to15, range16to20, topExpiring };
@@ -209,6 +306,13 @@ export async function getPoliciesByLOB() {
         const { count: health } = await supabase.from('health_policies').select('*', { count: 'exact', head: true });
         const { count: commercial } = await supabase.from('commercial_policies').select('*', { count: 'exact', head: true });
 
+        console.log('[LOB Chart] Policy counts by line of business:', {
+            motor: motor || 0,
+            health: health || 0,
+            commercial: commercial || 0,
+            total: (motor || 0) + (health || 0) + (commercial || 0)
+        });
+
         return [
             { name: 'Motor', value: motor || 0, fill: '#3B82F6' },
             { name: 'Health', value: health || 0, fill: '#10B981' },
@@ -216,6 +320,7 @@ export async function getPoliciesByLOB() {
             { name: 'Others', value: 0, fill: '#6366F1' }
         ];
     } catch (error) {
+        console.error('[LOB Chart] Error fetching policy counts:', error);
         return [];
     }
 }
@@ -331,5 +436,177 @@ export async function getRMPerformance() {
     } catch (error) {
         console.error('Error fetching RM performance:', error);
         return null;
+    }
+}
+
+// --- Premium Analytics Functions ---
+
+export async function getPremiumByLOB(): Promise<PremiumBreakdown[]> {
+    try {
+        // Get premium_amount sum from each table
+        const { data: motorData } = await supabase
+            .from('motor_policies')
+            .select('premium_amount');
+
+        const { data: healthData } = await supabase
+            .from('health_policies')
+            .select('premium_amount');
+
+        const { data: commercialData } = await supabase
+            .from('commercial_policies')
+            .select('premium_amount');
+
+        const motorTotal = (motorData || []).reduce((sum: number, p: any) => sum + (Number(p.premium_amount) || 0), 0);
+        const healthTotal = (healthData || []).reduce((sum: number, p: any) => sum + (Number(p.premium_amount) || 0), 0);
+        const commercialTotal = (commercialData || []).reduce((sum: number, p: any) => sum + (Number(p.premium_amount) || 0), 0);
+
+        const grandTotal = motorTotal + healthTotal + commercialTotal;
+
+        console.log('[Premium By LOB]', {
+            motor: motorTotal,
+            health: healthTotal,
+            commercial: commercialTotal,
+            total: grandTotal
+        });
+
+        // Calculate percentages
+        const premiumBreakdown: PremiumBreakdown[] = [
+            {
+                name: 'Motor',
+                value: motorTotal,
+                percentage: grandTotal > 0 ? Math.round((motorTotal / grandTotal) * 100) : 0,
+                fill: '#3B82F6'
+            },
+            {
+                name: 'Health',
+                value: healthTotal,
+                percentage: grandTotal > 0 ? Math.round((healthTotal / grandTotal) * 100) : 0,
+                fill: '#10B981'
+            },
+            {
+                name: 'Commercial',
+                value: commercialTotal,
+                percentage: grandTotal > 0 ? Math.round((commercialTotal / grandTotal) * 100) : 0,
+                fill: '#F59E0B'
+            }
+        ];
+
+        return premiumBreakdown.filter(item => item.value > 0);
+    } catch (error) {
+        console.error('[Premium By LOB] Error:', error);
+        return [];
+    }
+}
+
+export async function getPremiumTrend(
+    startDate: Date,
+    endDate: Date,
+    groupBy: 'day' | 'week' | 'month' = 'day'
+): Promise<PremiumTrend[]> {
+    try {
+        // Get all policies created within the date range
+        const startStr = startDate.toISOString().split('T')[0];
+        const endStr = endDate.toISOString().split('T')[0];
+
+        const { data: motorData } = await supabase
+            .from('motor_policies')
+            .select('created_at, premium_amount')
+            .gte('created_at', startStr)
+            .lte('created_at', endStr)
+            .order('created_at');
+
+        const { data: healthData } = await supabase
+            .from('health_policies')
+            .select('created_at, premium_amount')
+            .gte('created_at', startStr)
+            .lte('created_at', endStr)
+            .order('created_at');
+
+        const { data: commercialData } = await supabase
+            .from('commercial_policies')
+            .select('created_at, premium_amount')
+            .gte('created_at', startStr)
+            .lte('created_at', endStr)
+            .order('created_at');
+
+        // Aggregate by date
+        const dateMap = new Map<string, { motor: number; health: number; commercial: number }>();
+
+        // Helper to get date key based on groupBy
+        const getDateKey = (dateStr: string): string => {
+            const date = new Date(dateStr);
+            if (groupBy === 'day') {
+                return date.toISOString().split('T')[0];
+            } else if (groupBy === 'week') {
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay());
+                return weekStart.toISOString().split('T')[0];
+            } else { // month
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+            }
+        };
+
+        // Initialize all dates in range
+        const current = new Date(startDate);
+        while (current <= endDate) {
+            const key = getDateKey(current.toISOString());
+            if (!dateMap.has(key)) {
+                dateMap.set(key, { motor: 0, health: 0, commercial: 0 });
+            }
+            if (groupBy === 'day') {
+                current.setDate(current.getDate() + 1);
+            } else if (groupBy === 'week') {
+                current.setDate(current.getDate() + 7);
+            } else {
+                current.setMonth(current.getMonth() + 1);
+            }
+        }
+
+        // Aggregate motor premiums
+        (motorData || []).forEach((p: any) => {
+            const key = getDateKey(p.created_at);
+            const existing = dateMap.get(key) || { motor: 0, health: 0, commercial: 0 };
+            existing.motor += Number(p.premium_amount) || 0;
+            dateMap.set(key, existing);
+        });
+
+        // Aggregate health premiums
+        (healthData || []).forEach((p: any) => {
+            const key = getDateKey(p.created_at);
+            const existing = dateMap.get(key) || { motor: 0, health: 0, commercial: 0 };
+            existing.health += Number(p.premium_amount) || 0;
+            dateMap.set(key, existing);
+        });
+
+        // Aggregate commercial premiums
+        (commercialData || []).forEach((p: any) => {
+            const key = getDateKey(p.created_at);
+            const existing = dateMap.get(key) || { motor: 0, health: 0, commercial: 0 };
+            existing.commercial += Number(p.premium_amount) || 0;
+            dateMap.set(key, existing);
+        });
+
+        // Convert to array and sort
+        const trendData: PremiumTrend[] = Array.from(dateMap.entries())
+            .map(([date, values]) => ({
+                date,
+                motor: values.motor,
+                health: values.health,
+                commercial: values.commercial,
+                total: values.motor + values.health + values.commercial
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+        console.log('[Premium Trend]', {
+            startDate: startStr,
+            endDate: endStr,
+            groupBy,
+            dataPoints: trendData.length
+        });
+
+        return trendData;
+    } catch (error) {
+        console.error('[Premium Trend] Error:', error);
+        return [];
     }
 }

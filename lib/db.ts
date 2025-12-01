@@ -32,6 +32,22 @@ function convertDates(data: any): any {
 }
 
 /**
+ * Check for duplicate policy number
+ */
+async function checkDuplicatePolicy(table: string, userId: string, policyNumber: string): Promise<void> {
+    const { data, error } = await supabase
+        .from(table)
+        .select('id')
+        .eq('user_id', userId)
+        .eq('policy_number', policyNumber)
+        .maybeSingle();
+
+    if (data) {
+        throw new Error('This policy number already exists in your account');
+    }
+}
+
+/**
  * Get all motor policies for a user
  */
 export async function getUserMotorPolicies(userId: string): Promise<MotorPolicy[]> {
@@ -148,6 +164,8 @@ export async function getUserQuoteRequests(userId: string): Promise<QuoteRequest
  */
 export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
     try {
+        await checkDuplicatePolicy('motor_policies', policy.user_id, policy.policy_number);
+
         const { data, error } = await supabase
             .from('motor_policies')
             .insert({
@@ -184,6 +202,8 @@ export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_a
  */
 export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
     try {
+        await checkDuplicatePolicy('health_policies', policy.user_id, policy.policy_number);
+
         const { data, error } = await supabase
             .from('health_policies')
             .insert({
@@ -213,6 +233,8 @@ export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created
  */
 export async function addCommercialPolicy(policy: Omit<CommercialPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
     try {
+        await checkDuplicatePolicy('commercial_policies', policy.user_id, policy.policy_number);
+
         const { data, error } = await supabase
             .from('commercial_policies')
             .insert({
@@ -572,7 +594,7 @@ export async function updateUserStatus(userId: string, status: 'active' | 'disab
 export async function getUserAuditLogs(userId: string): Promise<AuditLog[]> {
     try {
         const { data, error } = await supabase
-            .from('audit_logs')
+            .from('user_audit_log')
             .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
@@ -581,7 +603,7 @@ export async function getUserAuditLogs(userId: string): Promise<AuditLog[]> {
 
         return (data || []).map((row: any) => convertDates(row)) as AuditLog[];
     } catch (error: any) {
-        console.error('Error fetching audit logs:', error);
+        console.error('Error fetching audit logs:', error.message || error);
         return [];
     }
 }
@@ -1018,10 +1040,11 @@ export async function getUserLifePolicies(userId: string) {
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
-    return convertDates(data);
+    return (data || []).map((row: any) => convertDates(row));
 }
 
 export async function addLifePolicy(policy: any) {
+    await checkDuplicatePolicy('life_policies', policy.user_id, policy.policy_number);
     const { data, error } = await supabase
         .from('life_policies')
         .insert([policy])
@@ -1041,10 +1064,11 @@ export async function getUserTravelPolicies(userId: string) {
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
-    return convertDates(data);
+    return (data || []).map((row: any) => convertDates(row));
 }
 
 export async function addTravelPolicy(policy: any) {
+    await checkDuplicatePolicy('travel_policies', policy.user_id, policy.policy_number);
     const { data, error } = await supabase
         .from('travel_policies')
         .insert([policy])
@@ -1053,6 +1077,21 @@ export async function addTravelPolicy(policy: any) {
 
     if (error) throw error;
     return data;
+}
+
+/**
+ * Get company's GMC policy by company name
+ * Used by corporate employees to find their company's group health policy
+ */
+export async function getCompanyGMCPolicy(companyName: string) {
+    const { data, error } = await supabase
+        .from('health_policies')
+        .select('*')
+        .eq('company_name', companyName)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data ? convertDates(data) : null;
 }
 
 // Cyber Policies
@@ -1064,10 +1103,11 @@ export async function getUserCyberPolicies(userId: string) {
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
-    return convertDates(data);
+    return (data || []).map((row: any) => convertDates(row));
 }
 
 export async function addCyberPolicy(policy: any) {
+    await checkDuplicatePolicy('cyber_policies', policy.user_id, policy.policy_number);
     const { data, error } = await supabase
         .from('cyber_policies')
         .insert([policy])
@@ -1088,7 +1128,7 @@ export async function getUserNotifications(userId: string) {
         .limit(20);
 
     if (error) throw error;
-    return convertDates(data);
+    return (data || []).map((row: any) => convertDates(row));
 }
 
 export async function markNotificationAsRead(notificationId: string) {

@@ -8,10 +8,13 @@ interface PolicyDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    type: 'total' | 'premium' | 'expiring';
+    type: 'total' | 'premium' | 'expiring' | 'expired';
     motorPolicies?: MotorPolicy[];
     healthPolicies: HealthPolicy[];
     commercialPolicies?: CommercialPolicy[];
+    travelPolicies?: any[];
+    lifePolicies?: any[];
+    cyberPolicies?: any[];
 }
 
 export default function PolicyDetailModal({
@@ -21,7 +24,10 @@ export default function PolicyDetailModal({
     type,
     motorPolicies = [],
     healthPolicies,
-    commercialPolicies = []
+    commercialPolicies = [],
+    travelPolicies = [],
+    lifePolicies = [],
+    cyberPolicies = []
 }: PolicyDetailModalProps) {
     const router = useRouter();
 
@@ -49,16 +55,83 @@ export default function PolicyDetailModal({
         const dates = getPolicyDates();
         const premium = Number(policy.premium_amount);
 
+        // Determine primary field based on policy type
+        let primaryField = policy.policy_number;
+        let primaryLabel = 'Policy Number';
+
+        if (policyType === 'Motor') {
+            primaryField = policy.vehicle_number;
+            primaryLabel = 'Vehicle Number';
+        } else if (policyType === 'Health') {
+            primaryField = policy.company_name; // Health uses company_name as primary identifier in this context? Or maybe we should use a different field if available. Requirement says "Policy holder name". Health policy has company_name. Let's use that or insurer if name missing.
+            // Wait, requirement says "Health: Policy holder name". Health policy schema has 'company_name' but not 'policy_holder_name'.
+            // Let's check the schema again. HealthPolicy has 'company_name'.
+            // Maybe I should use company_name as the clickable field.
+            primaryField = policy.company_name || 'N/A';
+        } else if (policyType === 'Commercial') {
+            primaryField = policy.company_name || policy.policy_holder_name || 'N/A';
+        } else if (['Travel', 'Life', 'Cyber'].includes(policyType)) {
+            // Travel/Life/Cyber: Policy holder name
+            // Travel has destination? No, requirement says "Policy holder name".
+            // Let's check Travel/Life/Cyber schemas.
+            // Life: nominee_name? No.
+            // Actually, these policies might not have a 'policy_holder_name' field on the policy itself if it's linked to the user.
+            // But for the table, we need something clickable.
+            // If the requirement says "Policy holder name", and it's not on the policy, maybe it means the User's name?
+            // But the user is the same for all.
+            // Let's use Policy Number as fallback if specific field not found, but requirement asks for specific fields.
+            // For now, let's use Policy Number for these if name not available, or maybe 'insurer_name'?
+            // Wait, for Motor it is Vehicle Number.
+            // For Commercial it is Business Name.
+            // For Health/Travel/Life/Cyber it is Policy Holder Name.
+            // Since I don't have policy_holder_name on Health/Travel/Cyber (only Commercial has it), I will use Policy Number as the primary clickable field for now to avoid breaking,
+            // OR I can use another relevant field.
+            // For Travel: Destination?
+            // For Life: Nominee?
+            // For Cyber: Risk Type?
+            // The requirement explicitly said "Policy holder name".
+            // I'll stick to Policy Number for now if name is missing, but I'll try to use relevant fields if possible.
+            // Actually, let's look at the requirement again: "Health: Policy holder name (clickable)".
+            // If the DB doesn't have it, maybe I should use the User's name? But that's static.
+            // I'll use Policy Number for now as the clickable field for these if I can't find a better one, BUT I will add a Policy Number column as requested.
+            // So:
+            // Col 1: Primary (Clickable)
+            // Col 2: Policy Number
+            // ...
+
+            // For Motor: Vehicle Number
+            // For Health: Company Name (closest to "Policy Holder" for corporate/group, or maybe just use Policy Number if individual?)
+            // For Commercial: Company Name / Policy Holder Name
+            // For others: Let's use Insurer Name? No, that's a separate column.
+            // Let's use "Policy Details" as header and put relevant info.
+            // For Travel: Destination
+            // For Life: Sum Assured? No.
+            // For Cyber: Risk Type
+
+            // actually, let's just use Policy Number as the clickable field for the others if the specific field is missing, 
+            // BUT the requirement says "Policy Number column" is separate.
+            // So I must have two columns.
+            // If I can't find a "Policy Holder Name", I'll use "N/A" or the User's name if I can get it.
+            // But I don't have the user's name here easily unless I fetch it.
+            // Let's use "Self" or similar if it's the logged-in user?
+
+            // Let's use a generic "Details" column.
+            if (policyType === 'Travel') primaryField = policy.destination || 'Travel Policy';
+            if (policyType === 'Life') primaryField = policy.nominee_name || 'Life Policy';
+            if (policyType === 'Cyber') primaryField = policy.cyber_risk_type || 'Cyber Policy';
+        }
+
         return (
             <tr key={policy.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm">
                     <button
                         onClick={() => handlePolicyClick(policyType, policy.id)}
-                        className="text-primary-600 hover:text-primary-700 font-semibold hover:underline"
+                        className="text-primary-600 hover:text-primary-700 font-semibold hover:underline text-left"
                     >
-                        {policy.policy_number}
+                        {primaryField}
                     </button>
                 </td>
+                <td className="px-4 py-3 text-sm text-gray-900">{policy.policy_number}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{policy.insurer_name}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{policyType}</td>
                 <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
@@ -83,13 +156,22 @@ export default function PolicyDetailModal({
     const allPolicies = [
         ...motorPolicies.map(p => ({ ...p, policyType: 'Motor' })),
         ...healthPolicies.map((p: any) => ({ ...p, policyType: 'Health' })),
-        ...commercialPolicies.map(p => ({ ...p, policyType: 'Commercial' }))
+        ...commercialPolicies.map(p => ({ ...p, policyType: 'Commercial' })),
+        ...travelPolicies.map(p => ({ ...p, policyType: 'Travel' })),
+        ...lifePolicies.map(p => ({ ...p, policyType: 'Life' })),
+        ...cyberPolicies.map(p => ({ ...p, policyType: 'Cyber' }))
     ];
 
     // Filter based on type
     let displayPolicies = allPolicies;
     if (type === 'expiring') {
-        displayPolicies = allPolicies.filter(p => p.status === 'Expiring Soon');
+        displayPolicies = allPolicies.filter((p: any) => p.status === 'Expiring Soon');
+    } else if (type === 'expired') {
+        displayPolicies = allPolicies.filter((p: any) => p.status === 'Expired');
+    } else if (type === 'total' || type === 'premium') {
+        // For total and premium, we only want active policies (Active or Expiring Soon)
+        // Expiring Soon is technically still active until it expires
+        displayPolicies = allPolicies.filter((p: any) => p.status === 'Active' || p.status === 'Expiring Soon');
     }
 
     // Calculate total premium for premium view
@@ -145,6 +227,9 @@ export default function PolicyDetailModal({
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                            Details
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                             Policy Number
                                         </th>
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -176,6 +261,18 @@ export default function PolicyDetailModal({
                                     {commercialPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
                                         displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial')) :
                                         commercialPolicies.map(p => renderPolicyRow(p, 'Commercial'))
+                                    )}
+                                    {travelPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
+                                        displayPolicies.filter(p => p.policyType === 'Travel').map(p => renderPolicyRow(p, 'Travel')) :
+                                        travelPolicies.map(p => renderPolicyRow(p, 'Travel'))
+                                    )}
+                                    {lifePolicies.length > 0 && (type === 'total' || type === 'expiring' ?
+                                        displayPolicies.filter(p => p.policyType === 'Life').map(p => renderPolicyRow(p, 'Life')) :
+                                        lifePolicies.map(p => renderPolicyRow(p, 'Life'))
+                                    )}
+                                    {cyberPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
+                                        displayPolicies.filter(p => p.policyType === 'Cyber').map(p => renderPolicyRow(p, 'Cyber')) :
+                                        cyberPolicies.map(p => renderPolicyRow(p, 'Cyber'))
                                     )}
                                 </tbody>
                             </table>

@@ -18,7 +18,8 @@ import {
 
 import KPIGrid from '@/components/admin/dashboard/KPIGrid';
 import ExpiringPoliciesWidget from '@/components/admin/dashboard/ExpiringPoliciesWidget';
-import ActivityFeed from '@/components/admin/dashboard/ActivityFeed';
+import PremiumSourceWidget from '@/components/admin/dashboard/PremiumSourceWidget';
+import PremiumTrendWidget from '@/components/admin/dashboard/PremiumTrendWidget';
 import LOBChart from '@/components/admin/dashboard/LOBChart';
 import OperationalWidgets from '@/components/admin/dashboard/OperationalWidgets';
 import { AlertTriangle, Users, RefreshCw } from 'lucide-react';
@@ -50,10 +51,9 @@ export default function AdminDashboardPage() {
 
     const loadData = async () => {
         try {
-            const [metricsData, expiry, activity, lob, dups, docs, rm] = await Promise.all([
+            const [metricsData, expiry, lob, dups, docs, rm] = await Promise.all([
                 getAdminDashboardMetrics(),
                 getExpiringPoliciesAdmin(),
-                getRecentActivity(),
                 getPoliciesByLOB(),
                 getDuplicateAlerts(),
                 getDocumentVerificationPending(),
@@ -62,7 +62,6 @@ export default function AdminDashboardPage() {
 
             setMetrics(metricsData);
             setExpiryData(expiry);
-            setActivities(activity);
             setLobData(lob);
             setDuplicates(dups);
             setDocPending(docs);
@@ -112,24 +111,25 @@ export default function AdminDashboardPage() {
             {/* 1. KPI Cards */}
             <KPIGrid metrics={metrics} />
 
-            {/* 2. Main Grid: Expiry & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                    <ExpiringPoliciesWidget data={expiryData} />
-                </div>
-                <div className="lg:col-span-1">
-                    <ActivityFeed activities={activities} />
-                </div>
+            {/* 2. Expiring Policies & Premium Source */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ExpiringPoliciesWidget data={expiryData} />
+                <PremiumSourceWidget />
             </div>
 
-            {/* 3. Charts & Operations */}
+            {/* 3. Premium Trend & LOB Chart */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <PremiumTrendWidget />
+                </div>
                 <div className="lg:col-span-1">
                     <LOBChart data={lobData} />
                 </div>
-                <div className="lg:col-span-2">
-                    <OperationalWidgets metrics={metrics} docVerificationData={docPending} />
-                </div>
+            </div>
+
+            {/* 4. Operations */}
+            <div>
+                <OperationalWidgets metrics={metrics} docVerificationData={docPending} />
             </div>
 
             {/* 4. Alerts & RM Performance (Row 4) */}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, AlertCircle, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { Claim } from '@/types';
 import { getUserClaims } from '@/lib/db';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +10,7 @@ import ClaimForm from '@/components/forms/ClaimForm';
 
 export default function ClaimsPage() {
     const { user } = useAuth();
+    const searchParams = useSearchParams();
     const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -30,6 +32,12 @@ export default function ClaimsPage() {
     useEffect(() => {
         fetchClaims();
     }, [user]);
+
+    useEffect(() => {
+        if (searchParams.get('action') === 'new') {
+            setShowForm(true);
+        }
+    }, [searchParams]);
 
     const getStatusColor = (status: string) => {
         switch (status) {

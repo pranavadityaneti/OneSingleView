@@ -8,7 +8,7 @@ import { PolicyStatus } from '@/types';
  */
 export function calculatePolicyStatus(
     endDate: Date,
-    thresholdDays: number = 20
+    thresholdDays: number = 15
 ): PolicyStatus {
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();

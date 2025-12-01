@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Car, Heart, Briefcase, X, Plane, Shield, Umbrella } from 'lucide-react';
+import { Plus, Car, Heart, Briefcase, X, Plane, Shield, Umbrella, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AddPolicyModal from '@/components/policies/AddPolicyModal';
 
-export default function StickyAddPolicy({ userId }: { userId: string }) {
+export default function StickyAddPolicy({ userId, className = '' }: { userId: string, className?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -19,6 +19,13 @@ export default function StickyAddPolicy({ userId }: { userId: string }) {
 
     const handleOptionClick = (type: string) => {
         setIsOpen(false);
+
+        // Special handling for claim registration
+        if (type === 'Claim') {
+            router.push('/claims?action=new');
+            return;
+        }
+
         // For now, since AddPolicyModal doesn't accept a pre-selected type prop in its current interface (it manages state internally),
         // we will just open the modal. 
         // Ideally, we should refactor AddPolicyModal to accept `initialType`.
@@ -40,26 +47,27 @@ export default function StickyAddPolicy({ userId }: { userId: string }) {
         { label: 'Health', icon: Heart, color: 'bg-green-500', onClick: () => handleOptionClick('Health') },
         { label: 'Commercial', icon: Briefcase, color: 'bg-purple-500', onClick: () => handleOptionClick('Commercial') },
         { label: 'Life', icon: Heart, color: 'bg-pink-500', onClick: () => handleOptionClick('Life') },
-        { label: 'Travel', icon: Briefcase, color: 'bg-orange-500', onClick: () => handleOptionClick('Travel') },
-        { label: 'Cyber', icon: Briefcase, color: 'bg-indigo-500', onClick: () => handleOptionClick('Cyber') },
+        { label: 'Travel', icon: Plane, color: 'bg-orange-500', onClick: () => handleOptionClick('Travel') },
+        { label: 'Cyber', icon: Shield, color: 'bg-indigo-500', onClick: () => handleOptionClick('Cyber') },
+        { label: 'Register Claim', icon: FileText, color: 'bg-red-500', onClick: () => handleOptionClick('Claim') },
     ];
 
     return (
         <>
-            <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end space-y-4">
+            <div className={`relative z-50 flex flex-col items-end ${className}`}>
                 {isOpen && (
-                    <div className="flex flex-col items-end space-y-3 mb-2 animate-in slide-in-from-bottom-5 fade-in duration-200">
+                    <div className="absolute top-full right-0 mt-2 flex flex-col items-end space-y-3 animate-in slide-in-from-top-5 fade-in duration-200 bg-white/80 p-2 rounded-xl backdrop-blur-sm border border-gray-100 shadow-xl">
                         {options.map((option, index) => (
                             <button
                                 key={index}
                                 onClick={option.onClick}
-                                className="flex items-center group"
+                                className="flex items-center group w-full justify-end"
                             >
-                                <span className="mr-4 px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                <span className="mr-3 px-2 py-1 bg-white text-gray-700 text-xs font-medium rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                     {option.label}
                                 </span>
-                                <div className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform hover:scale-110 ${option.color}`}>
-                                    <option.icon className="w-6 h-6" />
+                                <div className={`w-10 h-10 rounded-full shadow-md flex items-center justify-center text-white transition-transform hover:scale-110 ${option.color}`}>
+                                    <option.icon className="w-5 h-5" />
                                 </div>
                             </button>
                         ))}
@@ -68,12 +76,14 @@ export default function StickyAddPolicy({ userId }: { userId: string }) {
 
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-white transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary-200 ${isOpen ? 'bg-gray-600 rotate-45' : 'bg-primary-600'
+                    className={`w-10 h-10 rounded-full shadow-md flex items-center justify-center text-white transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-200 ${isOpen ? 'bg-gray-600 rotate-45' : 'bg-primary-600'
                         }`}
                 >
-                    <Plus className="w-8 h-8" />
+                    <Plus className="w-6 h-6" />
                 </button>
             </div>
+
+
 
             <AddPolicyModal
                 isOpen={isModalOpen}

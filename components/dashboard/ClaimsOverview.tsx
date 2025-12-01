@@ -51,9 +51,9 @@ export default function ClaimsOverview({ activeCount, settledCount, rejectedCoun
 
             <div className="mt-2 border-t border-dashed border-gray-200 pt-3 text-center">
                 <p className="text-xs text-gray-400 font-medium mb-2">No active claims</p>
-                <button className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-95">
+                <Link href="/claims?action=new" className="block w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-95">
                     Register a New Claim
-                </button>
+                </Link>
             </div>
         </div>
     );

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addLifePolicy } from '@/lib/db';
+import { INSURANCE_COMPANIES } from '@/lib/constants';
 
 interface LifePolicyFormProps {
     userId: string;
@@ -26,6 +27,20 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
         policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
         document_url: initialData?.document_url || '',
     });
+
+    // Auto-calculate end date when start date changes (1 day before same date next year)
+    useEffect(() => {
+        if (formData.policy_start_date && !initialData) {
+            const startDate = new Date(formData.policy_start_date);
+            const endDate = new Date(startDate);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            endDate.setDate(endDate.getDate() - 1); // 1 day before
+            setFormData(prev => ({
+                ...prev,
+                policy_end_date: endDate
+            }));
+        }
+    }, [formData.policy_start_date, initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -64,7 +79,16 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
 
             <div className="grid md:grid-cols-2 gap-6">
                 <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
-                <FormInput label="Insurer Name" name="insurer_name" value={formData.insurer_name} onChange={handleChange} required />
+                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
+                <FormInput
+                    label="Insurer Name"
+                    name="insurer_name"
+                    type="select"
+                    value={formData.insurer_name}
+                    onChange={handleChange}
+                    options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
+                    required
+                />
                 <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount} onChange={handleChange} required />
                 <FormInput label="Sum Assured (₹)" name="sum_assured" type="number" value={formData.sum_assured} onChange={handleChange} required />
                 <FormInput label="Nominee Name" name="nominee_name" value={formData.nominee_name} onChange={handleChange} required />

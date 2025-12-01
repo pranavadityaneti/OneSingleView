@@ -6,6 +6,7 @@ import { MotorPolicy, MotorPolicyFormData } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addMotorPolicy, updateMotorPolicy } from '@/lib/db';
+import { INSURANCE_COMPANIES, CAR_MANUFACTURERS } from '@/lib/constants';
 import {
     validateVehicleNumber,
     validatePolicyNumber,
@@ -35,6 +36,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
         fuel_type: initialData?.fuel_type || 'Petrol',
         manufacturing_year: initialData?.manufacturing_year || new Date().getFullYear(),
         number_plate_type: initialData?.number_plate_type || 'White',
+        ownership_type: initialData?.ownership_type || 'Individual',
         insurer_name: initialData?.insurer_name || '',
         premium_amount: initialData?.premium_amount || 0,
         policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
@@ -43,6 +45,20 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
         previous_policy_docs: initialData?.previous_policy_docs || [],
         dl_docs: initialData?.dl_docs || [],
     });
+
+    // Auto-calculate end date when start date changes (1 day before same date next year)
+    useEffect(() => {
+        if (formData.policy_start_date && !initialData) {
+            const startDate = new Date(formData.policy_start_date);
+            const endDate = new Date(startDate);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            endDate.setDate(endDate.getDate() - 1); // 1 day before
+            setFormData(prev => ({
+                ...prev,
+                policy_end_date: endDate
+            }));
+        }
+    }, [formData.policy_start_date, initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -188,24 +204,37 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 required
                             />
                             <FormInput
-                                label="Number Plate"
+                                label="Number Plate Type"
                                 name="number_plate_type"
                                 type="select"
-                                value={formData.number_plate_type || 'White'}
+                                value={formData.number_plate_type}
                                 onChange={handleChange}
-                                options={[
-                                    { value: 'White', label: 'White (Private)' },
-                                    { value: 'Yellow', label: 'Yellow (Commercial)' },
-                                    { value: 'EV', label: 'Green (EV)' }
-                                ]}
                                 required
+                                options={[
+                                    { value: 'White', label: 'White (Pvt)' },
+                                    { value: 'Yellow', label: 'Yellow (Commercial)' },
+                                    { value: 'EV', label: 'EV (Green)' },
+                                ]}
+                            />
+                            <FormInput
+                                label="Ownership Type"
+                                name="ownership_type"
+                                type="select"
+                                value={formData.ownership_type ?? 'Individual'}
+                                onChange={handleChange}
+                                required
+                                options={[
+                                    { value: 'Individual', label: 'Individual' },
+                                    { value: 'Company', label: 'Company' },
+                                ]}
                             />
                             <FormInput
                                 label="Manufacturer"
                                 name="manufacturer"
+                                type="select"
                                 value={formData.manufacturer || ''}
                                 onChange={handleChange}
-                                placeholder="e.g. Maruti Suzuki"
+                                options={CAR_MANUFACTURERS.map(m => ({ value: m, label: m }))}
                                 error={errors.manufacturer}
                                 required
                             />
@@ -262,9 +291,10 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                             <FormInput
                                 label="Insurer Name"
                                 name="insurer_name"
+                                type="select"
                                 value={formData.insurer_name || ''}
                                 onChange={handleChange}
-                                placeholder="e.g. ICICI Lombard"
+                                options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                                 error={errors.insurer_name}
                                 required
                             />
