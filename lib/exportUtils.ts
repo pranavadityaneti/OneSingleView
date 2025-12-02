@@ -313,11 +313,29 @@ function prepareDataForExport(policies: any[]) {
 // Export to Excel
 export function exportToXLS(policies: any[], filename: string) {
     try {
+        console.log('Exporting to XLS with filename:', filename);
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Policies");
-        XLSX.writeFile(wb, `${filename}.xlsx`);
+
+        // Generate buffer
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+        // Create Blob
+        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        // Trigger download
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${filename}.xlsx`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        console.log('XLS download triggered');
     } catch (error) {
         console.error('Error exporting to Excel:', error);
         throw new Error('Failed to export to Excel');
@@ -327,6 +345,7 @@ export function exportToXLS(policies: any[], filename: string) {
 // Export to CSV
 export function exportToCSV(policies: any[], filename: string) {
     try {
+        console.log('Exporting to CSV with filename:', filename);
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
         const csv = XLSX.utils.sheet_to_csv(ws);
@@ -340,6 +359,8 @@ export function exportToCSV(policies: any[], filename: string) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        console.log('CSV download triggered');
     } catch (error) {
         console.error('Error exporting to CSV:', error);
         throw new Error('Failed to export to CSV');
