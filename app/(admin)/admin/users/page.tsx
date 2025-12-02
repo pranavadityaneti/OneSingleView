@@ -52,7 +52,8 @@ export default function UsersPage() {
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (user.mobile && user.mobile.includes(searchTerm));
 
-        const matchesType = typeFilter === 'all' || user.role === typeFilter;
+        const matchesType = typeFilter === 'all' ||
+            (typeFilter === 'corporate' ? (user.role === 'corporate_employee' || user.role === 'corporate_admin') : user.role === typeFilter);
 
         return matchesSearch && matchesType;
     });
@@ -133,12 +134,12 @@ export default function UsersPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'corporate'
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'corporate_employee' || user.role === 'corporate_admin'
                                             ? 'bg-purple-100 text-purple-800'
                                             : 'bg-blue-100 text-blue-800'
                                             }`}>
-                                            {user.role === 'corporate' ? <Building className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                            {(user.role === 'corporate_employee' || user.role === 'corporate_admin') ? <Building className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
+                                            {user.role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </span>
                                         {user.company_name && (
                                             <p className="text-xs text-gray-500 mt-1">{user.company_name}</p>
