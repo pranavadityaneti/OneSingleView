@@ -55,7 +55,7 @@ function SignupForm() {
         setLoading(true);
 
         try {
-            const role: UserRole = type === 'corporate' ? 'corporate' : 'individual';
+            const role: UserRole = type === 'corporate' ? 'corporate_employee' : 'individual';
 
             await signUp(
                 formData.email,
