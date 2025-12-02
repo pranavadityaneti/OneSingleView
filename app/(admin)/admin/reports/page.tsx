@@ -221,7 +221,7 @@ export default function AdminReportsPage() {
             const filename = `insurance_report_${timestamp}`;
 
             if (format === 'pdf') {
-                const { jsPDF } = await import('jspdf');
+                const { default: jsPDF } = await import('jspdf');
                 const { default: autoTable } = await import('jspdf-autotable');
 
                 const doc = new jsPDF('landscape');
