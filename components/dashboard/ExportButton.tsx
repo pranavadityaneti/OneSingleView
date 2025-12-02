@@ -84,12 +84,24 @@ export default function ExportButton({
                 return created >= start && created <= end;
             });
 
-            const filename = `policies_export_${new Date().toISOString().split('T')[0]}`;
+            // Generate descriptive filename
+            const dateRangeStr = `${startDate}_to_${endDate}`;
+            let typeStr = 'All_Policies';
+
+            if (selectedTypes.length > 0) {
+                if (selectedTypes.length === 1) {
+                    typeStr = `${selectedTypes[0]}_Policies`;
+                } else {
+                    typeStr = 'Mixed_Policies';
+                }
+            }
+
+            const filename = `${typeStr}_${dateRangeStr}`;
 
             if (selectedFormat === 'PDF') {
                 // Reuse existing PDF logic but for mixed types
                 // For now, we'll use the date range export which handles mixed types
-                await exportPoliciesByDate(start, end, policiesToExport, userName);
+                await exportPoliciesByDate(start, end, policiesToExport, userName, `${filename}.pdf`);
             } else if (selectedFormat === 'XLS') {
                 exportToXLS(policiesToExport, filename);
             } else if (selectedFormat === 'CSV') {

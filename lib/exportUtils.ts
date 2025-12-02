@@ -151,7 +151,8 @@ export async function exportPoliciesByDate(
     startDate: Date,
     endDate: Date,
     allPolicies: any[],
-    userName: string
+    userName: string,
+    filename?: string
 ): Promise<void> {
     try {
         // Filter policies by creation date
@@ -240,7 +241,7 @@ export async function exportPoliciesByDate(
             );
         }
 
-        pdf.save(`policies_${startDate.toISOString().split('T')[0]}_to_${endDate.toISOString().split('T')[0]}.pdf`);
+        pdf.save(filename || `policies_${startDate.toISOString().split('T')[0]}_to_${endDate.toISOString().split('T')[0]}.pdf`);
     } catch (error) {
         console.error('Error generating date range PDF:', error);
         throw new Error('Failed to generate date range PDF');
