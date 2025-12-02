@@ -137,6 +137,8 @@ export default function AdminReportsPage() {
     const handleExport = async (format: 'pdf' | 'excel' | 'csv') => {
         setDownloading(true);
         try {
+            if (typeof window === 'undefined') return;
+
             // Prepare comprehensive data for export
             const headers = ['Policy Number', 'Type', 'Insurer', 'Premium', 'Status', 'Start Date', 'End Date', 'Created Date'];
             const motorHeaders = [...headers, 'Vehicle Number', 'Make', 'Model', 'Policy Type'];
