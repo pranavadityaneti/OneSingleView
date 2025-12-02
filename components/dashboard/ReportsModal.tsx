@@ -19,6 +19,9 @@ export default function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
     const handleDownload = async () => {
         setDownloading(true);
         try {
+            // Ensure this only runs in the browser (SSR safety)
+            if (typeof window === 'undefined') return;
+
             // Mock data generation based on filters
             const data = [
                 ['Policy No', 'Insurer', 'Type', 'Premium', 'Status', 'Date'],
@@ -31,7 +34,7 @@ export default function ReportsModal({ isOpen, onClose }: ReportsModalProps) {
             const filename = `insurance_report_${timestamp}`;
 
             if (format === 'pdf') {
-                const { jsPDF } = await import('jspdf');
+                const { default: jsPDF } = await import('jspdf');
                 const { default: autoTable } = await import('jspdf-autotable');
 
                 const doc = new jsPDF();
