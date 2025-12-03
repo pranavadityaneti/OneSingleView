@@ -74,7 +74,7 @@ function SignupForm() {
                 window.scrollTo(0, 0); // Scroll to top before redirect
 
                 // Redirect based on role
-                if (role === 'corporate_employee' || role === 'corporate_admin') {
+                if (role === 'corporate_employee') {
                     router.push('/dashboard/corporate');
                 } else {
                     router.push('/dashboard');
