@@ -5,7 +5,9 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { Claim, ClaimFormData, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
-import { addClaim, getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getCompanyGMCPolicy } from '@/lib/db';
+import { addClaim, updateClaim, getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getCompanyGMCPolicy } from '@/lib/db';
+import { INSURANCE_COMPANIES } from '@/lib/constants';
+import { formatDateForInput } from '@/lib/utils';
 import { getCurrentUser } from '@/lib/auth';
 
 interface ClaimFormProps {
@@ -249,7 +251,7 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
                             label="Incident Date"
                             name="incident_date"
                             type="date"
-                            value={formData.incident_date ? new Date(formData.incident_date).toISOString().split('T')[0] : ''}
+                            value={formatDateForInput(formData.incident_date)}
                             onChange={handleDateChange as any}
                             required
                             error={errors.incident_date}

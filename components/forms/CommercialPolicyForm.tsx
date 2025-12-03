@@ -7,6 +7,7 @@ import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addCommercialPolicy, updateCommercialPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
+import { formatDateForInput } from '@/lib/utils';
 import {
     validatePolicyNumber,
     validatePremiumAmount,
@@ -224,7 +225,7 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
                                 label="Expiry Date"
                                 name="expiry_date"
                                 type="date"
-                                value={formData.expiry_date ? new Date(formData.expiry_date).toISOString().split('T')[0] : ''}
+                                value={formatDateForInput(formData.expiry_date)}
                                 onChange={handleDateChange as any}
                                 required
                             />

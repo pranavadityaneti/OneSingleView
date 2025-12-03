@@ -7,6 +7,7 @@ import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addMotorPolicy, updateMotorPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES, CAR_MANUFACTURERS } from '@/lib/constants';
+import { formatDateForInput } from '@/lib/utils';
 import {
     validateVehicleNumber,
     validatePolicyNumber,
@@ -311,7 +312,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 label="Start Date"
                                 name="policy_start_date"
                                 type="date"
-                                value={formData.policy_start_date ? new Date(formData.policy_start_date).toISOString().split('T')[0] : ''}
+                                value={formatDateForInput(formData.policy_start_date)}
                                 onChange={handleDateChange as any}
                                 required
                             />
@@ -319,9 +320,8 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 label="End Date"
                                 name="policy_end_date"
                                 type="date"
-                                value={formData.policy_end_date ? new Date(formData.policy_end_date).toISOString().split('T')[0] : ''}
+                                value={formatDateForInput(formData.policy_end_date)}
                                 onChange={handleDateChange as any}
-                                error={errors.policy_end_date}
                                 required
                             />
                         </div>

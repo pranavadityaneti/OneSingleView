@@ -138,3 +138,21 @@ export function truncate(text: string, length: number): string {
     if (text.length <= length) return text;
     return text.slice(0, length) + '...';
 }
+
+/**
+ * Safely format a date for HTML date input (YYYY-MM-DD)
+ * @param date - Date value (Date object, string, or null/undefined)
+ * @returns string - Formatted date string or empty string if invalid
+ */
+export function formatDateForInput(date: Date | string | null | undefined): string {
+    if (!date) return '';
+
+    try {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        if (isNaN(dateObj.getTime())) return '';
+
+        return dateObj.toISOString().split('T')[0];
+    } catch {
+        return '';
+    }
+}
