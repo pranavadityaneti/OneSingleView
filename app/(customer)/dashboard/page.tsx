@@ -114,8 +114,8 @@ export default function DashboardPage() {
 
             // Store policy data for modal with calculated status
             const processPolicy = (p: any) => {
-                const endDate = new Date('policy_end_date' in p ? p.policy_end_date : p.expiry_date);
-                const status = calculatePolicyStatus(endDate);
+                const endDateValue = 'policy_end_date' in p ? p.policy_end_date : p.expiry_date;
+                const status = calculatePolicyStatus(endDateValue); // Now handles null/invalid dates
                 return { ...p, status };
             };
 
