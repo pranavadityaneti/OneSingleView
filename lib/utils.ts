@@ -3,15 +3,23 @@ import { PolicyStatus } from '@/types';
 /**
  * Calculate policy status based on end/expiry date
  * @param endDate - Policy end/expiry date
- * @param thresholdDays - Number of days before expiry to mark as "Expiring Soon" (default: 20)
+ * @param thresholdDays - Number of days before expiry to mark as "Expiring Soon" (default: 15)
  * @returns PolicyStatus - 'Active', 'Expiring Soon', or 'Expired'
  */
 export function calculatePolicyStatus(
-    endDate: Date,
+    endDate: Date | string | null | undefined,
     thresholdDays: number = 15
 ): PolicyStatus {
+    // Handle null, undefined, or invalid dates
+    if (!endDate) return 'Expired';
+
+    const date = typeof endDate === 'string' ? new Date(endDate) : endDate;
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'Expired';
+
     const today = new Date();
-    const diffTime = endDate.getTime() - today.getTime();
+    const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) return 'Expired';
@@ -103,11 +111,16 @@ export function formatDate(date: Date): string {
 /**
  * Calculate days until a date
  * @param endDate - Target date
- * @returns number - Days remaining (negative if past)
+ * @returns number - Days remaining (negative if past), or 0 if invalid date
  */
-export function daysUntil(endDate: Date): number {
+export function daysUntil(endDate: Date | string | null | undefined): number {
+    if (!endDate) return 0;
+
+    const date = typeof endDate === 'string' ? new Date(endDate) : endDate;
+    if (isNaN(date.getTime())) return 0;
+
     const today = new Date();
-    const diffTime = endDate.getTime() - today.getTime();
+    const diffTime = date.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 

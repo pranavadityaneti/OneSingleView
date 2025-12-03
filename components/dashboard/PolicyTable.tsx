@@ -163,16 +163,21 @@ export default function PolicyTable({
                             {policies.map((policy: any) => {
                                 const isMotor = policy.type === 'Motor';
                                 const isHealth = policy.type === 'Health';
-                                const startDate = new Date(
-                                    isMotor ? policy.policy_start_date :
-                                        isHealth ? policy.start_date :
-                                            policy.start_date
-                                );
-                                const endDate = new Date(
-                                    isMotor ? policy.policy_end_date :
-                                        isHealth ? policy.expiry_date :
-                                            policy.expiry_date
-                                );
+
+                                // Safely handle dates
+                                const startDateValue = isMotor ? policy.policy_start_date :
+                                    isHealth ? policy.start_date :
+                                        policy.start_date;
+
+                                const endDateValue = isMotor ? policy.policy_end_date :
+                                    isHealth ? policy.expiry_date :
+                                        policy.expiry_date;
+
+                                // Create Date objects with validation
+                                const startDate = startDateValue ? new Date(startDateValue) : null;
+                                const endDate = endDateValue ? new Date(endDateValue) : null;
+
+                                // Calculate status (now handles null/invalid dates)
                                 const status = calculatePolicyStatus(endDate);
 
                                 return (
@@ -194,20 +199,24 @@ export default function PolicyTable({
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm text-gray-600">
-                                                {startDate.toLocaleDateString('en-IN', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
+                                                {startDate && !isNaN(startDate.getTime())
+                                                    ? startDate.toLocaleDateString('en-IN', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })
+                                                    : 'N/A'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm text-gray-600">
-                                                {endDate.toLocaleDateString('en-IN', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
+                                                {endDate && !isNaN(endDate.getTime())
+                                                    ? endDate.toLocaleDateString('en-IN', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })
+                                                    : 'N/A'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
