@@ -1,60 +1,29 @@
--- Migration: fix_storage_rls.sql
--- Create bucket if not exists and set RLS policies
-
--- Create bucket 'policy-documents' if it doesn't exist
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('policy-documents', 'policy-documents', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Create bucket 'rc-copies' if it doesn't exist
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('rc-copies', 'rc-copies', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Create bucket 'claim-documents' if it doesn't exist
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('claim-documents', 'claim-documents', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Enable RLS on objects
+-- Enable RLS on storage.objects if not already enabled
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to upload files to 'policy-documents'
-CREATE POLICY "Allow authenticated uploads to policy-documents"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'policy-documents');
+-- Create policy to allow authenticated users to upload avatars
+-- We use a more permissive policy for now to ensure it works, but restrict to authenticated users
+-- Ideally we should restrict by folder name (avatars/) and user_id in filename, but filename structure is dynamic
+-- So we'll allow authenticated users to insert into 'avatars' bucket
 
--- Allow authenticated users to select their own files or public files
-CREATE POLICY "Allow authenticated select"
-ON storage.objects FOR SELECT
+CREATE POLICY "Allow authenticated uploads to avatars bucket"
+ON storage.objects
+FOR INSERT
 TO authenticated
-USING (bucket_id = 'policy-documents');
+WITH CHECK ( bucket_id = 'avatars' );
 
--- Allow public access to read files (since buckets are public)
-CREATE POLICY "Public Access"
-ON storage.objects FOR SELECT
+-- Allow users to read their own avatars (or public read?)
+-- Avatars are usually public. Let's allow public read for avatars.
+CREATE POLICY "Allow public read access to avatars"
+ON storage.objects
+FOR SELECT
 TO public
-USING (bucket_id = 'policy-documents');
+USING ( bucket_id = 'avatars' );
 
--- Repeat for rc-copies
-CREATE POLICY "Allow authenticated uploads to rc-copies"
-ON storage.objects FOR INSERT
+-- Allow users to update their own avatars (if they overwrite)
+CREATE POLICY "Allow users to update their own avatars"
+ON storage.objects
+FOR UPDATE
 TO authenticated
-WITH CHECK (bucket_id = 'rc-copies');
-
-CREATE POLICY "Public Access rc-copies"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'rc-copies');
-
--- Repeat for claim-documents
-CREATE POLICY "Allow authenticated uploads to claim-documents"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'claim-documents');
-
-CREATE POLICY "Public Access claim-documents"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'claim-documents');
+USING ( bucket_id = 'avatars' AND owner = auth.uid() )
+WITH CHECK ( bucket_id = 'avatars' AND owner = auth.uid() );

@@ -35,6 +35,7 @@ export default function ExportButton({
 
     // Filter States
     const [selectedTypes, setSelectedTypes] = useState<PolicyType[]>([]);
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['Active', 'Expiring Soon', 'Expired']);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('PDF');
@@ -81,7 +82,15 @@ export default function ExportButton({
 
             policiesToExport = policiesToExport.filter(p => {
                 const created = new Date(p.created_at);
-                return created >= start && created <= end;
+                const status = p.status || 'Active'; // Default to Active if missing
+
+                // Filter by date
+                const dateMatch = created >= start && created <= end;
+
+                // Filter by status
+                const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(status);
+
+                return dateMatch && statusMatch;
             });
 
             // Generate descriptive filename
@@ -201,6 +210,30 @@ export default function ExportButton({
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Status Selection */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-3">Status</label>
+                                <div className="flex space-x-4">
+                                    {['Active', 'Expiring Soon', 'Expired'].map((status) => (
+                                        <label key={status} className="flex items-center cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedStatuses.includes(status)}
+                                                onChange={() => {
+                                                    if (selectedStatuses.includes(status)) {
+                                                        setSelectedStatuses(selectedStatuses.filter(s => s !== status));
+                                                    } else {
+                                                        setSelectedStatuses([...selectedStatuses, status]);
+                                                    }
+                                                }}
+                                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">{status}</span>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
 

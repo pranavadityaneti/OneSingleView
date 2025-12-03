@@ -75,7 +75,7 @@ function SignupForm() {
 
                 // Redirect based on role
                 if (role === 'corporate_employee') {
-                    router.push('/dashboard/corporate');
+                    router.push('/dashboard');
                 } else {
                     router.push('/dashboard');
                 }

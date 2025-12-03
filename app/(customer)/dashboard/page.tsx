@@ -25,6 +25,8 @@ import AdvertisingBanner from '@/components/dashboard/AdvertisingBanner';
 import AnalyticsAreaChart from '@/components/dashboard/AnalyticsAreaChart';
 import AnalyticsDonutChart from '@/components/dashboard/AnalyticsDonutChart';
 import AnalyticsBarChart from '@/components/dashboard/AnalyticsBarChart';
+import FlipCard from '@/components/dashboard/FlipCard';
+import MonthlyActivityChart from '@/components/dashboard/MonthlyActivityChart';
 import ProtectFamilyCard from '@/components/dashboard/ProtectFamilyCard';
 import ReportsModal from '@/components/dashboard/ReportsModal';
 import PolicyDetailModal from '@/components/dashboard/PolicyDetailModal';
@@ -79,11 +81,11 @@ export default function DashboardPage() {
                     return;
                 }
 
-                // Redirect corporate users to corporate dashboard
-                if (currentUser.role === 'corporate_employee' || currentUser.role === 'corporate_admin') {
-                    router.push('/dashboard/corporate');
-                    return;
-                }
+                // Redirect corporate users to corporate dashboard - REMOVED for Unified Dashboard
+                // if (currentUser.role === 'corporate_employee' || currentUser.role === 'corporate_admin') {
+                //     router.push('/dashboard/corporate');
+                //     return;
+                // }
 
                 setUser(currentUser);
                 await loadDashboardData(currentUser.id);
@@ -385,47 +387,48 @@ export default function DashboardPage() {
             <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Access</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div onClick={() => setSelectedPolicyType('Motor')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                            <Car className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Motor</p>
-                    </div>
-
-                    <div onClick={() => setSelectedPolicyType('Health')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                            <Heart className="w-5 h-5 text-green-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Health</p>
-                    </div>
-
-                    <div onClick={() => setSelectedPolicyType('Travel')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
-                            <Plane className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Travel</p>
-                    </div>
-
-                    <div onClick={() => setSelectedPolicyType('Commercial')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-colors">
-                            <Briefcase className="w-5 h-5 text-orange-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Commercial</p>
-                    </div>
-
-                    <div onClick={() => setSelectedPolicyType('Life')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-pink-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-pink-100 transition-colors">
-                            <Umbrella className="w-5 h-5 text-pink-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Life</p>
-                    </div>
-
-                    <div onClick={() => setSelectedPolicyType('Cyber')} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group text-center">
-                        <div className="w-10 h-10 mx-auto bg-cyan-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-cyan-100 transition-colors">
-                            <Shield className="w-5 h-5 text-cyan-600" />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">Cyber</p>
-                    </div>
+                    <FlipCard
+                        title="Motor"
+                        icon={Car}
+                        activeCount={motorPolicies.filter(p => p.status === 'Active').length}
+                        colorClass="blue"
+                        onClick={() => setSelectedPolicyType('Motor')}
+                    />
+                    <FlipCard
+                        title="Health"
+                        icon={Heart}
+                        activeCount={healthPolicies.filter(p => p.status === 'Active').length}
+                        colorClass="green"
+                        onClick={() => setSelectedPolicyType('Health')}
+                    />
+                    <FlipCard
+                        title="Travel"
+                        icon={Plane}
+                        activeCount={travelPolicies.filter(p => p.status === 'Active').length}
+                        colorClass="purple"
+                        onClick={() => setSelectedPolicyType('Travel')}
+                    />
+                    <FlipCard
+                        title="Commercial"
+                        icon={Briefcase}
+                        activeCount={commercialPolicies.filter(p => p.status === 'Active').length}
+                        colorClass="orange"
+                        onClick={() => setSelectedPolicyType('Commercial')}
+                    />
+                    <FlipCard
+                        title="Life"
+                        icon={Umbrella}
+                        activeCount={lifePolicies.filter(p => p.status === 'Active').length}
+                        colorClass="pink"
+                        onClick={() => setSelectedPolicyType('Life')}
+                    />
+                    <FlipCard
+                        title="Cyber"
+                        icon={Shield}
+                        activeCount={cyberPolicies.filter(p => p.status === 'Active').length}
+                        colorClass="cyan"
+                        onClick={() => setSelectedPolicyType('Cyber')}
+                    />
                 </div>
             </div>
 
@@ -444,9 +447,12 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column (2/3 width on desktop) */}
                 <div className="lg:col-span-2 space-y-4 md:space-y-6">
-                    {/* Monthly Activity - Area Chart */}
+                    {/* Monthly Activity - Stacked Bar Chart */}
                     <div className="h-[400px]">
-                        <AnalyticsAreaChart data={(summary as any).areaChartData} />
+                        <MonthlyActivityChart
+                            data={(summary as any).areaChartData}
+                            allPolicies={[...motorPolicies, ...healthPolicies, ...commercialPolicies, ...travelPolicies, ...lifePolicies, ...cyberPolicies]}
+                        />
                     </div>
 
                     {/* Claims Overview and Bar Chart - Side by side on desktop, stacked on mobile */}

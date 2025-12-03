@@ -117,8 +117,46 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             <div className="px-4 py-4 border-b border-gray-100">
                 <div className="flex flex-col items-center text-center space-y-3">
                     {/* Profile Picture */}
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                        {user.name.charAt(0).toUpperCase()}
+                    <div className="relative group">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold text-xl shadow-lg overflow-hidden">
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                            ) : (
+                                user.name.charAt(0).toUpperCase()
+                            )}
+                        </div>
+
+                        {/* Edit Overlay */}
+                        <label
+                            htmlFor="avatar-upload"
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                            <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm">
+                                <UserCircle className="w-5 h-5 text-white" />
+                            </div>
+                        </label>
+                        <input
+                            id="avatar-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                // Import dynamically to avoid circular deps if any, or just use the imported one
+                                const { uploadAvatar } = await import('@/lib/db');
+
+                                // Show loading state if possible, or just optimistic update
+                                // For now, let's just upload and reload
+                                const url = await uploadAvatar(user.id, file);
+                                if (url) {
+                                    window.location.reload();
+                                } else {
+                                    alert('Failed to upload image. Please try again.');
+                                }
+                            }}
+                        />
                     </div>
 
                     {/* User Name */}

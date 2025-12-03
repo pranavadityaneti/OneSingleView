@@ -1149,3 +1149,42 @@ export async function markAllNotificationsAsRead(userId: string) {
 
     if (error) throw error;
 }
+/**
+ * Upload user avatar
+ */
+export async function uploadAvatar(userId: string, file: File): Promise<string | null> {
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}-${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Upload file
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            throw uploadError;
+        }
+
+        // Get public URL
+        const { data } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        // Update user profile
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({ avatar_url: data.publicUrl })
+            .eq('id', userId);
+
+        if (updateError) {
+            throw updateError;
+        }
+
+        return data.publicUrl;
+    } catch (error: any) {
+        console.error('Error uploading avatar:', error.message);
+        return null;
+    }
+}

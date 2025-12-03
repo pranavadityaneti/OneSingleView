@@ -29,17 +29,60 @@ echo ""
 
 # Combine all migrations into a single file
 cat > /tmp/combined_migration.sql << 'EOF'
--- Migration 1: Rename GMC to Health
--- This renames the gmc_policies table to health_policies
+-- Migration 3: Fix Storage RLS for Avatars (Priority Fix)
+-- Enable RLS on storage.objects if not already enabled
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE IF EXISTS gmc_policies RENAME TO health_policies;
+-- Create policy to allow authenticated users to upload avatars
+DROP POLICY IF EXISTS "Allow authenticated uploads to avatars bucket" ON storage.objects;
+CREATE POLICY "Allow authenticated uploads to avatars bucket"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'avatars' );
+
+-- Allow users to read their own avatars (or public read?)
+DROP POLICY IF EXISTS "Allow public read access to avatars" ON storage.objects;
+CREATE POLICY "Allow public read access to avatars"
+ON storage.objects
+FOR SELECT
+TO public
+USING ( bucket_id = 'avatars' );
+
+-- Allow users to update their own avatars
+DROP POLICY IF EXISTS "Allow users to update their own avatars" ON storage.objects;
+CREATE POLICY "Allow users to update their own avatars"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING ( bucket_id = 'avatars' AND owner = auth.uid() )
+WITH CHECK ( bucket_id = 'avatars' AND owner = auth.uid() );
+
+-- Migration 1: Rename GMC to Health (Idempotent)
+-- This renames the gmc_policies table to health_policies
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'gmc_policies') THEN
+        ALTER TABLE gmc_policies RENAME TO health_policies;
+    END IF;
+END $$;
 
 -- Update RLS policies for health_policies
+-- Drop BOTH old and new policy names to ensure idempotency
 DROP POLICY IF EXISTS "Users can view their own GMC policies" ON health_policies;
+DROP POLICY IF EXISTS "Users can view their own health policies" ON health_policies;
+
 DROP POLICY IF EXISTS "Users can insert their own GMC policies" ON health_policies;
+DROP POLICY IF EXISTS "Users can insert their own health policies" ON health_policies;
+
 DROP POLICY IF EXISTS "Users can update their own GMC policies" ON health_policies;
+DROP POLICY IF EXISTS "Users can update their own health policies" ON health_policies;
+
 DROP POLICY IF EXISTS "Users can delete their own GMC policies" ON health_policies;
+DROP POLICY IF EXISTS "Users can delete their own health policies" ON health_policies;
+
 DROP POLICY IF EXISTS "Admins can view all GMC policies" ON health_policies;
+DROP POLICY IF EXISTS "Admins can view all health policies" ON health_policies;
 
 CREATE POLICY "Users can view their own health policies"
     ON health_policies FOR SELECT

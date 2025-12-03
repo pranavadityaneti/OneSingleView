@@ -250,30 +250,12 @@ export default function PolicyDetailModal({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 bg-white">
-                                    {motorPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Motor').map(p => renderPolicyRow(p, 'Motor')) :
-                                        motorPolicies.map(p => renderPolicyRow(p, 'Motor'))
-                                    )}
-                                    {healthPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Health').map(p => renderPolicyRow(p, 'Health')) :
-                                        healthPolicies.map((p: any) => renderPolicyRow(p, 'Health'))
-                                    )}
-                                    {commercialPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial')) :
-                                        commercialPolicies.map(p => renderPolicyRow(p, 'Commercial'))
-                                    )}
-                                    {travelPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Travel').map(p => renderPolicyRow(p, 'Travel')) :
-                                        travelPolicies.map(p => renderPolicyRow(p, 'Travel'))
-                                    )}
-                                    {lifePolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Life').map(p => renderPolicyRow(p, 'Life')) :
-                                        lifePolicies.map(p => renderPolicyRow(p, 'Life'))
-                                    )}
-                                    {cyberPolicies.length > 0 && (type === 'total' || type === 'expiring' ?
-                                        displayPolicies.filter(p => p.policyType === 'Cyber').map(p => renderPolicyRow(p, 'Cyber')) :
-                                        cyberPolicies.map(p => renderPolicyRow(p, 'Cyber'))
-                                    )}
+                                    {displayPolicies.filter(p => p.policyType === 'Motor').map(p => renderPolicyRow(p, 'Motor'))}
+                                    {displayPolicies.filter(p => p.policyType === 'Health').map(p => renderPolicyRow(p, 'Health'))}
+                                    {displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial'))}
+                                    {displayPolicies.filter(p => p.policyType === 'Travel').map(p => renderPolicyRow(p, 'Travel'))}
+                                    {displayPolicies.filter(p => p.policyType === 'Life').map(p => renderPolicyRow(p, 'Life'))}
+                                    {displayPolicies.filter(p => p.policyType === 'Cyber').map(p => renderPolicyRow(p, 'Cyber'))}
                                 </tbody>
                             </table>
                         </div>
