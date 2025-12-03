@@ -10,6 +10,7 @@ export interface User {
     role: UserRole;
     customer_id?: string;
     address?: string;
+    avatar_url?: string;
     created_at: Date;
     updated_at: Date;
     rm_id?: string;
