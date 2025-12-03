@@ -207,7 +207,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 label="Number Plate Type"
                                 name="number_plate_type"
                                 type="select"
-                                value={formData.number_plate_type}
+                                value={formData.number_plate_type ?? ''}
                                 onChange={handleChange}
                                 required
                                 options={[
