@@ -96,19 +96,19 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
         today.setHours(0, 0, 0, 0); // Start of today
 
         // Calculate active/expired based on expiry/end dates
-        const motorActive = motor?.filter(p => {
+        const motorActive = motor?.filter((p: { policy_end_date?: string | Date }) => {
             if (!p.policy_end_date) return false;
             const endDate = new Date(p.policy_end_date);
             return endDate >= today;
         }).length || 0;
 
-        const healthActive = health?.filter(p => {
+        const healthActive = health?.filter((p: { expiry_date?: string | Date }) => {
             if (!p.expiry_date) return false;
             const endDate = new Date(p.expiry_date);
             return endDate >= today;
         }).length || 0;
 
-        const commercialActive = commercial?.filter(p => {
+        const commercialActive = commercial?.filter((p: { expiry_date?: string | Date }) => {
             if (!p.expiry_date) return false;
             const endDate = new Date(p.expiry_date);
             return endDate >= today;
@@ -131,19 +131,19 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
         twentyDaysFromNow.setDate(today.getDate() + 20);
 
         // Count expiring soon across all policy types
-        const motorExpiring = motor?.filter(p => {
+        const motorExpiring = motor?.filter((p: { policy_end_date?: string | Date }) => {
             if (!p.policy_end_date) return false;
             const endDate = new Date(p.policy_end_date);
             return endDate >= today && endDate <= twentyDaysFromNow;
         }).length || 0;
 
-        const healthExpiring = health?.filter(p => {
+        const healthExpiring = health?.filter((p: { expiry_date?: string | Date }) => {
             if (!p.expiry_date) return false;
             const endDate = new Date(p.expiry_date);
             return endDate >= today && endDate <= twentyDaysFromNow;
         }).length || 0;
 
-        const commercialExpiring = commercial?.filter(p => {
+        const commercialExpiring = commercial?.filter((p: { expiry_date?: string | Date }) => {
             if (!p.expiry_date) return false;
             const endDate = new Date(p.expiry_date);
             return endDate >= today && endDate <= twentyDaysFromNow;

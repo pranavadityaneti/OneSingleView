@@ -31,7 +31,7 @@ export async function signUp(
             email,
             mobile,
             name,
-            company_name: role === 'corporate' ? company_name : undefined,
+            company_name: (role === 'corporate_employee' || role === 'corporate_admin') ? company_name : undefined,
             role,
             customer_id: customerId,
         };
@@ -276,5 +276,5 @@ export function isAdmin(user: User | null): boolean {
  * Check if user is customer (individual or corporate)
  */
 export function isCustomer(user: User | null): boolean {
-    return hasRole(user, ['individual', 'corporate']);
+    return hasRole(user, ['individual', 'corporate_employee', 'corporate_admin']);
 }
