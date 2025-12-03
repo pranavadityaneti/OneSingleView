@@ -149,12 +149,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                                     const url = await uploadAvatar(user.id, file);
 
                                     if (url) {
-                                        // Update user object with new avatar URL
-                                        user.avatar_url = url;
-                                        // Force re-render by resetting the input
-                                        e.target.value = '';
-                                        // Trigger a soft refresh of the component
-                                        window.dispatchEvent(new Event('storage'));
+                                        // Trigger a router refresh to reload server components
+                                        window.location.href = window.location.href;
                                     } else {
                                         alert('Failed to upload image. Please try again.');
                                     }

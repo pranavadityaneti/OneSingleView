@@ -18,7 +18,7 @@ export default function PolicyTable({ policies, policyType, userId, onPolicyAdde
     const getStatusBadge = (status: string) => {
         const styles = {
             'Active': 'bg-green-50 text-green-700 border-green-100',
-            'Expiring Soon': 'bg-amber-50 text-amber-700 border-amber-100',
+            'Expiring Soon': 'bg-yellow-50 text-yellow-700 border-yellow-100',
             'Expired': 'bg-red-50 text-red-700 border-red-100'
         };
         return (
