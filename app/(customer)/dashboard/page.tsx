@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
     // Selected Policy Type for Table
     type PolicyType = 'Motor' | 'Health' | 'Travel' | 'Commercial' | 'Life' | 'Cyber' | null;
-    const [selectedPolicyType, setSelectedPolicyType] = useState<PolicyType>(null);
+    const [selectedPolicyType, setSelectedPolicyType] = useState<PolicyType>('Motor'); // Default to Motor
 
     useEffect(() => {
         const loadData = async () => {
@@ -432,14 +432,23 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Policy Table Section - Conditionally Rendered */}
+            {/* Policy Table Section - Always visible, changes based on selected type */}
             {selectedPolicyType && (
                 <PolicyTable
                     policyType={selectedPolicyType}
                     motorPolicies={motorPolicies}
                     healthPolicies={healthPolicies}
                     commercialPolicies={commercialPolicies}
-                    onClose={() => setSelectedPolicyType(null)}
+                    travelPolicies={travelPolicies}
+                    lifePolicies={lifePolicies}
+                    cyberPolicies={cyberPolicies}
+                    userId={user?.id || ''}
+                    onPolicyAdded={async () => {
+                        // Reload dashboard data when a policy is added
+                        if (user) {
+                            await loadDashboardData(user.id);
+                        }
+                    }}
                 />
             )}
 

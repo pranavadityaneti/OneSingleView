@@ -144,15 +144,22 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
 
-                                // Import dynamically to avoid circular deps if any, or just use the imported one
-                                const { uploadAvatar } = await import('@/lib/db');
+                                try {
+                                    const { uploadAvatar } = await import('@/lib/db');
+                                    const url = await uploadAvatar(user.id, file);
 
-                                // Show loading state if possible, or just optimistic update
-                                // For now, let's just upload and reload
-                                const url = await uploadAvatar(user.id, file);
-                                if (url) {
-                                    window.location.reload();
-                                } else {
+                                    if (url) {
+                                        // Update user object with new avatar URL
+                                        user.avatar_url = url;
+                                        // Force re-render by resetting the input
+                                        e.target.value = '';
+                                        // Trigger a soft refresh of the component
+                                        window.dispatchEvent(new Event('storage'));
+                                    } else {
+                                        alert('Failed to upload image. Please try again.');
+                                    }
+                                } catch (error) {
+                                    console.error('Upload error:', error);
                                     alert('Failed to upload image. Please try again.');
                                 }
                             }}

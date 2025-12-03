@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
-import { Car, Heart, Briefcase, Eye, X } from 'lucide-react';
+import { Car, Heart, Briefcase, Eye, Plus, Plane, Umbrella, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import AddPolicyModal from '@/components/policies/AddPolicyModal';
 
 type PolicyType = 'Motor' | 'Health' | 'Travel' | 'Commercial' | 'Life' | 'Cyber';
 
@@ -12,7 +14,11 @@ interface PolicyTableProps {
     motorPolicies: MotorPolicy[];
     healthPolicies: HealthPolicy[];
     commercialPolicies: CommercialPolicy[];
-    onClose: () => void;
+    travelPolicies?: any[];
+    lifePolicies?: any[];
+    cyberPolicies?: any[];
+    userId: string;
+    onPolicyAdded?: () => void;
 }
 
 export default function PolicyTable({
@@ -20,9 +26,14 @@ export default function PolicyTable({
     motorPolicies,
     healthPolicies,
     commercialPolicies,
-    onClose
+    travelPolicies = [],
+    lifePolicies = [],
+    cyberPolicies = [],
+    userId,
+    onPolicyAdded
 }: PolicyTableProps) {
     const router = useRouter();
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // Get policies based on type
     const getPolicies = () => {
@@ -34,9 +45,11 @@ export default function PolicyTable({
             case 'Commercial':
                 return commercialPolicies.map(p => ({ ...p, type: 'Commercial' as const }));
             case 'Travel':
+                return travelPolicies.map(p => ({ ...p, type: 'Travel' as const }));
             case 'Life':
+                return lifePolicies.map(p => ({ ...p, type: 'Life' as const }));
             case 'Cyber':
-                return [];
+                return cyberPolicies.map(p => ({ ...p, type: 'Cyber' as const }));
             default:
                 return [];
         }
@@ -52,6 +65,12 @@ export default function PolicyTable({
                 return <Heart className="w-5 h-5 text-green-600" />;
             case 'Commercial':
                 return <Briefcase className="w-5 h-5 text-orange-600" />;
+            case 'Travel':
+                return <Plane className="w-5 h-5 text-purple-600" />;
+            case 'Life':
+                return <Umbrella className="w-5 h-5 text-pink-600" />;
+            case 'Cyber':
+                return <Shield className="w-5 h-5 text-cyan-600" />;
             default:
                 return null;
         }
@@ -91,11 +110,11 @@ export default function PolicyTable({
                     </div>
                 </div>
                 <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-white rounded-lg transition-colors"
-                    title="Close table"
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
                 >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <Plus className="w-4 h-4" />
+                    <span className="font-medium">Add Policy</span>
                 </button>
             </div>
 
@@ -194,10 +213,10 @@ export default function PolicyTable({
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
                                                 className={`px-2.5 py-1 rounded-full text-xs font-medium ${status === 'Active'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : status === 'Expiring Soon'
-                                                            ? 'bg-yellow-100 text-yellow-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : status === 'Expiring Soon'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-red-100 text-red-800'
                                                     }`}
                                             >
                                                 {status}
@@ -219,6 +238,18 @@ export default function PolicyTable({
                     </table>
                 )}
             </div>
+
+            {/* Add Policy Modal */}
+            <AddPolicyModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                userId={userId}
+                initialType={policyType}
+                onSuccess={() => {
+                    setIsAddModalOpen(false);
+                    onPolicyAdded?.();
+                }}
+            />
         </div>
     );
 }
