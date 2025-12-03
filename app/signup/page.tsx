@@ -71,9 +71,14 @@ function SignupForm() {
 
             if (session) {
                 // User is logged in (auto-confirm enabled)
-                // Signup form only creates individual/corporate users, so redirect to customer dashboard
                 window.scrollTo(0, 0); // Scroll to top before redirect
-                router.push('/dashboard');
+
+                // Redirect based on role
+                if (role === 'corporate_employee' || role === 'corporate_admin') {
+                    router.push('/dashboard/corporate');
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 // User needs to confirm email
                 setError('Account created! Please check your email to confirm your account before logging in.');

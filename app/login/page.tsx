@@ -33,6 +33,9 @@ function LoginForm() {
             if (user.role === 'admin') {
                 console.log('🔍 Redirecting to /admin/dashboard');
                 router.push('/admin/dashboard');
+            } else if (user.role === 'corporate_employee' || user.role === 'corporate_admin') {
+                console.log('🔍 Redirecting to /dashboard/corporate');
+                router.push('/dashboard/corporate');
             } else {
                 console.log('🔍 Redirecting to /dashboard');
                 router.push('/dashboard');
