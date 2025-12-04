@@ -46,6 +46,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [openGroups, setOpenGroups] = useState<string[]>(['Overview', 'Policies', 'Claims', 'Documents', 'Community', 'Admin']);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
     const toggleGroup = (label: string) => {
         setOpenGroups(prev =>
@@ -126,37 +127,63 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                             )}
                         </div>
 
-                        {/* Edit Overlay */}
-                        <label
-                            htmlFor="avatar-upload"
-                            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        >
-                            <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm">
-                                <UserCircle className="w-5 h-5 text-white" />
+                        {/* Loading Overlay */}
+                        {isUploadingAvatar && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                             </div>
-                        </label>
+                        )}
+
+                        {/* Edit Overlay */}
+                        {!isUploadingAvatar && (
+                            <label
+                                htmlFor="avatar-upload"
+                                className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm">
+                                    <UserCircle className="w-5 h-5 text-white" />
+                                </div>
+                            </label>
+                        )}
                         <input
                             id="avatar-upload"
                             type="file"
                             accept="image/*"
                             className="hidden"
+                            disabled={isUploadingAvatar}
                             onChange={async (e) => {
                                 const file = e.target.files?.[0];
-                                if (!file) return;
+                                if (!file || isUploadingAvatar) return;
+
+                                setIsUploadingAvatar(true);
+                                console.log('[Avatar Upload] Starting upload for file:', file.name);
 
                                 try {
                                     const { uploadAvatar } = await import('@/lib/db');
+                                    console.log('[Avatar Upload] Calling uploadAvatar function...');
+
                                     const url = await uploadAvatar(user.id, file);
+                                    console.log('[Avatar Upload] Upload result:', url);
 
                                     if (url) {
-                                        // Force page reload to update avatar
-                                        window.location.reload();
+                                        console.log('[Avatar Upload] Success! Updating UI...');
+                                        // Update user object with new avatar URL
+                                        user.avatar_url = url;
+                                        // Use router.refresh() instead of full page reload
+                                        router.refresh();
+                                        setIsUploadingAvatar(false);
                                     } else {
-                                        alert('Failed to upload image. Please try again.');
+                                        console.error('[Avatar Upload] Upload returned null');
+                                        setIsUploadingAvatar(false);
+                                        alert('Failed to upload image. Please check console for details.');
                                     }
                                 } catch (error) {
-                                    console.error('Upload error:', error);
-                                    alert('Failed to upload image. Please try again.');
+                                    console.error('[Avatar Upload] Error:', error);
+                                    setIsUploadingAvatar(false);
+                                    alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                } finally {
+                                    // Reset file input
+                                    e.target.value = '';
                                 }
                             }}
                         />
