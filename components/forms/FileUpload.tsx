@@ -147,8 +147,8 @@ export default function FileUpload({
                             ) : (
                                 <File className="w-8 h-8 text-gray-400" />
                             )}
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                            <div className="flex-1 min-w-0 max-w-[280px]">
+                                <p className="text-sm font-medium text-gray-900 truncate break-all" title={fileName}>{fileName}</p>
                                 {uploading && (
                                     <div className="mt-2">
                                         <div className="w-full bg-gray-200 rounded-full h-2">

@@ -171,9 +171,10 @@ export interface RMInfo {
 export interface PortfolioStats {
     motor: number;
     health: number;
-    gpa: number;
-    fire: number;
-    others: number;
+    travel: number;
+    commercial: number;
+    life: number;
+    cyber: number;
 }
 
 export interface DashboardSummary {

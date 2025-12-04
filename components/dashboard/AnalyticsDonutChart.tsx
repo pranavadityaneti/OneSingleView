@@ -10,27 +10,30 @@ interface AnalyticsDonutChartProps {
 
 const COLORS = {
     motor: '#3B82F6',      // Blue
-    health: '#8b5cf6',        // Purple
-    gpa: '#06B6D4',        // Cyan
-    fire: '#F59E0B',       // Orange
-    others: '#10B981',     // Green
+    health: '#8b5cf6',     // Purple
+    travel: '#06B6D4',     // Cyan
+    commercial: '#F59E0B', // Orange
+    life: '#EC4899',       // Pink
+    cyber: '#10B981',      // Green
 };
 
 const LABELS = {
     motor: 'Motor',
     health: 'Health',
-    gpa: 'GPA',
-    fire: 'Fire',
-    others: 'Others',
+    travel: 'Travel',
+    commercial: 'Commercial',
+    life: 'Life',
+    cyber: 'Cyber',
 };
 
 export default function AnalyticsDonutChart({ data }: AnalyticsDonutChartProps) {
     const chartData = [
         { name: LABELS.motor, value: data.motor, color: COLORS.motor },
         { name: LABELS.health, value: data.health, color: COLORS.health },
-        { name: LABELS.gpa, value: data.gpa, color: COLORS.gpa },
-        { name: LABELS.fire, value: data.fire, color: COLORS.fire },
-        { name: LABELS.others, value: data.others, color: COLORS.others },
+        { name: LABELS.travel, value: data.travel, color: COLORS.travel },
+        { name: LABELS.commercial, value: data.commercial, color: COLORS.commercial },
+        { name: LABELS.life, value: data.life, color: COLORS.life },
+        { name: LABELS.cyber, value: data.cyber, color: COLORS.cyber },
     ].filter((item) => item.value > 0);
 
     const totalValue = chartData.reduce((acc, item) => acc + item.value, 0);

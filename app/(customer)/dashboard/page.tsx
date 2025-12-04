@@ -161,16 +161,9 @@ export default function DashboardPage() {
             const motorPremium = motor.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
             const healthPremium = healthData.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
             const travelPremium = travel.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const commercialPremium = commercial.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
             const lifePremium = life.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
             const cyberPremium = cyber.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-
-            const gpaPolicies = commercial.filter((p) => p.lob_type === 'GPA');
-            const firePolicies = commercial.filter((p) => p.lob_type === 'Fire');
-            const otherCommercialPolicies = commercial.filter((p) => p.lob_type === 'Other');
-
-            const gpaPremium = gpaPolicies.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const firePremium = firePolicies.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const othersPremium = otherCommercialPolicies.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0) + travelPremium + lifePremium + cyberPremium;
 
             const allPolicies = [...processedMotor, ...processedHealth, ...processedCommercial, ...processedTravel, ...processedLife, ...processedCyber];
 
@@ -216,9 +209,10 @@ export default function DashboardPage() {
                 portfolio_by_lob: {
                     motor: motorPremium,
                     health: healthPremium,
-                    gpa: gpaPremium,
-                    fire: firePremium,
-                    others: othersPremium,
+                    travel: travelPremium,
+                    commercial: commercialPremium,
+                    life: lifePremium,
+                    cyber: cyberPremium,
                 },
                 areaChartData, // Pass to state
                 barChartData   // Pass to state

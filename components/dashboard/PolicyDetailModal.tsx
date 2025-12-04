@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Search, ArrowDown, FileText, Info } from 'lucide-react';
+import { X, Search, ArrowDown, ArrowUp, FileText, Info } from 'lucide-react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 interface PolicyDetailModalProps {
@@ -32,6 +32,7 @@ export default function PolicyDetailModal({
 }: PolicyDetailModalProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortDirection, setSortDirection] = useState<'high' | 'low' | null>(null); // null = no sort
     const [showClaimsInfo, setShowClaimsInfo] = useState(false);
 
     const handlePolicyClick = (policyType: string, id: string) => {
@@ -231,16 +232,16 @@ export default function PolicyDetailModal({
             });
         }
 
-        // Apply premium sort for 'premium' type
-        if (type === 'premium') {
-            // Auto-sort by premium high to low
+        // Apply premium sort for 'premium' type (user-controlled)
+        if (type === 'premium' && sortDirection) {
             filtered = [...filtered].sort((a, b) => {
-                return Number(b.premium_amount) - Number(a.premium_amount);
+                const diff = Number(b.premium_amount) - Number(a.premium_amount);
+                return sortDirection === 'high' ? diff : -diff;
             });
         }
 
         return filtered;
-    }, [allPolicies, type, searchQuery]);
+    }, [allPolicies, type, searchQuery, sortDirection]);
 
     // Calculate total premium for premium view
     const totalPremium = type === 'premium'
@@ -287,12 +288,33 @@ export default function PolicyDetailModal({
                         </div>
                     )}
 
-                    {/* Sort Info - For 'premium' type */}
+                    {/* Sort Controls - For 'premium' type */}
                     {type === 'premium' && (
-                        <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
-                            <div className="flex items-center gap-2 text-sm text-blue-700">
-                                <ArrowDown className="w-4 h-4" />
-                                <span className="font-medium">Sorted by Premium: High to Low</span>
+                        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm font-medium text-gray-700">Sort by Premium:</span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setSortDirection(sortDirection === 'high' ? null : 'high')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all ${sortDirection === 'high'
+                                                ? 'bg-blue-600 text-white shadow-md'
+                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <ArrowDown className="w-4 h-4" />
+                                        High to Low
+                                    </button>
+                                    <button
+                                        onClick={() => setSortDirection(sortDirection === 'low' ? null : 'low')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all ${sortDirection === 'low'
+                                                ? 'bg-blue-600 text-white shadow-md'
+                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <ArrowUp className="w-4 h-4" />
+                                        Low to High
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
