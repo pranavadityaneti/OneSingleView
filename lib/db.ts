@@ -885,6 +885,7 @@ export async function updateUserProfile(
         mobile?: string;
         company_name?: string;
         address?: string;
+        avatar_url?: string;
     }
 ): Promise<User> {
     try {
