@@ -149,8 +149,8 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                                     const url = await uploadAvatar(user.id, file);
 
                                     if (url) {
-                                        // Trigger a router refresh to reload server components
-                                        window.location.href = window.location.href;
+                                        // Force page reload to update avatar
+                                        window.location.reload();
                                     } else {
                                         alert('Failed to upload image. Please try again.');
                                     }
