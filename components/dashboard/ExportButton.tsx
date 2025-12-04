@@ -35,7 +35,6 @@ export default function ExportButton({
 
     // Filter States
     const [selectedTypes, setSelectedTypes] = useState<PolicyType[]>([]);
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['Active', 'Expiring Soon', 'Expired']);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('PDF');
@@ -74,7 +73,7 @@ export default function ExportButton({
             if (typesToInclude.includes('Life')) policiesToExport = [...policiesToExport, ...lifePolicies];
             if (typesToInclude.includes('Cyber')) policiesToExport = [...policiesToExport, ...cyberPolicies];
 
-            // Filter by date
+            // Filter by date range only (removed status filter)
             const start = new Date(startDate);
             const end = new Date(endDate);
             // Set end date to end of day
@@ -82,15 +81,8 @@ export default function ExportButton({
 
             policiesToExport = policiesToExport.filter(p => {
                 const created = new Date(p.created_at);
-                const status = p.status || 'Active'; // Default to Active if missing
-
-                // Filter by date
-                const dateMatch = created >= start && created <= end;
-
-                // Filter by status
-                const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(status);
-
-                return dateMatch && statusMatch;
+                // Filter by date only
+                return created >= start && created <= end;
             });
 
             // Generate descriptive filename
@@ -108,8 +100,6 @@ export default function ExportButton({
             const filename = `${typeStr}_${dateRangeStr}`;
 
             if (selectedFormat === 'PDF') {
-                // Reuse existing PDF logic but for mixed types
-                // For now, we'll use the date range export which handles mixed types
                 await exportPoliciesByDate(start, end, policiesToExport, userName, `${filename}.pdf`);
             } else if (selectedFormat === 'XLS') {
                 exportToXLS(policiesToExport, filename);
@@ -132,12 +122,12 @@ export default function ExportButton({
     };
 
     const policyOptions = [
-        { type: 'Motor', icon: Car, count: motorPolicies.length },
-        { type: 'Health', icon: Heart, count: healthPolicies.length },
-        { type: 'Travel', icon: Plane, count: travelPolicies.length },
-        { type: 'Commercial', icon: Briefcase, count: commercialPolicies.length },
-        { type: 'Life', icon: Umbrella, count: lifePolicies.length },
-        { type: 'Cyber', icon: Shield, count: cyberPolicies.length },
+        { type: 'Motor', icon: Car },
+        { type: 'Health', icon: Heart },
+        { type: 'Travel', icon: Plane },
+        { type: 'Commercial', icon: Briefcase },
+        { type: 'Life', icon: Umbrella },
+        { type: 'Cyber', icon: Shield },
     ];
 
     return (
@@ -164,7 +154,7 @@ export default function ExportButton({
                         </div>
 
                         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-                            {/* Policy Type Selection */}
+                            {/* Policy Type Selection - Removed count display */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-900 mb-3">Policy Type</label>
                                 <div className="grid grid-cols-3 gap-3">
@@ -181,7 +171,6 @@ export default function ExportButton({
                                             >
                                                 <option.icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-primary-600' : 'text-gray-500'}`} />
                                                 <span className="text-sm font-medium">{option.type}</span>
-                                                <span className="text-xs text-gray-400">{option.count}</span>
                                             </button>
                                         );
                                     })}
@@ -210,30 +199,6 @@ export default function ExportButton({
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                         />
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Status Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-900 mb-3">Status</label>
-                                <div className="flex space-x-4">
-                                    {['Active', 'Expiring Soon', 'Expired'].map((status) => (
-                                        <label key={status} className="flex items-center cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedStatuses.includes(status)}
-                                                onChange={() => {
-                                                    if (selectedStatuses.includes(status)) {
-                                                        setSelectedStatuses(selectedStatuses.filter(s => s !== status));
-                                                    } else {
-                                                        setSelectedStatuses([...selectedStatuses, status]);
-                                                    }
-                                                }}
-                                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                            />
-                                            <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">{status}</span>
-                                        </label>
-                                    ))}
                                 </div>
                             </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Search, ArrowDown } from 'lucide-react';
+import { X, Search, ArrowDown, FileText, Info } from 'lucide-react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 interface PolicyDetailModalProps {
@@ -32,10 +32,24 @@ export default function PolicyDetailModal({
 }: PolicyDetailModalProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
+    const [showClaimsInfo, setShowClaimsInfo] = useState(false);
 
     const handlePolicyClick = (policyType: string, id: string) => {
         onClose();
         router.push(`/policies/${policyType.toLowerCase()}/${id}`);
+    };
+
+    const handleClaimsStatusClick = () => {
+        setShowClaimsInfo(true);
+    };
+
+    const handleViewQuote = (policy: any) => {
+        // This will open the quote document if available
+        if (policy.quote_document_url) {
+            window.open(policy.quote_document_url, '_blank');
+        } else {
+            alert('No quote document available for this policy');
+        }
     };
 
     const renderPolicyRow = (policy: any, policyType: string) => {
@@ -98,6 +112,34 @@ export default function PolicyDetailModal({
                 <td className="px-4 py-3 text-sm text-gray-600">
                     {dates.end ? new Date(dates.end).toLocaleDateString() : 'N/A'}
                 </td>
+
+                {/* Claims Status - Only for expiring type */}
+                {type === 'expiring' && (
+                    <td className="px-4 py-3 text-sm">
+                        <select
+                            onClick={handleClaimsStatusClick}
+                            className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-primary-500 outline-none"
+                            defaultValue=""
+                        >
+                            <option value="">Select</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </td>
+                )}
+
+                {/* View Quote - Only for expiring type */}
+                {type === 'expiring' && (
+                    <td className="px-4 py-3 text-sm">
+                        <button
+                            onClick={() => handleViewQuote(policy)}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                        >
+                            <FileText className="w-3 h-3" />
+                            View Quote
+                        </button>
+                    </td>
+                )}
             </tr>
         );
     };
@@ -159,126 +201,165 @@ export default function PolicyDetailModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-                        <p className="text-sm text-gray-500 mt-1">
-                            {displayPolicies.length} {displayPolicies.length === 1 ? 'policy' : 'policies'}
-                            {type === 'premium' && ` • Total: ₹${totalPremium.toLocaleString()}`}
-                        </p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5 text-gray-500" />
-                    </button>
-                </div>
-
-                {/* Search Bar - Only for 'total' type */}
-                {type === 'total' && (
-                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search policies (policy number, insurer, vehicle number, etc.)"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* Sort Info - For 'premium' type */}
-                {type === 'premium' && (
-                    <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
-                        <div className="flex items-center gap-2 text-sm text-blue-700">
-                            <ArrowDown className="w-4 h-4" />
-                            <span className="font-medium">Sorted by Premium: High to Low</span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Status Legend */}
-                <div className="px-6 py-2 bg-gray-50 border-b border-gray-200 flex gap-4 text-xs">
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                        <span className="text-gray-600">Active</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                        <span className="text-gray-600">Expiring Soon (&lt;20 days)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                        <span className="text-gray-600">Expired</span>
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-auto p-6">
-                    {displayPolicies.length === 0 ? (
-                        <div className="text-center py-12">
-                            <p className="text-gray-500">
-                                {searchQuery ? 'No policies match your search' : 'No policies found'}
+        <>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+                            <p className="text-sm text-gray-500 mt-1">
+                                {displayPolicies.length} {displayPolicies.length === 1 ? 'policy' : 'policies'}
+                                {type === 'premium' && ` • Total: ₹${totalPremium.toLocaleString()}`}
                             </p>
                         </div>
-                    ) : (
-                        <div className="border border-gray-200 rounded-xl overflow-x-auto">
-                            <table className="w-full min-w-[600px]">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Details
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Policy Number
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Insurer
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Type
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Premium
-                                            {type === 'premium' && (
-                                                <ArrowDown className="w-3 h-3 inline ml-1 text-blue-600" />
-                                            )}
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            Status
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            End Date
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 bg-white">
-                                    {displayPolicies.filter(p => p.policyType === 'Motor').map(p => renderPolicyRow(p, 'Motor'))}
-                                    {displayPolicies.filter(p => p.policyType === 'Health').map(p => renderPolicyRow(p, 'Health'))}
-                                    {displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial'))}
-                                    {displayPolicies.filter(p => p.policyType === 'Travel').map(p => renderPolicyRow(p, 'Travel'))}
-                                    {displayPolicies.filter(p => p.policyType === 'Life').map(p => renderPolicyRow(p, 'Life'))}
-                                    {displayPolicies.filter(p => p.policyType === 'Cyber').map(p => renderPolicyRow(p, 'Cyber'))}
-                                </tbody>
-                            </table>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    {/* Search Bar - Only for 'total' type */}
+                    {type === 'total' && (
+                        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search policies (policy number, insurer, vehicle number, etc.)"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
                         </div>
                     )}
-                </div>
 
-                {/* Footer */}
-                <div className="p-6 border-t border-gray-200 bg-gray-50">
-                    <p className="text-xs text-gray-500">
-                        Click on a policy to view full details
-                    </p>
+                    {/* Sort Info - For 'premium' type */}
+                    {type === 'premium' && (
+                        <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
+                            <div className="flex items-center gap-2 text-sm text-blue-700">
+                                <ArrowDown className="w-4 h-4" />
+                                <span className="font-medium">Sorted by Premium: High to Low</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Status Legend */}
+                    <div className="px-6 py-2 bg-gray-50 border-b border-gray-200 flex gap-4 text-xs">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span className="text-gray-600">Active</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                            <span className="text-gray-600">Expiring Soon (&lt;20 days)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            <span className="text-gray-600">Expired</span>
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 overflow-auto p-6">
+                        {displayPolicies.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500">
+                                    {searchQuery ? 'No policies match your search' : 'No policies found'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="border border-gray-200 rounded-xl overflow-x-auto">
+                                <table className="w-full min-w-[600px]">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Details
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Policy Number
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Insurer
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Type
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Premium
+                                                {type === 'premium' && (
+                                                    <ArrowDown className="w-3 h-3 inline ml-1 text-blue-600" />
+                                                )}
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                End Date
+                                            </th>
+                                            {type === 'expiring' && (
+                                                <>
+                                                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                        Claims Status
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                        Quote
+                                                    </th>
+                                                </>
+                                            )}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                        {displayPolicies.filter(p => p.policyType === 'Motor').map(p => renderPolicyRow(p, 'Motor'))}
+                                        {displayPolicies.filter(p => p.policyType === 'Health').map(p => renderPolicyRow(p, 'Health'))}
+                                        {displayPolicies.filter(p => p.policyType === 'Commercial').map(p => renderPolicyRow(p, 'Commercial'))}
+                                        {displayPolicies.filter(p => p.policyType === 'Travel').map(p => renderPolicyRow(p, 'Travel'))}
+                                        {displayPolicies.filter(p => p.policyType === 'Life').map(p => renderPolicyRow(p, 'Life'))}
+                                        {displayPolicies.filter(p => p.policyType === 'Cyber').map(p => renderPolicyRow(p, 'Cyber'))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-6 border-t border-gray-200 bg-gray-50">
+                        <p className="text-xs text-gray-500">
+                            Click on a policy to view full details
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            {/* Claims Info Popup */}
+            {showClaimsInfo && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <Info className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Claims Status</h3>
+                                <p className="text-sm text-gray-600">
+                                    Please click on <span className="font-semibold">Yes</span>, if you have applied for any type of claim which is under process.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setShowClaimsInfo(false)}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                            >
+                                Got it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
