@@ -140,6 +140,56 @@ export default function PolicyDetailModal({
                         </button>
                     </td>
                 )}
+
+                {/* View Documents - For all types */}
+                <td className="px-4 py-3 text-sm">
+                    <div className="flex flex-col gap-1">
+                        {/* RC Copy */}
+                        {policyType === 'Motor' && policy.rc_docs && policy.rc_docs.length > 0 && (
+                            <a
+                                href={policy.rc_docs[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                            >
+                                <FileText className="w-3 h-3" />
+                                RC Copy
+                            </a>
+                        )}
+                        {/* Policy Copy */}
+                        {policyType === 'Motor' && policy.previous_policy_docs && policy.previous_policy_docs.length > 0 && (
+                            <a
+                                href={policy.previous_policy_docs[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                            >
+                                <FileText className="w-3 h-3" />
+                                Policy Copy
+                            </a>
+                        )}
+                        {/* For Health/Commercial/Others - Policy Docs */}
+                        {['Health', 'Commercial', 'Travel', 'Life', 'Cyber'].includes(policyType) && policy.policy_docs && policy.policy_docs.length > 0 && (
+                            <a
+                                href={policy.policy_docs[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                            >
+                                <FileText className="w-3 h-3" />
+                                Policy Doc
+                            </a>
+                        )}
+                        {/* No documents available */}
+                        {!((policyType === 'Motor' && ((policy.rc_docs && policy.rc_docs.length > 0) || (policy.previous_policy_docs && policy.previous_policy_docs.length > 0))) ||
+                            (['Health', 'Commercial', 'Travel', 'Life', 'Cyber'].includes(policyType) && policy.policy_docs && policy.policy_docs.length > 0)) && (
+                                <span className="text-xs text-gray-400">No docs</span>
+                            )}
+                    </div>
+                </td>
             </tr>
         );
     };
@@ -310,6 +360,9 @@ export default function PolicyDetailModal({
                                                     </th>
                                                 </>
                                             )}
+                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                View Doc
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 bg-white">

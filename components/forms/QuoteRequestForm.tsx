@@ -21,6 +21,7 @@ export default function QuoteRequestForm({ userId, onClose, onSuccess }: QuoteRe
         lob_type: 'Motor',
         details: '',
         uploaded_quote: '',
+        required_documents: '',
         has_better_quote: false
     });
 
@@ -140,6 +141,15 @@ export default function QuoteRequestForm({ userId, onClose, onSuccess }: QuoteRe
                             />
                             {errors.details && <p className="text-red-500 text-xs mt-1">{errors.details}</p>}
                         </div>
+
+                        {/* Required Documents Upload */}
+                        <FileUpload
+                            label="PLEASE UPLOAD REQUIRED DOCUMENTS"
+                            name="required_documents"
+                            bucket="quote-documents"
+                            onUploadComplete={(url) => setFormData(prev => ({ ...prev, required_documents: url }))}
+                            existingFile={formData.required_documents ? { url: formData.required_documents, name: 'Required Documents' } : undefined}
+                        />
 
                         <div className="flex items-center space-x-2">
                             <input
