@@ -33,8 +33,6 @@ export default function PolicyDetailModal({
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
 
-    if (!isOpen) return null;
-
     const handlePolicyClick = (policyType: string, id: string) => {
         onClose();
         router.push(`/policies/${policyType.toLowerCase()}/${id}`);
@@ -156,6 +154,9 @@ export default function PolicyDetailModal({
     const totalPremium = type === 'premium'
         ? displayPolicies.reduce((sum, p) => sum + Number(p.premium_amount), 0)
         : 0;
+
+    // Return early if modal is not open - AFTER all hooks are called
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
