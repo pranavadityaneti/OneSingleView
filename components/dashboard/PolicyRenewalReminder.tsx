@@ -187,19 +187,22 @@ export default function PolicyRenewalReminder({
             <div className="h-px bg-gray-200 -mx-6 mb-4"></div>
 
             {/* Carousel Content */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-3">
                 {/* Expiry Message */}
-                <div>
-                    <p className="text-gray-700 text-sm">
-                        Your <span className="font-semibold text-gray-900">{currentPolicy.type}</span> policy for{' '}
+                <div className="break-words">
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                        Your <span className="font-semibold text-gray-900">{currentPolicy.type}</span> policy
                         {vehicleNumber && (
-                            <span className="font-bold text-primary-600">{vehicleNumber}</span>
+                            <span className="block sm:inline">
+                                {' '}for <span className="font-bold text-primary-600">{vehicleNumber}</span>
+                            </span>
                         )}
                         {sumInsured && !vehicleNumber && (
-                            <span className="font-bold text-primary-600">{formatCurrency(sumInsured)}</span>
+                            <span className="block sm:inline">
+                                {' '}for <span className="font-bold text-primary-600">{formatCurrency(sumInsured)}</span>
+                            </span>
                         )}
-                        {' '}expires in{' '}
-                        <span className="font-bold text-orange-600">{daysUntilExpiry} days</span>.
+                        {' '}expires in <span className="font-bold text-orange-600">{daysUntilExpiry} days</span>.
                     </p>
                 </div>
 
@@ -252,8 +255,8 @@ export default function PolicyRenewalReminder({
                                 key={index}
                                 onClick={() => setCurrentIndex(index)}
                                 className={`h-1.5 rounded-full transition-all ${index === currentIndex
-                                        ? 'w-6 bg-primary-600'
-                                        : 'w-1.5 bg-gray-300 hover:bg-gray-400'
+                                    ? 'w-6 bg-primary-600'
+                                    : 'w-1.5 bg-gray-300 hover:bg-gray-400'
                                     }`}
                                 aria-label={`Go to policy ${index + 1}`}
                             />

@@ -92,15 +92,13 @@ export default function AnalyticsDonutChart({ data }: AnalyticsDonutChartProps) 
                 </div>
             </div>
 
-            {/* Custom Legend */}
-            <div className="mt-6 space-y-3">
+            {/* Custom Legend - Compact 2-column grid */}
+            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-2">
                 {chartData.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></span>
-                            <span className="text-gray-600 font-medium">{item.name}</span>
-                        </div>
-                        <span className="font-bold text-gray-900">
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></span>
+                        <span className="text-gray-600 font-medium truncate">{item.name}:</span>
+                        <span className="font-bold text-gray-900 ml-auto">
                             {((item.value / totalValue) * 100).toFixed(0)}%
                         </span>
                     </div>
