@@ -7,11 +7,13 @@ interface FlipCardProps {
     title: string;
     icon: LucideIcon;
     activeCount: number;
+    expiringSoonCount: number;
     colorClass: string; // e.g., 'blue', 'green'
     onClick: () => void;
 }
 
-export default function FlipCard({ title, icon: Icon, activeCount, colorClass, onClick }: FlipCardProps) {
+export default function FlipCard({ title, icon: Icon, activeCount, expiringSoonCount, colorClass, onClick }: FlipCardProps) {
+    const totalPolicies = activeCount + expiringSoonCount;
     // Map color names to Tailwind classes
     const colorMap: Record<string, { bg: string; text: string; hover: string; border: string }> = {
         blue: { bg: 'bg-blue-50', text: 'text-blue-600', hover: 'group-hover:bg-blue-100', border: 'border-blue-100' },
@@ -40,8 +42,8 @@ export default function FlipCard({ title, icon: Icon, activeCount, colorClass, o
 
                 {/* Back Side */}
                 <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col items-center justify-center p-4">
-                    <div className="text-4xl font-bold mb-1">{activeCount}</div>
-                    <div className="text-xs font-medium text-gray-300 uppercase tracking-wider">Active Policies</div>
+                    <div className="text-4xl font-bold mb-1">{totalPolicies}</div>
+                    <div className="text-xs font-medium text-gray-300 uppercase tracking-wider">Total Policies</div>
                 </div>
             </div>
         </div>

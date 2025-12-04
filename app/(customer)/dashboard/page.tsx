@@ -391,6 +391,7 @@ export default function DashboardPage() {
                         title="Motor"
                         icon={Car}
                         activeCount={motorPolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={motorPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="blue"
                         onClick={() => setSelectedPolicyType('Motor')}
                     />
@@ -398,6 +399,7 @@ export default function DashboardPage() {
                         title="Health"
                         icon={Heart}
                         activeCount={healthPolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={healthPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="green"
                         onClick={() => setSelectedPolicyType('Health')}
                     />
@@ -405,6 +407,7 @@ export default function DashboardPage() {
                         title="Travel"
                         icon={Plane}
                         activeCount={travelPolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={travelPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="purple"
                         onClick={() => setSelectedPolicyType('Travel')}
                     />
@@ -412,6 +415,7 @@ export default function DashboardPage() {
                         title="Commercial"
                         icon={Briefcase}
                         activeCount={commercialPolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={commercialPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="orange"
                         onClick={() => setSelectedPolicyType('Commercial')}
                     />
@@ -419,6 +423,7 @@ export default function DashboardPage() {
                         title="Life"
                         icon={Umbrella}
                         activeCount={lifePolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={lifePolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="pink"
                         onClick={() => setSelectedPolicyType('Life')}
                     />
@@ -426,6 +431,7 @@ export default function DashboardPage() {
                         title="Cyber"
                         icon={Shield}
                         activeCount={cyberPolicies.filter(p => p.status === 'Active').length}
+                        expiringSoonCount={cyberPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="cyan"
                         onClick={() => setSelectedPolicyType('Cyber')}
                     />

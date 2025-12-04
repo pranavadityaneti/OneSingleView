@@ -167,6 +167,12 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                         <p className="text-base font-bold text-gray-900 truncate">
                             {user.name}
                         </p>
+                        {/* Company Name - for corporate users */}
+                        {user.company_name && (
+                            <p className="text-sm text-gray-700 mt-0.5 font-medium truncate">
+                                {user.company_name}
+                            </p>
+                        )}
                         {/* Customer ID */}
                         <p className="text-xs text-gray-500 mt-0.5 font-medium">
                             ID: {user.customer_id || 'N/A'}
