@@ -28,6 +28,7 @@ import PolicyRenewalReminder from '@/components/dashboard/PolicyRenewalReminder'
 import FlipCard from '@/components/dashboard/FlipCard';
 import MonthlyActivityChart from '@/components/dashboard/MonthlyActivityChart';
 import ProtectFamilyCard from '@/components/dashboard/ProtectFamilyCard';
+import CoverageGapCard from '@/components/dashboard/CoverageGapCard';
 import ReportsModal from '@/components/dashboard/ReportsModal';
 import PolicyDetailModal from '@/components/dashboard/PolicyDetailModal';
 import StickyAddPolicy from '@/components/dashboard/StickyAddPolicy';
@@ -489,15 +490,26 @@ export default function DashboardPage() {
                         <AnalyticsDonutChart data={summary.portfolio_by_lob} />
                     </div>
 
-                    {/* Protect Family Card */}
-                    <div className="h-[320px]">
-                        <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
+                    {/* Protect Family Card and Coverage Gap Card - Stacked */}
+                    <div className="h-[320px] flex flex-col gap-3">
+                        <div className="flex-1">
+                            <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
+                        </div>
+                        {/* Coverage Gap Card - Only show if Health policies are missing */}
+                        {healthPolicies.length === 0 && (
+                            <div className="flex-1">
+                                <CoverageGapCard
+                                    missingPolicyType="Health"
+                                    onExplore={() => setIsHealthModalOpen(true)}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Exclusive Offers & Rewards Section */}
-            <div>
+            {/* Exclusive Offers & Rewards Section - Added margin-top to prevent overlap */}
+            <div className="mt-8">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Exclusive Offers & Rewards</h2>
                 <div className="grid md:grid-cols-3 gap-4">
                     {/* Offers content would go here */}
