@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
-import { Bell, ChevronRight, Car, Heart, Umbrella, Briefcase } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { Bell, ChevronRight, Car, Heart, Umbrella, Briefcase, ChevronLeft } from 'lucide-react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -24,9 +24,10 @@ export default function PolicyRenewalReminder({
     cyberPolicies = []
 }: PolicyRenewalReminderProps) {
     const router = useRouter();
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Find the next policy expiring soon
-    const nextExpiringPolicy = useMemo(() => {
+    // Find ALL policies expiring soon
+    const expiringPolicies = useMemo(() => {
         const allPolicies = [
             ...motorPolicies.map(p => ({ ...p, type: 'Motor' as const })),
             ...healthPolicies.map(p => ({ ...p, type: 'Health' as const })),
@@ -37,7 +38,7 @@ export default function PolicyRenewalReminder({
         ];
 
         // Filter policies that are expiring soon
-        const expiringPolicies = allPolicies.filter(p => {
+        const filtered = allPolicies.filter(p => {
             const isMotor = p.type === 'Motor';
             const isHealth = p.type === 'Health';
             const endDateValue = isMotor ? (p as any).policy_end_date :
@@ -48,8 +49,8 @@ export default function PolicyRenewalReminder({
             return status === 'Expiring Soon';
         });
 
-        // Sort by expiry date to get the nearest one
-        expiringPolicies.sort((a, b) => {
+        // Sort by expiry date to get the nearest ones first
+        filtered.sort((a, b) => {
             const isMotorA = a.type === 'Motor';
             const isHealthA = a.type === 'Health';
             const isMotorB = b.type === 'Motor';
@@ -68,10 +69,29 @@ export default function PolicyRenewalReminder({
             return aTime - bTime;
         });
 
-        return expiringPolicies.length > 0 ? expiringPolicies[0] : null;
+        return filtered;
     }, [motorPolicies, healthPolicies, commercialPolicies, travelPolicies, lifePolicies, cyberPolicies]);
 
-    if (!nextExpiringPolicy) {
+    // Auto-swipe every 3 seconds
+    useEffect(() => {
+        if (expiringPolicies.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % expiringPolicies.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [expiringPolicies.length]);
+
+    const handlePrevious = () => {
+        setCurrentIndex((prev) => (prev - 1 + expiringPolicies.length) % expiringPolicies.length);
+    };
+
+    const handleNext = () => {
+        setCurrentIndex((prev) => (prev + 1) % expiringPolicies.length);
+    };
+
+    if (expiringPolicies.length === 0) {
         return (
             <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-4">
@@ -93,24 +113,26 @@ export default function PolicyRenewalReminder({
         );
     }
 
-    // Calculate days until expiry
-    const isMotor = nextExpiringPolicy.type === 'Motor';
-    const isHealth = nextExpiringPolicy.type === 'Health';
-    const endDateValue = isMotor ? (nextExpiringPolicy as any).policy_end_date :
-        isHealth ? (nextExpiringPolicy as any).expiry_date :
-            (nextExpiringPolicy as any).expiry_date;
+    const currentPolicy = expiringPolicies[currentIndex];
+
+    // Calculate days until expiry for current policy
+    const isMotor = currentPolicy.type === 'Motor';
+    const isHealth = currentPolicy.type === 'Health';
+    const endDateValue = isMotor ? (currentPolicy as any).policy_end_date :
+        isHealth ? (currentPolicy as any).expiry_date :
+            (currentPolicy as any).expiry_date;
     const endDate = endDateValue ? new Date(endDateValue) : null;
     const today = new Date();
     const daysUntilExpiry = endDate ? Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
     // Get policy-specific details
-    const vehicleNumber = isMotor ? (nextExpiringPolicy as any).vehicle_number : null;
-    const sumInsured = isHealth ? (nextExpiringPolicy as any).sum_insured :
-        nextExpiringPolicy.type === 'Life' ? (nextExpiringPolicy as any).sum_insured :
+    const vehicleNumber = isMotor ? (currentPolicy as any).vehicle_number : null;
+    const sumInsured = isHealth ? (currentPolicy as any).sum_insured :
+        currentPolicy.type === 'Life' ? (currentPolicy as any).sum_insured :
             null;
 
     const getIcon = () => {
-        switch (nextExpiringPolicy.type) {
+        switch (currentPolicy.type) {
             case 'Motor':
                 return <Car className="w-5 h-5 text-blue-600" />;
             case 'Health':
@@ -125,28 +147,51 @@ export default function PolicyRenewalReminder({
     };
 
     const handleRenew = () => {
-        const typeSlug = nextExpiringPolicy.type.toLowerCase();
-        router.push(`/policies/${typeSlug}/${(nextExpiringPolicy as any).id}`);
+        const typeSlug = currentPolicy.type.toLowerCase();
+        router.push(`/policies/${typeSlug}/${(currentPolicy as any).id}`);
     };
 
     return (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-soft p-6 h-full flex flex-col">
-            {/* Header */}
-            <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-orange-50 rounded-lg">
-                    <Bell className="w-5 h-5 text-orange-600" />
+            {/* Header with carousel counter */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-orange-50 rounded-lg">
+                        <Bell className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">Upcoming Renewals</h3>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Upcoming Renewal</h3>
+                {expiringPolicies.length > 1 && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handlePrevious}
+                            className="p-1 hover:bg-gray-100 rounded transition-colors"
+                            aria-label="Previous policy"
+                        >
+                            <ChevronLeft className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <span className="text-xs text-gray-500 font-medium">
+                            {currentIndex + 1} / {expiringPolicies.length}
+                        </span>
+                        <button
+                            onClick={handleNext}
+                            className="p-1 hover:bg-gray-100 rounded transition-colors"
+                            aria-label="Next policy"
+                        >
+                            <ChevronRight className="w-4 h-4 text-gray-600" />
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="h-px bg-gray-200 -mx-6 mb-4"></div>
 
-            {/* Main Content */}
+            {/* Carousel Content */}
             <div className="flex-1 space-y-4">
                 {/* Expiry Message */}
                 <div>
                     <p className="text-gray-700 text-sm">
-                        Your <span className="font-semibold text-gray-900">{nextExpiringPolicy.type}</span> policy for{' '}
+                        Your <span className="font-semibold text-gray-900">{currentPolicy.type}</span> policy for{' '}
                         {vehicleNumber && (
                             <span className="font-bold text-primary-600">{vehicleNumber}</span>
                         )}
@@ -175,13 +220,13 @@ export default function PolicyRenewalReminder({
                         </div>
                         <div className="flex-1">
                             <p className="text-xs text-gray-500">Policy Type</p>
-                            <p className="text-sm font-semibold text-gray-900">{nextExpiringPolicy.type}</p>
+                            <p className="text-sm font-semibold text-gray-900">{currentPolicy.type}</p>
                         </div>
                     </div>
 
                     <div className="pl-8">
                         <p className="text-xs text-gray-500">Insurer</p>
-                        <p className="text-sm font-semibold text-gray-900">{(nextExpiringPolicy as any).insurer_name}</p>
+                        <p className="text-sm font-semibold text-gray-900">{(currentPolicy as any).insurer_name}</p>
                     </div>
 
                     {sumInsured && (
@@ -198,6 +243,23 @@ export default function PolicyRenewalReminder({
                         </div>
                     )}
                 </div>
+
+                {/* Carousel Dots Indicator */}
+                {expiringPolicies.length > 1 && (
+                    <div className="flex justify-center gap-1.5 pt-2">
+                        {expiringPolicies.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentIndex(index)}
+                                className={`h-1.5 rounded-full transition-all ${index === currentIndex
+                                        ? 'w-6 bg-primary-600'
+                                        : 'w-1.5 bg-gray-300 hover:bg-gray-400'
+                                    }`}
+                                aria-label={`Go to policy ${index + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Action Button */}
