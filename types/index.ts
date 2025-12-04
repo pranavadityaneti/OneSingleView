@@ -27,9 +27,10 @@ export interface UserAuditLog {
 // Policy Types
 export type PolicyStatus = 'Active' | 'Expiring Soon' | 'Expired';
 export type VehicleType = 'Car' | 'Bike' | 'Bus' | 'GCV' | 'Misc';
-export type NumberPlateType = 'White' | 'Yellow' | 'EV';
+export type NumberPlateType = 'White' | 'Yellow' | 'EV' | 'Others';
 export type OwnershipType = 'Individual' | 'Company';
 export type LOBType = 'Motor' | 'Health' | 'GPA' | 'Fire' | 'Other';
+export type PolicyType = 'Comprehensive' | 'TP'; // TP = Third Party
 
 export interface MotorPolicy {
     id: string;
@@ -45,6 +46,7 @@ export interface MotorPolicy {
     manufacturing_year: number;
     number_plate_type: NumberPlateType;
     ownership_type?: OwnershipType;
+    policy_type?: PolicyType; // New field for Comprehensive/TP
     insurer_name: string;
     premium_amount: number;
     policy_start_date: Date;

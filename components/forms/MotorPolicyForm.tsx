@@ -38,6 +38,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
         manufacturing_year: initialData?.manufacturing_year || new Date().getFullYear(),
         number_plate_type: initialData?.number_plate_type || 'White',
         ownership_type: initialData?.ownership_type || 'Individual',
+        policy_type: initialData?.policy_type || 'Comprehensive',
         insurer_name: initialData?.insurer_name || '',
         premium_amount: initialData?.premium_amount || 0,
         policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
@@ -215,6 +216,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                     { value: 'White', label: 'White (Pvt)' },
                                     { value: 'Yellow', label: 'Yellow (Commercial)' },
                                     { value: 'EV', label: 'EV (Green)' },
+                                    { value: 'Others', label: 'Others' },
                                 ]}
                             />
                             <FormInput
@@ -227,6 +229,18 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 options={[
                                     { value: 'Individual', label: 'Individual' },
                                     { value: 'Company', label: 'Company' },
+                                ]}
+                            />
+                            <FormInput
+                                label="Policy Type"
+                                name="policy_type"
+                                type="select"
+                                value={formData.policy_type ?? 'Comprehensive'}
+                                onChange={handleChange}
+                                required
+                                options={[
+                                    { value: 'Comprehensive', label: 'Comprehensive' },
+                                    { value: 'TP', label: 'TP (Third Party)' },
                                 ]}
                             />
                             <FormInput
