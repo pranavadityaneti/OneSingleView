@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X, Search, ArrowDown } from 'lucide-react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 
 interface PolicyDetailModalProps {
@@ -30,6 +31,7 @@ export default function PolicyDetailModal({
     cyberPolicies = []
 }: PolicyDetailModalProps) {
     const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState('');
 
     if (!isOpen) return null;
 
@@ -57,65 +59,14 @@ export default function PolicyDetailModal({
 
         // Determine primary field based on policy type
         let primaryField = policy.policy_number;
-        let primaryLabel = 'Policy Number';
 
         if (policyType === 'Motor') {
             primaryField = policy.vehicle_number;
-            primaryLabel = 'Vehicle Number';
         } else if (policyType === 'Health') {
-            primaryField = policy.company_name; // Health uses company_name as primary identifier in this context? Or maybe we should use a different field if available. Requirement says "Policy holder name". Health policy has company_name. Let's use that or insurer if name missing.
-            // Wait, requirement says "Health: Policy holder name". Health policy schema has 'company_name' but not 'policy_holder_name'.
-            // Let's check the schema again. HealthPolicy has 'company_name'.
-            // Maybe I should use company_name as the clickable field.
             primaryField = policy.company_name || 'N/A';
         } else if (policyType === 'Commercial') {
             primaryField = policy.company_name || policy.policy_holder_name || 'N/A';
         } else if (['Travel', 'Life', 'Cyber'].includes(policyType)) {
-            // Travel/Life/Cyber: Policy holder name
-            // Travel has destination? No, requirement says "Policy holder name".
-            // Let's check Travel/Life/Cyber schemas.
-            // Life: nominee_name? No.
-            // Actually, these policies might not have a 'policy_holder_name' field on the policy itself if it's linked to the user.
-            // But for the table, we need something clickable.
-            // If the requirement says "Policy holder name", and it's not on the policy, maybe it means the User's name?
-            // But the user is the same for all.
-            // Let's use Policy Number as fallback if specific field not found, but requirement asks for specific fields.
-            // For now, let's use Policy Number for these if name not available, or maybe 'insurer_name'?
-            // Wait, for Motor it is Vehicle Number.
-            // For Commercial it is Business Name.
-            // For Health/Travel/Life/Cyber it is Policy Holder Name.
-            // Since I don't have policy_holder_name on Health/Travel/Cyber (only Commercial has it), I will use Policy Number as the primary clickable field for now to avoid breaking,
-            // OR I can use another relevant field.
-            // For Travel: Destination?
-            // For Life: Nominee?
-            // For Cyber: Risk Type?
-            // The requirement explicitly said "Policy holder name".
-            // I'll stick to Policy Number for now if name is missing, but I'll try to use relevant fields if possible.
-            // Actually, let's look at the requirement again: "Health: Policy holder name (clickable)".
-            // If the DB doesn't have it, maybe I should use the User's name? But that's static.
-            // I'll use Policy Number for now as the clickable field for these if I can't find a better one, BUT I will add a Policy Number column as requested.
-            // So:
-            // Col 1: Primary (Clickable)
-            // Col 2: Policy Number
-            // ...
-
-            // For Motor: Vehicle Number
-            // For Health: Company Name (closest to "Policy Holder" for corporate/group, or maybe just use Policy Number if individual?)
-            // For Commercial: Company Name / Policy Holder Name
-            // For others: Let's use Insurer Name? No, that's a separate column.
-            // Let's use "Policy Details" as header and put relevant info.
-            // For Travel: Destination
-            // For Life: Sum Assured? No.
-            // For Cyber: Risk Type
-
-            // actually, let's just use Policy Number as the clickable field for the others if the specific field is missing, 
-            // BUT the requirement says "Policy Number column" is separate.
-            // So I must have two columns.
-            // If I can't find a "Policy Holder Name", I'll use "N/A" or the User's name if I can get it.
-            // But I don't have the user's name here easily unless I fetch it.
-            // Let's use "Self" or similar if it's the logged-in user?
-
-            // Let's use a generic "Details" column.
             if (policyType === 'Travel') primaryField = policy.destination || 'Travel Policy';
             if (policyType === 'Life') primaryField = policy.nominee_name || 'Life Policy';
             if (policyType === 'Cyber') primaryField = policy.cyber_risk_type || 'Cyber Policy';
@@ -163,16 +114,43 @@ export default function PolicyDetailModal({
     ];
 
     // Filter based on type
-    let displayPolicies = allPolicies;
-    if (type === 'expiring') {
-        displayPolicies = allPolicies.filter((p: any) => p.status === 'Expiring Soon');
-    } else if (type === 'expired') {
-        displayPolicies = allPolicies.filter((p: any) => p.status === 'Expired');
-    } else if (type === 'total' || type === 'premium') {
-        // For total and premium, we only want active policies (Active or Expiring Soon)
-        // Expiring Soon is technically still active until it expires
-        displayPolicies = allPolicies.filter((p: any) => p.status === 'Active' || p.status === 'Expiring Soon');
-    }
+    const displayPolicies = useMemo(() => {
+        let filtered = allPolicies;
+
+        if (type === 'expiring') {
+            filtered = allPolicies.filter((p: any) => p.status === 'Expiring Soon');
+        } else if (type === 'expired') {
+            filtered = allPolicies.filter((p: any) => p.status === 'Expired');
+        } else if (type === 'total' || type === 'premium') {
+            filtered = allPolicies.filter((p: any) => p.status === 'Active' || p.status === 'Expiring Soon');
+        }
+
+        // Apply search filter for 'total' type
+        if (type === 'total' && searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter((p: any) => {
+                return (
+                    p.policy_number?.toLowerCase().includes(query) ||
+                    p.insurer_name?.toLowerCase().includes(query) ||
+                    p.vehicle_number?.toLowerCase().includes(query) ||
+                    p.company_name?.toLowerCase().includes(query) ||
+                    p.destination?.toLowerCase().includes(query) ||
+                    p.nominee_name?.toLowerCase().includes(query) ||
+                    p.policyType?.toLowerCase().includes(query)
+                );
+            });
+        }
+
+        // Apply premium sort for 'premium' type
+        if (type === 'premium') {
+            // Auto-sort by premium high to low
+            filtered = [...filtered].sort((a, b) => {
+                return Number(b.premium_amount) - Number(a.premium_amount);
+            });
+        }
+
+        return filtered;
+    }, [allPolicies, type, searchQuery]);
 
     // Calculate total premium for premium view
     const totalPremium = type === 'premium'
@@ -199,6 +177,32 @@ export default function PolicyDetailModal({
                     </button>
                 </div>
 
+                {/* Search Bar - Only for 'total' type */}
+                {type === 'total' && (
+                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search policies (policy number, insurer, vehicle number, etc.)"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Sort Info - For 'premium' type */}
+                {type === 'premium' && (
+                    <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                            <ArrowDown className="w-4 h-4" />
+                            <span className="font-medium">Sorted by Premium: High to Low</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* Status Legend */}
                 <div className="px-6 py-2 bg-gray-50 border-b border-gray-200 flex gap-4 text-xs">
                     <div className="flex items-center gap-1.5">
@@ -219,7 +223,9 @@ export default function PolicyDetailModal({
                 <div className="flex-1 overflow-auto p-6">
                     {displayPolicies.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-gray-500">No policies found</p>
+                            <p className="text-gray-500">
+                                {searchQuery ? 'No policies match your search' : 'No policies found'}
+                            </p>
                         </div>
                     ) : (
                         <div className="border border-gray-200 rounded-xl overflow-x-auto">
@@ -240,6 +246,9 @@ export default function PolicyDetailModal({
                                         </th>
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                             Premium
+                                            {type === 'premium' && (
+                                                <ArrowDown className="w-3 h-3 inline ml-1 text-blue-600" />
+                                            )}
                                         </th>
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                             Status
@@ -265,7 +274,7 @@ export default function PolicyDetailModal({
                 {/* Footer */}
                 <div className="p-6 border-t border-gray-200 bg-gray-50">
                     <p className="text-xs text-gray-500">
-                        Click on a policy number to view full details
+                        Click on a policy to view full details
                     </p>
                 </div>
             </div>
