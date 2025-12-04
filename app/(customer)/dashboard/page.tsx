@@ -24,7 +24,7 @@ import OffersCard from '@/components/dashboard/OffersCard';
 import AdvertisingBanner from '@/components/dashboard/AdvertisingBanner';
 import AnalyticsAreaChart from '@/components/dashboard/AnalyticsAreaChart';
 import AnalyticsDonutChart from '@/components/dashboard/AnalyticsDonutChart';
-import AnalyticsBarChart from '@/components/dashboard/AnalyticsBarChart';
+import PolicyRenewalReminder from '@/components/dashboard/PolicyRenewalReminder';
 import FlipCard from '@/components/dashboard/FlipCard';
 import MonthlyActivityChart from '@/components/dashboard/MonthlyActivityChart';
 import ProtectFamilyCard from '@/components/dashboard/ProtectFamilyCard';
@@ -470,16 +470,21 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    {/* Claims Overview and Bar Chart - Side by side on desktop, stacked on mobile */}
+                    {/* Claims Overview and Policy Renewal Reminder - Side by side on desktop, stacked on mobile */}
                     <div className="grid md:grid-cols-2 gap-6 h-[320px]">
                         <ClaimsOverview
                             activeCount={activeClaims}
                             settledCount={settledClaims}
                             rejectedCount={rejectedClaims}
                         />
-                        <div className="h-full">
-                            <AnalyticsBarChart data={(summary as any).barChartData} />
-                        </div>
+                        <PolicyRenewalReminder
+                            motorPolicies={motorPolicies}
+                            healthPolicies={healthPolicies}
+                            commercialPolicies={commercialPolicies}
+                            travelPolicies={travelPolicies}
+                            lifePolicies={lifePolicies}
+                            cyberPolicies={cyberPolicies}
+                        />
                     </div>
                 </div>
 
