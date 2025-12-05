@@ -32,7 +32,9 @@ export default function MonthlyActivityChart({ data: initialData, allPolicies }:
             });
 
         filteredPolicies.forEach(policy => {
-            const date = new Date(policy.created_at); // Using creation date for distribution
+            // Use policy start date if available, fallback to created_at
+            const dateStr = policy.policy_start_date || policy.start_date || policy.created_at;
+            const date = new Date(dateStr);
             const monthIndex = date.getMonth();
             const status = policy.status || 'Active'; // Default to Active if status missing
 
@@ -66,8 +68,8 @@ export default function MonthlyActivityChart({ data: initialData, allPolicies }:
                         <button
                             onClick={() => setMetric('count')}
                             className={`px-3 py-1.5 rounded-md transition-all ${metric === 'count'
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Count
@@ -75,8 +77,8 @@ export default function MonthlyActivityChart({ data: initialData, allPolicies }:
                         <button
                             onClick={() => setMetric('premium')}
                             className={`px-3 py-1.5 rounded-md transition-all ${metric === 'premium'
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Premium

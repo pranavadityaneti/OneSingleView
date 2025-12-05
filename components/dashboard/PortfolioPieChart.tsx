@@ -9,24 +9,24 @@ interface PortfolioPieChartProps {
 }
 
 const COLORS = {
-    motor: '#6366f1',      // Primary blue
-    health: '#8b5cf6',     // Secondary purple
-    gpa: '#06b6d4',        // Cyan
-    fire: '#f59e0b',       // Orange
-    others: '#10b981',     // Green
+    motor: '#6366f1',
+    health: '#8b5cf6',
+    commercial: '#06b6d4',
+    travel: '#f59e0b',
+    life: '#ec4899',
+    cyber: '#10b981',
 };
 
 const LABELS = {
-    motor: 'Motor/Vehicle',
+    motor: 'Motor',
     health: 'Health',
-    gpa: 'GPA',
-    fire: 'Fire',
-    others: 'Others',
+    commercial: 'Commercial',
+    travel: 'Travel',
+    life: 'Life',
+    cyber: 'Cyber',
 };
 
 import { useRouter } from 'next/navigation';
-
-// ... imports
 
 export default function PortfolioPieChart({ data }: PortfolioPieChartProps) {
     const router = useRouter();
@@ -35,9 +35,10 @@ export default function PortfolioPieChart({ data }: PortfolioPieChartProps) {
     const chartData = [
         { name: LABELS.motor, value: data.motor, color: COLORS.motor, path: '/motor' },
         { name: LABELS.health, value: data.health, color: COLORS.health, path: '/health' },
-        { name: LABELS.gpa, value: data.gpa, color: COLORS.gpa, path: '/commercial' },
-        { name: LABELS.fire, value: data.fire, color: COLORS.fire, path: '/commercial' },
-        { name: LABELS.others, value: data.others, color: COLORS.others, path: '/commercial' },
+        { name: LABELS.commercial, value: data.commercial, color: COLORS.commercial, path: '/commercial' },
+        { name: LABELS.travel, value: data.travel, color: COLORS.travel, path: '/travel' },
+        { name: LABELS.life, value: data.life, color: COLORS.life, path: '/life' },
+        { name: LABELS.cyber, value: data.cyber, color: COLORS.cyber, path: '/cyber' },
     ].filter((item) => item.value > 0); // Only show non-zero values
 
     const onPieClick = (data: any) => {

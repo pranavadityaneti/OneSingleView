@@ -23,7 +23,7 @@ import {
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
 import { signOut } from '@/lib/auth';
-import InsuranceTipsCarousel from './InsuranceTipsCarousel';
+// import InsuranceTipsCarousel from './InsuranceTipsCarousel';
 
 interface SidebarProps {
     user: User;
@@ -282,9 +282,10 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             </nav>
 
             {/* Insurance Tips Carousel */}
-            <div className="mt-auto">
+            {/* Insurance Tips Carousel - Removed as per request */}
+            {/* <div className="mt-auto">
                 <InsuranceTipsCarousel />
-            </div>
+            </div> */}
         </aside>
     );
 }

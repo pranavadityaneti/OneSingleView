@@ -157,8 +157,13 @@ export async function signIn(email: string, password: string): Promise<User> {
             password,
         });
 
+        console.log('SignIn response:', { authData, authError });
+
         if (authError) throw authError;
-        if (!authData.user) throw new Error('No user returned from sign in');
+        if (!authData.user) {
+            console.error('No user in authData:', authData);
+            throw new Error('No user returned from sign in');
+        }
 
         // Fetch user data from database
         const { data: userData, error: dbError } = await supabase

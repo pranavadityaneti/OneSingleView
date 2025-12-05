@@ -95,7 +95,25 @@ export default function PolicyDetailModal({
                         {primaryField}
                     </button>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900">{policy.policy_number}</td>
+                {/* Vehicle Type Cell for Motor Policies */}
+                {policyType === 'Motor' ? (
+                    <td className="px-4 py-3 text-sm text-gray-900 capitalize">
+                        {policy.custom_vehicle_type || policy.vehicle_type || 'N/A'}
+                    </td>
+                ) : (
+                    // Empty cell for other policy types if mixed list (though currently filtered by type usually)
+                    // If mixed types are shown, we need to handle alignment. 
+                    // However, modal usually shows mixed list only for 'total', 'expiring' etc.
+                    // Let's check if we are in a context where Motor policies exist alongside others.
+                    // The header condition check `displayPolicies.some(p => p.policyType === 'Motor')` implies filtering.
+                    // If policies are mixed, non-Motor rows need an empty cell to maintain alignment.
+                    displayPolicies.some(p => p.policyType === 'Motor') ? <td className="px-4 py-3 text-sm"></td> : null
+                )}
+
+                {/* Hide Policy Number for Expiring/Expired types */}
+                {!['expiring', 'expired'].includes(type) && (
+                    <td className="px-4 py-3 text-sm text-gray-900">{policy.policy_number}</td>
+                )}
                 <td className="px-4 py-3 text-sm text-gray-900">{policy.insurer_name}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{policyType}</td>
                 <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
@@ -224,6 +242,8 @@ export default function PolicyDetailModal({
                     p.policy_number?.toLowerCase().includes(query) ||
                     p.insurer_name?.toLowerCase().includes(query) ||
                     p.vehicle_number?.toLowerCase().includes(query) ||
+                    p.custom_vehicle_type?.toLowerCase().includes(query) ||
+                    p.vehicle_type?.toLowerCase().includes(query) ||
                     p.company_name?.toLowerCase().includes(query) ||
                     p.destination?.toLowerCase().includes(query) ||
                     p.nominee_name?.toLowerCase().includes(query) ||
@@ -297,8 +317,8 @@ export default function PolicyDetailModal({
                                     <button
                                         onClick={() => setSortDirection(sortDirection === 'high' ? null : 'high')}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all ${sortDirection === 'high'
-                                                ? 'bg-blue-600 text-white shadow-md'
-                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                             }`}
                                     >
                                         <ArrowDown className="w-4 h-4" />
@@ -307,8 +327,8 @@ export default function PolicyDetailModal({
                                     <button
                                         onClick={() => setSortDirection(sortDirection === 'low' ? null : 'low')}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-all ${sortDirection === 'low'
-                                                ? 'bg-blue-600 text-white shadow-md'
-                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                             }`}
                                     >
                                         <ArrowUp className="w-4 h-4" />
@@ -351,9 +371,18 @@ export default function PolicyDetailModal({
                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                                 Details
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                                Policy Number
-                                            </th>
+                                            {/* Vehicle Type Column for Motor Policies */}
+                                            {displayPolicies.some(p => p.policyType === 'Motor') && (
+                                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                    Vehicle Type
+                                                </th>
+                                            )}
+                                            {/* Hide Policy Number for Expiring/Expired types as per request */}
+                                            {!['expiring', 'expired'].includes(type) && (
+                                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                    Policy Number
+                                                </th>
+                                            )}
                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                                 Insurer
                                             </th>

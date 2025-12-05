@@ -21,7 +21,7 @@ interface PolicyTableProps {
     onPolicyAdded?: () => void;
 }
 
-type SortField = 'policy_number' | 'insurer_name' | 'premium_amount' | 'start_date' | 'end_date' | 'status' | 'vehicle_number';
+type SortField = 'policy_number' | 'insurer_name' | 'premium_amount' | 'start_date' | 'end_date' | 'status' | 'vehicle_number' | 'vehicle_type';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function PolicyTable({
@@ -108,8 +108,11 @@ export default function PolicyTable({
                     startDateStr.includes(query) ||
                     endDateStr.includes(query);
 
-                // For Motor policies, also search vehicle number
-                const matchesVehicle = isMotor && (p as any).vehicle_number?.toLowerCase().includes(query);
+                const matchesVehicle = isMotor && (
+                    (p as any).vehicle_number?.toLowerCase().includes(query) ||
+                    (p as any).custom_vehicle_type?.toLowerCase().includes(query) ||
+                    (p as any).vehicle_type?.toLowerCase().includes(query)
+                );
 
                 return matchesCommon || matchesVehicle;
             });
@@ -160,6 +163,14 @@ export default function PolicyTable({
                     case 'vehicle_number':
                         aValue = isMotorA ? (a as any).vehicle_number || '' : '';
                         bValue = isMotorB ? (b as any).vehicle_number || '' : '';
+                    case 'vehicle_number':
+                        aValue = isMotorA ? (a as any).vehicle_number || '' : '';
+                        bValue = isMotorB ? (b as any).vehicle_number || '' : '';
+                        break;
+                    case 'vehicle_type':
+                        // Check custom_vehicle_type first, then vehicle_type (from DB enum)
+                        aValue = isMotorA ? ((a as any).custom_vehicle_type || (a as any).vehicle_type || '') : '';
+                        bValue = isMotorB ? ((b as any).custom_vehicle_type || (b as any).vehicle_type || '') : '';
                         break;
                     default:
                         return 0;
@@ -314,6 +325,14 @@ export default function PolicyTable({
                                         Vehicle Number {getSortIcon('vehicle_number')}
                                     </th>
                                 )}
+                                {isMotorTable && (
+                                    <th
+                                        onClick={() => handleSort('vehicle_type' as SortField)}
+                                        className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                                    >
+                                        Vehicle Type {getSortIcon('vehicle_type' as SortField)}
+                                    </th>
+                                )}
                                 <th
                                     onClick={() => handleSort('policy_number')}
                                     className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
@@ -386,6 +405,13 @@ export default function PolicyTable({
                                                 >
                                                     {policy.vehicle_number}
                                                 </button>
+                                            </td>
+                                        )}
+                                        {isMotorTable && (
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-900 capitalize">
+                                                    {(policy as any).custom_vehicle_type || (policy as any).vehicle_type || 'N/A'}
+                                                </span>
                                             </td>
                                         )}
                                         <td className="px-6 py-4 whitespace-nowrap">

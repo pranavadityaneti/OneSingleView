@@ -8,11 +8,12 @@ interface FlipCardProps {
     icon: LucideIcon;
     activeCount: number;
     expiringSoonCount: number;
+    totalLabel?: string;
     colorClass: string; // e.g., 'blue', 'green'
     onClick: () => void;
 }
 
-export default function FlipCard({ title, icon: Icon, activeCount, expiringSoonCount, colorClass, onClick }: FlipCardProps) {
+export default function FlipCard({ title, icon: Icon, activeCount, expiringSoonCount, colorClass, onClick, totalLabel = "Total Policies" }: FlipCardProps) {
     const totalPolicies = activeCount + expiringSoonCount;
     // Map color names to Tailwind classes
     const colorMap: Record<string, { bg: string; text: string; hover: string; border: string }> = {
@@ -26,12 +27,30 @@ export default function FlipCard({ title, icon: Icon, activeCount, expiringSoonC
 
     const colors = colorMap[colorClass] || colorMap['blue'];
 
+    const [isAutoFlipping, setIsAutoFlipping] = React.useState(false);
+
+    React.useEffect(() => {
+        // Trigger flip after a short delay
+        const timer = setTimeout(() => {
+            setIsAutoFlipping(true);
+
+            // Revert back after 1.5s
+            const revertTimer = setTimeout(() => {
+                setIsAutoFlipping(false);
+            }, 1000);
+
+            return () => clearTimeout(revertTimer);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div
             onClick={onClick}
             className="group h-32 w-full perspective-1000 cursor-pointer"
         >
-            <div className="relative h-full w-full transition-all duration-500 transform-style-3d group-hover:rotate-y-180">
+            <div className={`relative h-full w-full transition-all duration-500 transform-style-3d ${isAutoFlipping ? 'rotate-y-180' : 'group-hover:rotate-y-180'}`}>
                 {/* Front Side */}
                 <div className={`absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-lg bg-white border ${colors.border} flex flex-col items-center justify-center p-4 transition-all duration-300 group-hover:shadow-xl`}>
                     <div className={`p-3 rounded-full ${colors.bg} bg-opacity-10 mb-3`}>
@@ -43,7 +62,7 @@ export default function FlipCard({ title, icon: Icon, activeCount, expiringSoonC
                 {/* Back Side */}
                 <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col items-center justify-center p-4">
                     <div className="text-4xl font-bold mb-1">{totalPolicies}</div>
-                    <div className="text-xs font-medium text-gray-300 uppercase tracking-wider">Total Policies</div>
+                    <div className="text-xs font-medium text-gray-300 uppercase tracking-wider">{totalLabel}</div>
                 </div>
             </div>
         </div>

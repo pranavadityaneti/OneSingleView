@@ -389,6 +389,7 @@ export default function DashboardPage() {
                         expiringSoonCount={motorPolicies.filter(p => p.status === 'Expiring Soon').length}
                         colorClass="blue"
                         onClick={() => setSelectedPolicyType('Motor')}
+                        totalLabel="Total Number of Vehicles"
                     />
                     <FlipCard
                         title="Health"
