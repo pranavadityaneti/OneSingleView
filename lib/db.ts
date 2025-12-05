@@ -1173,16 +1173,6 @@ export async function uploadAvatar(userId: string, file: File): Promise<string |
             .from('avatars')
             .getPublicUrl(filePath);
 
-        // Update user profile
-        const { error: updateError } = await supabase
-            .from('users')
-            .update({ avatar_url: data.publicUrl })
-            .eq('id', userId);
-
-        if (updateError) {
-            throw updateError;
-        }
-
         return data.publicUrl;
     } catch (error: any) {
         console.error('Error uploading avatar:', error.message);

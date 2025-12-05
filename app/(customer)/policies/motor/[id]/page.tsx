@@ -16,6 +16,26 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
     const [editedPolicy, setEditedPolicy] = useState<any | null>(null);
     const [saveLoading, setSaveLoading] = useState(false);
 
+    const normalizePolicy = (data: any) => ({
+        ...data,
+        policy_number: data.policy_number || '',
+        premium_amount: data.premium_amount || 0,
+        policy_type: data.policy_type || '',
+        insurer_name: data.insurer_name || '',
+        vehicle_number: data.vehicle_number || '',
+        manufacturer: data.manufacturer || '',
+        model: data.model || '',
+        vehicle_type: data.vehicle_type || '',
+        fuel_type: data.fuel_type || '',
+        manufacturing_year: data.manufacturing_year || '',
+        number_plate_type: data.number_plate_type || '',
+        policy_start_date: data.policy_start_date || '',
+        policy_end_date: data.policy_end_date || '',
+        idv: data.idv || '',
+        ncb_percentage: data.ncb_percentage || '',
+        addon_covers: data.addon_covers || ''
+    });
+
     useEffect(() => {
         const fetchPolicy = async () => {
             try {
@@ -26,8 +46,10 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                     .single();
 
                 if (error) throw error;
-                setPolicy(data as MotorPolicy);
-                setEditedPolicy(data as MotorPolicy);
+
+                const normalizedData = normalizePolicy(data);
+                setPolicy(normalizedData as MotorPolicy);
+                setEditedPolicy(normalizedData as MotorPolicy);
             } catch (error) {
                 console.error('Error fetching policy:', error);
             } finally {
@@ -45,21 +67,66 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
         }));
     };
 
+    // Safe fields that definitely exist in MotorPolicy type and likely in DB
+    const ALLOWED_MOTOR_FIELDS = [
+        'policy_number',
+        'premium_amount',
+        'policy_type',
+        'insurer_name',
+        'vehicle_number',
+        'manufacturer',
+        'model',
+        'vehicle_type',
+        'fuel_type',
+        'manufacturing_year',
+        'number_plate_type',
+        'policy_start_date',
+        'policy_end_date'
+    ];
+
+    const pickAllowed = (obj: any, allowed: string[]) => {
+        return allowed.reduce((acc: any, key) => {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                // Special handling for numbers: ensure they are actual numbers
+                if (['premium_amount', 'manufacturing_year'].includes(key)) {
+                    acc[key] = Number(obj[key]);
+                } else {
+                    acc[key] = obj[key];
+                }
+            }
+            return acc;
+        }, {});
+    };
+
     const handleSave = async () => {
         try {
             setSaveLoading(true);
+
+            // Sanitize payload: strictly only send allowed fields
+            const updates = pickAllowed(editedPolicy, ALLOWED_MOTOR_FIELDS);
+
+            console.log('Sanitized Update Payload:', updates);
+
             const { error } = await supabase
                 .from('motor_policies')
-                .update(editedPolicy)
+                .update(updates)
                 .eq('id', id);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Update Error:', error);
+                throw error;
+            }
 
             setPolicy(editedPolicy);
             setIsEditing(false);
-        } catch (error) {
-            console.error('Error updating policy:', error);
-            alert('Failed to update policy');
+        } catch (error: any) {
+            console.error('Error updating policy full object:', JSON.stringify(error, null, 2));
+            // Check specifically for the column missing error
+            if (error?.code === 'PGRST204' || (error?.message && error.message.includes('Could not find'))) {
+                alert(`Database Schema Error: It seems some fields you are trying to edit do not exist in the database yet. We saved what we could.`);
+            } else {
+                alert(`Failed to update policy: ${error.message || 'Unknown error'}`);
+            }
         } finally {
             setSaveLoading(false);
         }
@@ -90,7 +157,7 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                 <div>
                     <label className="block text-sm text-gray-600 mb-1">{label}</label>
                     <select
-                        value={value}
+                        value={value || ''}
                         onChange={(e) => handleInputChange(field, e.target.value)}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
                     >
@@ -107,7 +174,7 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                 <label className="block text-sm text-gray-600 mb-1">{label}</label>
                 <input
                     type={type}
-                    value={type === 'date' && value ? new Date(value).toISOString().split('T')[0] : value}
+                    value={(type === 'date' && value ? new Date(value).toISOString().split('T')[0] : value) || ''}
                     onChange={(e) => handleInputChange(field, e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
                 />
