@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function CTASection() {
     const benefits = [
@@ -7,6 +10,26 @@ export default function CTASection() {
         'No credit card required',
         'Set up in under 2 minutes',
     ];
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.2,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: 'easeOut' },
+        },
+    };
 
     return (
         <section className="py-16 md:py-24 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-600 relative overflow-hidden">
@@ -16,36 +39,63 @@ export default function CTASection() {
                 <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-700 rounded-full opacity-30 blur-3xl" />
             </div>
 
-            <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <motion.div
+                className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-50px' }}
+            >
+                <motion.h2
+                    className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6"
+                    variants={itemVariants}
+                >
                     Ready to Simplify Your Insurance?
-                </h2>
-                <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                </motion.h2>
+                <motion.p
+                    className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto"
+                    variants={itemVariants}
+                >
                     Join thousands of Indians who have taken control of their insurance portfolio.
                     Start managing all your policies in one place today.
-                </p>
+                </motion.p>
 
                 {/* CTA Button */}
-                <div className="flex flex-col items-center gap-6">
-                    <Link
-                        href="/signup"
-                        className="group bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl hover:shadow-2xl flex items-center"
+                <motion.div
+                    className="flex flex-col items-center gap-6"
+                    variants={itemVariants}
+                >
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
                     >
-                        Get Started for Free
-                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                        <Link
+                            href="/signup"
+                            className="group bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl hover:shadow-2xl flex items-center"
+                        >
+                            Get Started for Free
+                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </motion.div>
 
                     {/* Benefits list */}
                     <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-white/90 text-sm">
                         {benefits.map((benefit, index) => (
-                            <div key={index} className="flex items-center gap-2">
+                            <motion.div
+                                key={index}
+                                className="flex items-center gap-2"
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.4 + index * 0.1 }}
+                            >
                                 <CheckCircle className="w-4 h-4" />
                                 <span>{benefit}</span>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </section>
     );
 }

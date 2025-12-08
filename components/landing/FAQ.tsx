@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FAQ() {
     const faqs = [
@@ -43,11 +44,45 @@ export default function FAQ() {
         setOpenIndex(openIndex === index ? null : index);
     };
 
+    const headerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: 'easeOut' },
+        },
+    };
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.3 },
+        },
+    };
+
     return (
         <section id="faq" className="py-16 md:py-24 bg-white">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
-                <div className="text-center mb-12">
+                <motion.div
+                    className="text-center mb-12"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-50px' }}
+                    variants={headerVariants}
+                >
                     <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider">
                         FAQ
                     </span>
@@ -57,14 +92,21 @@ export default function FAQ() {
                     <p className="text-lg text-gray-600">
                         Got questions? We&apos;ve got answers.
                     </p>
-                </div>
+                </motion.div>
 
                 {/* FAQ Accordion */}
-                <div className="space-y-4">
+                <motion.div
+                    className="space-y-4"
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-50px' }}
+                >
                     {faqs.map((faq, index) => (
-                        <div
+                        <motion.div
                             key={index}
                             className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100"
+                            variants={itemVariants}
                         >
                             <button
                                 onClick={() => toggle(index)}
@@ -73,22 +115,33 @@ export default function FAQ() {
                                 <span className="font-semibold text-gray-900 pr-4">
                                     {faq.question}
                                 </span>
-                                {openIndex === index ? (
-                                    <ChevronUp className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                ) : (
-                                    <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                )}
+                                <motion.div
+                                    animate={{ rotate: openIndex === index ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <ChevronDown className={`w-5 h-5 flex-shrink-0 ${openIndex === index ? 'text-blue-600' : 'text-gray-400'}`} />
+                                </motion.div>
                             </button>
-                            {openIndex === index && (
-                                <div className="px-5 md:px-6 pb-5 md:pb-6">
-                                    <p className="text-gray-600 leading-relaxed">
-                                        {faq.answer}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
+                            <AnimatePresence>
+                                {openIndex === index && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="px-5 md:px-6 pb-5 md:pb-6">
+                                            <p className="text-gray-600 leading-relaxed">
+                                                {faq.answer}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </section>
     );

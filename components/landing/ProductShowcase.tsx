@@ -1,11 +1,39 @@
+'use client';
+
 import { Shield, Bell, FileText, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function ProductShowcase() {
+    const headerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: 'easeOut' },
+        },
+    };
+
+    const showcaseVariants = {
+        hidden: { opacity: 0, scale: 0.95, y: 30 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: 'easeOut' },
+        },
+    };
+
     return (
         <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
-                <div className="text-center mb-12 md:mb-16">
+                <motion.div
+                    className="text-center mb-12 md:mb-16"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-50px' }}
+                    variants={headerVariants}
+                >
                     <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider">
                         Product Preview
                     </span>
@@ -15,11 +43,21 @@ export default function ProductShowcase() {
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                         A powerful yet simple interface to manage all your insurance needs
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Dashboard Preview Mock */}
-                <div className="relative">
-                    <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
+                <motion.div
+                    className="relative"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-50px' }}
+                    variants={showcaseVariants}
+                >
+                    <motion.div
+                        className="bg-white rounded-2xl md:rounded-3xl shadow-2xl border border-gray-200 overflow-hidden"
+                        whileHover={{ y: -5 }}
+                        transition={{ type: 'spring', stiffness: 300 }}
+                    >
                         {/* Browser chrome */}
                         <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center gap-2">
                             <div className="flex gap-1.5">
@@ -103,12 +141,12 @@ export default function ProductShowcase() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Decorative elements */}
                     <div className="absolute -z-10 -bottom-8 -left-8 w-64 h-64 bg-blue-100 rounded-full opacity-50 blur-3xl" />
                     <div className="absolute -z-10 -top-8 -right-8 w-64 h-64 bg-teal-100 rounded-full opacity-50 blur-3xl" />
-                </div>
+                </motion.div>
             </div>
         </section>
     );

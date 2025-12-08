@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -30,7 +33,13 @@ export default function Footer() {
     ];
 
     return (
-        <footer className="bg-gray-900 text-white">
+        <motion.footer
+            className="bg-gray-900 text-white"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
                     {/* Brand Column */}
@@ -122,18 +131,20 @@ export default function Footer() {
                     </p>
                     <div className="flex items-center space-x-4">
                         {socialLinks.map((social) => (
-                            <a
+                            <motion.a
                                 key={social.label}
                                 href={social.href}
                                 aria-label={social.label}
                                 className="text-gray-400 hover:text-blue-500 transition-colors"
+                                whileHover={{ scale: 1.2, y: -2 }}
+                                transition={{ type: 'spring', stiffness: 400 }}
                             >
                                 <social.icon size={20} />
-                            </a>
+                            </motion.a>
                         ))}
                     </div>
                 </div>
             </div>
-        </footer>
+        </motion.footer>
     );
 }
