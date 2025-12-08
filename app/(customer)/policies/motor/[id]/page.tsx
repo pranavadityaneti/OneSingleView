@@ -105,7 +105,6 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
             // Sanitize payload: strictly only send allowed fields
             const updates = pickAllowed(editedPolicy, ALLOWED_MOTOR_FIELDS);
 
-            console.log('Sanitized Update Payload:', updates);
 
             const { error } = await supabase
                 .from('motor_policies')

@@ -524,7 +524,6 @@ function prepareDataForExport(policies: any[]) {
 // Export to Excel
 export async function exportToXLS(policies: any[], filename: string) {
     try {
-        console.log('Exporting to XLS with filename:', filename);
         const XLSX = await loadXLSX();
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
@@ -547,7 +546,6 @@ export async function exportToXLS(policies: any[], filename: string) {
         link.click();
         document.body.removeChild(link);
 
-        console.log('XLS download triggered');
     } catch (error) {
         console.error('Error exporting to Excel:', error);
         throw new Error('Failed to export to Excel');
@@ -557,7 +555,6 @@ export async function exportToXLS(policies: any[], filename: string) {
 // Export to CSV
 export async function exportToCSV(policies: any[], filename: string) {
     try {
-        console.log('Exporting to CSV with filename:', filename);
         const XLSX = await loadXLSX();
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
@@ -573,7 +570,6 @@ export async function exportToCSV(policies: any[], filename: string) {
         link.click();
         document.body.removeChild(link);
 
-        console.log('CSV download triggered');
     } catch (error) {
         console.error('Error exporting to CSV:', error);
         throw new Error('Failed to export to CSV');

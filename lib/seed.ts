@@ -19,7 +19,6 @@ function randomNumber(min: number, max: number) {
 }
 
 export async function seedUserData(userId: string) {
-    console.log('Starting seed for user:', userId);
 
     // Seed Motor Policies (1-3)
     const motorCount = randomNumber(1, 3);
@@ -88,5 +87,4 @@ export async function seedUserData(userId: string) {
         } as any);
     }
 
-    console.log('Seeding completed');
 }

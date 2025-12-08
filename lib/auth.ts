@@ -61,7 +61,6 @@ export async function signUp(
 
                     // If unique violation (409), check if profile already exists
                     if (dbError.code === '23505') { // Postgres unique violation code
-                        console.log('User profile already exists, checking for orphan...');
 
                         // Check if a profile exists with this email but different ID (orphaned)
                         const { data: existingProfile, error: fetchError } = await supabase
@@ -81,7 +80,6 @@ export async function signUp(
                             }
 
                             // If ID doesn't match, it's an orphaned profile. Update it with new Auth ID.
-                            console.log('Found orphaned profile. Linking to new Auth ID...');
                             const { error: updateError } = await supabase
                                 .from('users')
                                 .update({
@@ -111,13 +109,13 @@ export async function signUp(
 
                 // Success
                 break;
-            } catch (error: any) {
+            } catch (error: unknown) {
                 retries--;
                 if (retries === 0) {
-                    console.error('Failed to create user profile after retries:', error);
+                    const message = error instanceof Error ? error.message : 'Unknown error';
+                    console.error('Failed to create user profile after retries:', message);
                     throw new Error('Failed to create user profile. Please try again.');
                 }
-                console.log(`Retrying user profile creation... (${retries} attempts left)`);
             }
         }
 
@@ -126,9 +124,9 @@ export async function signUp(
             created_at: new Date(),
             updated_at: new Date(),
         };
-    } catch (error: any) {
-        console.error('Signup error:', error);
-        throw new Error(error.message || 'Failed to sign up');
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to sign up';
+        throw new Error(message);
     }
 }
 
@@ -141,9 +139,9 @@ export async function resetPassword(email: string): Promise<void> {
             redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/update-password` : 'http://localhost:3000/update-password',
         });
         if (error) throw error;
-    } catch (error: any) {
-        console.error('Reset password error:', error);
-        throw new Error(error.message || 'Failed to send reset password email');
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to send reset password email';
+        throw new Error(message);
     }
 }
 
@@ -157,7 +155,6 @@ export async function signIn(email: string, password: string): Promise<User> {
             password,
         });
 
-        console.log('SignIn response:', { authData, authError });
 
         if (authError) throw authError;
         if (!authData.user) {
@@ -187,9 +184,9 @@ export async function signIn(email: string, password: string): Promise<User> {
             rm_id: userData.rm_id,
             customer_id: userData.customer_id,
         };
-    } catch (error: any) {
-        console.error('Sign in error:', error);
-        throw new Error(error.message || 'Failed to sign in');
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to sign in';
+        throw new Error(message);
     }
 }
 
@@ -200,9 +197,9 @@ export async function signOut(): Promise<void> {
     try {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
-    } catch (error: any) {
-        console.error('Sign out error:', error);
-        throw new Error(error.message || 'Failed to sign out');
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to sign out';
+        throw new Error(message);
     }
 }
 
@@ -253,7 +250,7 @@ export async function getCurrentUser(): Promise<User | null> {
  * Get Supabase auth state change listener
  */
 export function onAuthStateChange(callback: (user: User | null) => void) {
-    return supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+    return supabase.auth.onAuthStateChange(async (event: string, session: { user?: { id: string } } | null) => {
         if (session?.user) {
             const user = await getCurrentUser();
             callback(user);

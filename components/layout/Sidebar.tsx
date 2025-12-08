@@ -156,17 +156,13 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                                 if (!file || isUploadingAvatar) return;
 
                                 setIsUploadingAvatar(true);
-                                console.log('[Avatar Upload] Starting upload for file:', file.name);
 
                                 try {
                                     const { uploadAvatar } = await import('@/lib/db');
-                                    console.log('[Avatar Upload] Calling uploadAvatar function...');
 
                                     const url = await uploadAvatar(user.id, file);
-                                    console.log('[Avatar Upload] Upload result:', url);
 
                                     if (url) {
-                                        console.log('[Avatar Upload] Success! Updating UI...');
                                         // Update user object with new avatar URL
                                         user.avatar_url = url;
                                         // Use router.refresh() instead of full page reload

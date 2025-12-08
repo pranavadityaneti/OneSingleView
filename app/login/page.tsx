@@ -26,16 +26,12 @@ function LoginForm() {
         try {
             const user = await signIn(formData.email, formData.password);
 
-            console.log('🔍 Login Debug - User role:', user.role);
-            console.log('🔍 Login Debug - Full user:', user);
 
             // Redirect based on user role
             if (user.role === 'admin') {
-                console.log('🔍 Redirecting to /admin/dashboard');
                 router.push('/admin/dashboard');
             } else {
                 // All other roles (individual, corporate_employee, corporate_admin) go to main dashboard
-                console.log('🔍 Redirecting to /dashboard');
                 router.push('/dashboard');
             }
         } catch (err: any) {

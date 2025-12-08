@@ -38,12 +38,9 @@ export default function AdminDashboardPage() {
     const [rmPerformance, setRmPerformance] = useState<any>(null);
 
     useEffect(() => {
-        console.log('[AdminDashboard] useEffect triggered', { loading, user: user?.role });
         if (!loading && (!user || user.role !== 'admin')) {
-            console.log('[AdminDashboard] Redirecting to login');
             router.push('/login');
         } else if (user?.role === 'admin') {
-            console.log('[AdminDashboard] Loading data...');
             loadData();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
