@@ -570,8 +570,6 @@ export async function getUserById(userId: string): Promise<User | null> {
 export async function updateUserStatus(userId: string, status: 'active' | 'disabled'): Promise<void> {
     try {
         // TODO: Ensure 'status' column exists in users table.
-        // For now, we will just log this action as if it happened.
-        console.log(`Updating user ${userId} status to ${status}`);
 
         // const { error } = await supabase
         //     .from('users')
@@ -918,7 +916,6 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
 
         if (userError) {
             // If user not found or error, return default RM for demo
-            console.log('Error fetching user for RM, returning default:', userError);
             return {
                 name: 'Amit Sharma',
                 email: 'amit.sharma@onesingleview.com',

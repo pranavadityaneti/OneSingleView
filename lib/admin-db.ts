@@ -86,11 +86,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
         const { data: health } = await supabase.from('health_policies').select('expiry_date');
         const { data: commercial } = await supabase.from('commercial_policies').select('expiry_date');
 
-        console.log('[AdminMetrics] Raw policy counts:', {
-            motor: motor?.length || 0,
-            health: health?.length || 0,
-            commercial: commercial?.length || 0
-        });
 
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of today
@@ -118,14 +113,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
         const active = motorActive + healthActive + commercialActive;
         const expired = totalPolicies - active;
 
-        console.log('[AdminMetrics] Policy breakdown:', {
-            total: totalPolicies,
-            active,
-            expired,
-            motorActive,
-            healthActive,
-            commercialActive
-        });
 
         const twentyDaysFromNow = new Date();
         twentyDaysFromNow.setDate(today.getDate() + 20);
@@ -151,10 +138,6 @@ export async function getAdminDashboardMetrics(): Promise<AdminMetrics> {
 
         const expiringSoon = motorExpiring + healthExpiring + commercialExpiring;
 
-        console.log('[AdminMetrics] Expiring soon calculation:', {
-            expiringSoon,
-            dateRange: `${today.toLocaleDateString()} to ${twentyDaysFromNow.toLocaleDateString()}`
-        });
 
         // 3. Claims
         const { data: claims } = await supabase.from('claims').select('status, created_at');
@@ -306,12 +289,6 @@ export async function getPoliciesByLOB() {
         const { count: health } = await supabase.from('health_policies').select('*', { count: 'exact', head: true });
         const { count: commercial } = await supabase.from('commercial_policies').select('*', { count: 'exact', head: true });
 
-        console.log('[LOB Chart] Policy counts by line of business:', {
-            motor: motor || 0,
-            health: health || 0,
-            commercial: commercial || 0,
-            total: (motor || 0) + (health || 0) + (commercial || 0)
-        });
 
         return [
             { name: 'Motor', value: motor || 0, fill: '#3B82F6' },
@@ -462,12 +439,6 @@ export async function getPremiumByLOB(): Promise<PremiumBreakdown[]> {
 
         const grandTotal = motorTotal + healthTotal + commercialTotal;
 
-        console.log('[Premium By LOB]', {
-            motor: motorTotal,
-            health: healthTotal,
-            commercial: commercialTotal,
-            total: grandTotal
-        });
 
         // Calculate percentages
         const premiumBreakdown: PremiumBreakdown[] = [
@@ -597,12 +568,6 @@ export async function getPremiumTrend(
             }))
             .sort((a, b) => a.date.localeCompare(b.date));
 
-        console.log('[Premium Trend]', {
-            startDate: startStr,
-            endDate: endStr,
-            groupBy,
-            dataPoints: trendData.length
-        });
 
         return trendData;
     } catch (error) {

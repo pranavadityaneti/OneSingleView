@@ -107,8 +107,6 @@ export async function initializeStorage(): Promise<void> {
 
             if (error) {
                 console.error('Error creating storage bucket:', error);
-            } else {
-                console.log('Storage bucket created successfully');
             }
         }
     } catch (error) {
