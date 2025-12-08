@@ -72,8 +72,8 @@ export default function InsuranceLogoTicker() {
                             key={`company-${index}`}
                             className="inline-flex items-center justify-center mx-8 min-w-[180px] h-16"
                         >
-                            <div className="px-6 py-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-primary-200 transition-all">
-                                <span className="text-gray-400 font-semibold text-sm tracking-tight filter grayscale hover:grayscale-0 transition-all">
+                            <div className="px-6 py-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
+                                <span className="text-gray-500 font-medium text-sm tracking-tight hover:text-gray-700 transition-all">
                                     {company}
                                 </span>
                             </div>
