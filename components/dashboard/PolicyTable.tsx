@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
-import { Car, Heart, Briefcase, Eye, Plus, Plane, Umbrella, Shield, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Car, Heart, Briefcase, Eye, Plus, Plane, Umbrella, Shield, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AddPolicyModal from '@/components/policies/AddPolicyModal';
 
@@ -24,6 +24,8 @@ interface PolicyTableProps {
 type SortField = 'policy_number' | 'insurer_name' | 'premium_amount' | 'start_date' | 'end_date' | 'status' | 'vehicle_number' | 'vehicle_type';
 type SortDirection = 'asc' | 'desc' | null;
 
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
+
 export default function PolicyTable({
     policyType,
     motorPolicies,
@@ -40,6 +42,10 @@ export default function PolicyTable({
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     // Get policies based on type
     const getPolicies = () => {
@@ -125,9 +131,7 @@ export default function PolicyTable({
                 let bValue: any;
 
                 const isMotorA = a.type === 'Motor';
-                const isHealthA = a.type === 'Health';
                 const isMotorB = b.type === 'Motor';
-                const isHealthB = b.type === 'Health';
 
                 switch (sortField) {
                     case 'policy_number':
@@ -163,12 +167,8 @@ export default function PolicyTable({
                     case 'vehicle_number':
                         aValue = isMotorA ? (a as any).vehicle_number || '' : '';
                         bValue = isMotorB ? (b as any).vehicle_number || '' : '';
-                    case 'vehicle_number':
-                        aValue = isMotorA ? (a as any).vehicle_number || '' : '';
-                        bValue = isMotorB ? (b as any).vehicle_number || '' : '';
                         break;
                     case 'vehicle_type':
-                        // Check custom_vehicle_type first, then vehicle_type (from DB enum)
                         aValue = isMotorA ? ((a as any).custom_vehicle_type || (a as any).vehicle_type || '') : '';
                         bValue = isMotorB ? ((b as any).custom_vehicle_type || (b as any).vehicle_type || '') : '';
                         break;
@@ -191,9 +191,26 @@ export default function PolicyTable({
         return result;
     }, [allPolicies, searchQuery, sortField, sortDirection]);
 
+    // Pagination calculations
+    const totalItems = filteredAndSortedPolicies.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const paginatedPolicies = filteredAndSortedPolicies.slice(startIndex, endIndex);
+
+    // Reset to page 1 when filters change
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        setCurrentPage(1);
+    };
+
     const handleSort = (field: SortField) => {
         if (sortField === field) {
-            // Cycle through: asc -> desc -> null
             if (sortDirection === 'asc') {
                 setSortDirection('desc');
             } else if (sortDirection === 'desc') {
@@ -204,6 +221,7 @@ export default function PolicyTable({
             setSortField(field);
             setSortDirection('asc');
         }
+        setCurrentPage(1);
     };
 
     const getSortIcon = (field: SortField) => {
@@ -269,7 +287,7 @@ export default function PolicyTable({
                     <div>
                         <h3 className="text-lg font-bold text-gray-900">{policyType} Policies</h3>
                         <p className="text-sm text-gray-600">
-                            {filteredAndSortedPolicies.length} {filteredAndSortedPolicies.length === 1 ? 'policy' : 'policies'} found
+                            {totalItems} {totalItems === 1 ? 'policy' : 'policies'} found
                         </p>
                     </div>
                 </div>
@@ -290,15 +308,16 @@ export default function PolicyTable({
                         type="text"
                         placeholder={`Search ${policyType.toLowerCase()} policies${isMotorTable ? ' (policy number, insurer, vehicle number, etc.)' : ' (policy number, insurer, etc.)'}`}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                        aria-label={`Search ${policyType} policies`}
                     />
                 </div>
             </div>
 
             {/* Table Content with Scroll */}
-            <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-                {filteredAndSortedPolicies.length === 0 ? (
+            <div className="overflow-x-auto">
+                {paginatedPolicies.length === 0 ? (
                     <div className="text-center py-12 px-6">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             {getIcon() || <Briefcase className="w-8 h-8 text-gray-400" />}
@@ -375,11 +394,10 @@ export default function PolicyTable({
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredAndSortedPolicies.map((policy: any) => {
+                            {paginatedPolicies.map((policy: any) => {
                                 const isMotor = policy.type === 'Motor';
                                 const isHealth = policy.type === 'Health';
 
-                                // Safely handle dates
                                 const startDateValue = isMotor ? policy.policy_start_date :
                                     isHealth ? policy.start_date :
                                         policy.start_date;
@@ -388,11 +406,8 @@ export default function PolicyTable({
                                     isHealth ? policy.expiry_date :
                                         policy.expiry_date;
 
-                                // Create Date objects with validation
                                 const startDate = startDateValue ? new Date(startDateValue) : null;
                                 const endDate = endDateValue ? new Date(endDateValue) : null;
-
-                                // Calculate status (now handles null/invalid dates)
                                 const status = calculatePolicyStatus(endDate);
 
                                 return (
@@ -480,6 +495,50 @@ export default function PolicyTable({
                 )}
             </div>
 
+            {/* Pagination Controls */}
+            {totalItems > 0 && (
+                <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <span>Showing</span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                            className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                            aria-label="Items per page"
+                        >
+                            {PAGE_SIZE_OPTIONS.map(size => (
+                                <option key={size} value={size}>{size}</option>
+                            ))}
+                        </select>
+                        <span>of {totalItems} policies</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                aria-label="Previous page"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                aria-label="Next page"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Add Policy Modal */}
             <AddPolicyModal
                 isOpen={isAddModalOpen}
@@ -494,3 +553,4 @@ export default function PolicyTable({
         </div>
     );
 }
+

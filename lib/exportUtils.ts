@@ -1,8 +1,12 @@
-import jsPDF from 'jspdf';
+// Dynamic imports for performance - these are large libraries
+// jsPDF and xlsx are loaded only when export is triggered
 import html2canvas from 'html2canvas';
-import * as XLSX from 'xlsx';
 import { DashboardSummary, MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { formatCurrency, formatDate, calculatePolicyStatus } from './utils';
+
+// Lazy load heavy libraries
+const loadJsPDF = () => import('jspdf').then(m => m.default);
+const loadXLSX = () => import('xlsx');
 
 // Export dashboard as PDF
 export async function exportDashboardToPDF(
@@ -19,6 +23,7 @@ export async function exportDashboardToPDF(
         });
 
         const imgData = canvas.toDataURL('image/png');
+        const jsPDF = await loadJsPDF();
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
@@ -57,6 +62,7 @@ export async function exportPoliciesByType(
     userName: string
 ): Promise<void> {
     try {
+        const jsPDF = await loadJsPDF();
         const pdf = new jsPDF();
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
@@ -161,6 +167,7 @@ export async function exportPoliciesByDate(
             return createdAt >= startDate && createdAt <= endDate;
         });
 
+        const jsPDF = await loadJsPDF();
         const pdf = new jsPDF();
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
@@ -515,9 +522,10 @@ function prepareDataForExport(policies: any[]) {
 }
 
 // Export to Excel
-export function exportToXLS(policies: any[], filename: string) {
+export async function exportToXLS(policies: any[], filename: string) {
     try {
         console.log('Exporting to XLS with filename:', filename);
+        const XLSX = await loadXLSX();
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -547,9 +555,10 @@ export function exportToXLS(policies: any[], filename: string) {
 }
 
 // Export to CSV
-export function exportToCSV(policies: any[], filename: string) {
+export async function exportToCSV(policies: any[], filename: string) {
     try {
         console.log('Exporting to CSV with filename:', filename);
+        const XLSX = await loadXLSX();
         const data = prepareDataForExport(policies);
         const ws = XLSX.utils.json_to_sheet(data);
         const csv = XLSX.utils.sheet_to_csv(ws);
