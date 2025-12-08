@@ -283,7 +283,7 @@ export default function DashboardPage() {
                     cyberPolicies={cyberPolicies}
                     userName={user?.name || 'User'}
                 />
-                <StickyAddPolicy userId={user.id} className="relative !fixed-none !top-auto !right-auto" />
+                <StickyAddPolicy userId={user.id} className="relative !fixed-none !top-auto !right-auto" onSuccess={() => loadDashboardData(user.id)} />
             </div>
             <ReportsModal isOpen={isReportsOpen} onClose={() => setIsReportsOpen(false)} />
             <PolicyDetailModal
@@ -529,13 +529,11 @@ export default function DashboardPage() {
                 onClose={() => setIsHealthModalOpen(false)}
                 userId={user.id}
                 initialType="Health"
-                onSuccess={() => {
+                onSuccess={async () => {
                     setIsHealthModalOpen(false);
-                    // Trigger a reload by toggling a state or re-fetching
-                    // Since loadDashboardData is not accessible here (it's inside useEffect),
-                    // we should probably move it out or just reload the page.
-                    // For now, let's reload the page as a simple fix.
-                    window.location.reload();
+                    if (user) {
+                        await loadDashboardData(user.id);
+                    }
                 }}
             />
         </div>

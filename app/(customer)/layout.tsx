@@ -6,6 +6,7 @@ import { User } from '@/types';
 import { getCurrentUser, onAuthStateChange } from '@/lib/auth';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function CustomerLayout({
     children,
@@ -75,7 +76,9 @@ export default function CustomerLayout({
                 <Header user={user} onMenuClick={() => setIsMobileSidebarOpen(true)} />
                 <main className="py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8">
                     <div className="max-w-7xl mx-auto">
-                        {children}
+                        <ErrorBoundary>
+                            {children}
+                        </ErrorBoundary>
                     </div>
                 </main>
             </div>

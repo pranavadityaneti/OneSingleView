@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import QuoteRequestForm from '@/components/forms/QuoteRequestForm';
 
-export default function StickyAddPolicy({ userId, className = '' }: { userId: string, className?: string }) {
+interface StickyAddPolicyProps {
+    userId: string;
+    className?: string;
+    onSuccess?: () => void;
+}
+
+export default function StickyAddPolicy({ userId, className = '', onSuccess }: StickyAddPolicyProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
@@ -23,7 +29,7 @@ export default function StickyAddPolicy({ userId, className = '' }: { userId: st
                     onClose={() => setIsModalOpen(false)}
                     onSuccess={() => {
                         setIsModalOpen(false);
-                        window.location.reload();
+                        onSuccess?.();
                     }}
                 />
             )}
