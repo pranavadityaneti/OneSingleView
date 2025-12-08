@@ -76,7 +76,7 @@ export default function TrustBar() {
             y: 0,
             transition: {
                 duration: 0.5,
-                ease: 'easeOut',
+                ease: 'easeOut' as const,
             },
         },
     };

@@ -24,7 +24,7 @@ export default function Hero() {
             y: 0,
             transition: {
                 duration: 0.5,
-                ease: 'easeOut',
+                ease: 'easeOut' as const,
             },
         },
     };
@@ -36,7 +36,7 @@ export default function Hero() {
             scale: 1,
             transition: {
                 duration: 0.6,
-                ease: 'easeOut',
+                ease: 'easeOut' as const,
                 delay: 0.4,
             },
         },
