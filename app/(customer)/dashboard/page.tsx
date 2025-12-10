@@ -77,6 +77,7 @@ export default function DashboardPage() {
         const loadData = async () => {
             try {
                 const currentUser = await getCurrentUser();
+
                 if (!currentUser) {
                     router.push('/login');
                     return;
@@ -91,7 +92,7 @@ export default function DashboardPage() {
                 setUser(currentUser);
                 await loadDashboardData(currentUser.id);
             } catch (error) {
-                console.error('[Dashboard] Error loading dashboard:', error);
+                console.error('Error loading dashboard:', error);
             } finally {
                 setLoading(false);
             }

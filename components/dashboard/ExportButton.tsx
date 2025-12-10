@@ -38,7 +38,6 @@ export default function ExportButton({
     const [selectedTypes, setSelectedTypes] = useState<PolicyType[]>([]);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
-    const [selectedStatus, setSelectedStatus] = useState<string[]>(['Active', 'Expiring Soon', 'Expired']);
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('PDF');
 
     // Initialize dates
@@ -58,13 +57,7 @@ export default function ExportButton({
         }
     };
 
-    const toggleStatus = (status: string) => {
-        if (selectedStatus.includes(status)) {
-            setSelectedStatus(selectedStatus.filter(s => s !== status));
-        } else {
-            setSelectedStatus([...selectedStatus, status]);
-        }
-    };
+
 
     const handleExport = async () => {
         try {
@@ -91,14 +84,11 @@ export default function ExportButton({
 
             policiesToExport = policiesToExport.filter(p => {
                 const created = new Date(p.created_at);
-                const endDateValue = 'policy_end_date' in p ? p.policy_end_date : p.expiry_date;
-                const status = calculatePolicyStatus(endDateValue);
 
-                // Filter by date range AND status
+                // Filter by date range only
                 const dateMatch = created >= start && created <= end;
-                const statusMatch = selectedStatus.length > 0 ? selectedStatus.includes(status) : true;
 
-                return dateMatch && statusMatch;
+                return dateMatch;
             });
 
             // Generate descriptive filename
@@ -187,28 +177,6 @@ export default function ExportButton({
                                             >
                                                 <option.icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-primary-600' : 'text-gray-500'}`} />
                                                 <span className="text-sm font-medium">{option.type}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Status Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-900 mb-3">Policy Status</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['Active', 'Expiring Soon', 'Expired'].map((status) => {
-                                        const isSelected = selectedStatus.includes(status);
-                                        return (
-                                            <button
-                                                key={status}
-                                                onClick={() => toggleStatus(status)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${isSelected
-                                                    ? 'bg-primary-50 border-primary-600 text-primary-700'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                {status}
                                             </button>
                                         );
                                     })}

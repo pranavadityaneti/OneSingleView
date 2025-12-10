@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
 import { calculatePolicyStatus, formatCurrency } from '@/lib/utils';
-import { Car, Heart, Briefcase, Eye, Plus, Plane, Umbrella, Shield, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Car, Heart, Briefcase, Eye, Plus, Plane, Umbrella, Shield, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AddPolicyModal from '@/components/policies/AddPolicyModal';
 
@@ -73,7 +73,7 @@ export default function PolicyTable({
     const filteredAndSortedPolicies = useMemo(() => {
         let result = allPolicies;
 
-        // Filter: Show only Active and Expiring Soon policies
+        // Filter: Show Active, Expiring Soon, and Expired policies
         result = result.filter(p => {
             const isMotor = p.type === 'Motor';
             const isHealth = p.type === 'Health';
@@ -82,7 +82,7 @@ export default function PolicyTable({
                     (p as any).expiry_date;
             const endDate = endDateValue ? new Date(endDateValue) : null;
             const status = calculatePolicyStatus(endDate);
-            return status === 'Active' || status === 'Expiring Soon';
+            return status === 'Active' || status === 'Expiring Soon' || status === 'Expired';
         });
 
         // Search
@@ -352,12 +352,14 @@ export default function PolicyTable({
                                         Vehicle Type {getSortIcon('vehicle_type' as SortField)}
                                     </th>
                                 )}
-                                <th
-                                    onClick={() => handleSort('policy_number')}
-                                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                >
-                                    Policy Number {getSortIcon('policy_number')}
-                                </th>
+                                {!isMotorTable && (
+                                    <th
+                                        onClick={() => handleSort('policy_number')}
+                                        className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                                    >
+                                        Policy Number {getSortIcon('policy_number')}
+                                    </th>
+                                )}
                                 <th
                                     onClick={() => handleSort('insurer_name')}
                                     className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
@@ -370,12 +372,14 @@ export default function PolicyTable({
                                 >
                                     Premium Amount {getSortIcon('premium_amount')}
                                 </th>
-                                <th
-                                    onClick={() => handleSort('start_date')}
-                                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                                >
-                                    Start Date {getSortIcon('start_date')}
-                                </th>
+                                {!isMotorTable && (
+                                    <th
+                                        onClick={() => handleSort('start_date')}
+                                        className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                                    >
+                                        Start Date {getSortIcon('start_date')}
+                                    </th>
+                                )}
                                 <th
                                     onClick={() => handleSort('end_date')}
                                     className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
@@ -429,11 +433,13 @@ export default function PolicyTable({
                                                 </span>
                                             </td>
                                         )}
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                {policy.policy_number}
-                                            </span>
-                                        </td>
+                                        {!isMotorTable && (
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {policy.policy_number}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm text-gray-900">
                                                 {policy.insurer_name}
@@ -444,17 +450,19 @@ export default function PolicyTable({
                                                 {formatCurrency(policy.premium_amount)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm text-gray-600">
-                                                {startDate && !isNaN(startDate.getTime())
-                                                    ? startDate.toLocaleDateString('en-IN', {
-                                                        day: '2-digit',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })
-                                                    : 'N/A'}
-                                            </span>
-                                        </td>
+                                        {!isMotorTable && (
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-600">
+                                                    {startDate && !isNaN(startDate.getTime())
+                                                        ? startDate.toLocaleDateString('en-IN', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : 'N/A'}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="text-sm text-gray-600">
                                                 {endDate && !isNaN(endDate.getTime())
@@ -479,13 +487,30 @@ export default function PolicyTable({
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <button
-                                                onClick={() => handleViewDetails(policy)}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                View Details
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleViewDetails(policy)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                    View Details
+                                                </button>
+                                                {((isMotor && (policy.rc_docs?.length > 0 || policy.previous_policy_docs?.length > 0)) ||
+                                                    (!isMotor && policy.policy_docs?.length > 0)) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                const docUrl = isMotor
+                                                                    ? (policy.rc_docs?.[0] || policy.previous_policy_docs?.[0])
+                                                                    : policy.policy_docs?.[0];
+                                                                if (docUrl) window.open(docUrl, '_blank');
+                                                            }}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                                                        >
+                                                            <FileText className="w-4 h-4" />
+                                                            View Doc
+                                                        </button>
+                                                    )}
+                                            </div>
                                         </td>
                                     </tr>
                                 );

@@ -110,8 +110,8 @@ export default function PolicyDetailModal({
                     displayPolicies.some(p => p.policyType === 'Motor') ? <td className="px-4 py-3 text-sm"></td> : null
                 )}
 
-                {/* Hide Policy Number for Expiring/Expired types */}
-                {!['expiring', 'expired'].includes(type) && (
+                {/* Hide Policy Number for Expiring/Expired/Total types */}
+                {!['expiring', 'expired', 'total'].includes(type) && (
                     <td className="px-4 py-3 text-sm text-gray-900">{policy.policy_number}</td>
                 )}
                 <td className="px-4 py-3 text-sm text-gray-900">{policy.insurer_name}</td>
@@ -369,7 +369,7 @@ export default function PolicyDetailModal({
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                                Details
+                                                Vehicle Number
                                             </th>
                                             {/* Vehicle Type Column for Motor Policies */}
                                             {displayPolicies.some(p => p.policyType === 'Motor') && (
@@ -377,8 +377,8 @@ export default function PolicyDetailModal({
                                                     Vehicle Type
                                                 </th>
                                             )}
-                                            {/* Hide Policy Number for Expiring/Expired types as per request */}
-                                            {!['expiring', 'expired'].includes(type) && (
+                                            {/* Hide Policy Number for Expiring/Expired/Total types */}
+                                            {!['expiring', 'expired', 'total'].includes(type) && (
                                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                                     Policy Number
                                                 </th>

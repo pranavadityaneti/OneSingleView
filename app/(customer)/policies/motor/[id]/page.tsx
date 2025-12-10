@@ -15,6 +15,7 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
     const [isEditing, setIsEditing] = useState(false);
     const [editedPolicy, setEditedPolicy] = useState<any | null>(null);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [uploadingDocs, setUploadingDocs] = useState(false);
 
     const normalizePolicy = (data: any) => ({
         ...data,
@@ -128,6 +129,56 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
             }
         } finally {
             setSaveLoading(false);
+        }
+    };
+
+    const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>, docType: 'rc_docs' | 'previous_policy_docs' | 'dl_docs') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setUploadingDocs(true);
+
+            // Upload to Supabase Storage
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${id}_${docType}_${Date.now()}.${fileExt}`;
+            const filePath = `motor_policies/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('policy-documents')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('policy-documents')
+                .getPublicUrl(filePath);
+
+            // Update policy with new document URL
+            const currentDocs = editedPolicy[docType] || [];
+            const updatedDocs = [...currentDocs, publicUrl];
+
+            // Update local state
+            setEditedPolicy((prev: any) => ({
+                ...prev,
+                [docType]: updatedDocs
+            }));
+
+            // Update database
+            const { error: dbError } = await supabase
+                .from('motor_policies')
+                .update({ [docType]: updatedDocs })
+                .eq('id', id);
+
+            if (dbError) throw dbError;
+
+            alert('Document uploaded successfully!');
+        } catch (error: any) {
+            console.error('Error uploading document:', error);
+            alert(`Failed to upload document: ${error.message}`);
+        } finally {
+            setUploadingDocs(false);
         }
     };
 
@@ -265,7 +316,7 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                             />
                         ) : (
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                {policy.policy_number}
+                                {policy.vehicle_number}
                             </h1>
                         )}
                         <p className="text-gray-600">Motor Insurance Policy</p>
@@ -390,6 +441,54 @@ export default function MotorPolicyDetailPage({ params }: { params: Promise<{ id
                     ))}
                     {!policy.rc_docs?.length && !policy.previous_policy_docs?.length && !policy.dl_docs?.length && (
                         <p className="text-gray-500 italic">No documents uploaded</p>
+                    )}
+
+                    {/* Document Upload Section - Only visible in edit mode */}
+                    {isEditing && (
+                        <div className="mt-6 border-t pt-6">
+                            <h3 className="text-md font-semibold text-gray-900 mb-4">Upload Documents</h3>
+                            <div className="grid gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        RC Document
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        onChange={(e) => handleDocumentUpload(e, 'rc_docs')}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        disabled={uploadingDocs}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Previous Policy
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        onChange={(e) => handleDocumentUpload(e, 'previous_policy_docs')}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        disabled={uploadingDocs}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Driving License
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        onChange={(e) => handleDocumentUpload(e, 'dl_docs')}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        disabled={uploadingDocs}
+                                    />
+                                </div>
+                                {uploadingDocs && (
+                                    <p className="text-sm text-blue-600">Uploading document...</p>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

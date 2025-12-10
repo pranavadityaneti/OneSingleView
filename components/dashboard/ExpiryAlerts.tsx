@@ -80,9 +80,6 @@ export default function ExpiryAlerts({ motorPolicies, healthPolicies, commercial
                                     <div>
                                         <p className="font-medium text-gray-900">{policy.vehicle_number}</p>
                                         <p className="text-sm text-gray-600">{policy.insurer_name}</p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Policy: {policy.policy_number}
-                                        </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
