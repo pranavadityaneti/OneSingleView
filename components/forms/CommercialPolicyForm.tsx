@@ -8,6 +8,8 @@ import FileUpload from './FileUpload';
 import { addCommercialPolicy, updateCommercialPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 import { formatDateForInput } from '@/lib/utils';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import {
     validatePolicyNumber,
     validatePremiumAmount,
@@ -16,14 +18,18 @@ import {
 
 interface CommercialPolicyFormProps {
     userId: string;
+    userRole?: string;
     initialData?: CommercialPolicy;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function CommercialPolicyForm({ userId, initialData, onClose, onSuccess }: CommercialPolicyFormProps) {
+export default function CommercialPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: CommercialPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
 
     const [formData, setFormData] = useState<CommercialPolicyFormData>({
         lob_type: initialData?.lob_type || 'GPA',
@@ -58,6 +64,11 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
             ...prev,
             [name]: type === 'number' ? Number(value) : value
         }));
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
+        }
 
         if (errors[name]) {
             setErrors(prev => {
@@ -96,6 +107,12 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setErrors(prev => ({ ...prev, policy_number: 'This policy already exists. Please check the policy number.' }));
+            return;
+        }
 
         if (!validateForm()) return;
 
@@ -171,13 +188,16 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
                                 ]}
                                 required
                             />
-                            <FormInput
-                                label="Company Name"
-                                name="company_name"
-                                value={formData.company_name || ''}
-                                onChange={handleChange}
-                                placeholder="e.g. Acme Corp"
-                            />
+                            {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                                <FormInput
+                                    label="Company Name"
+                                    name="company_name"
+                                    value={formData.company_name || ''}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Acme Corp"
+                                    required
+                                />
+                            )}
                             <FormInput
                                 label="Policy Holder Name"
                                 name="policy_holder_name"
@@ -194,6 +214,16 @@ export default function CommercialPolicyForm({ userId, initialData, onClose, onS
                                 error={errors.policy_number}
                                 required
                             />
+
+                            {/* Duplicate Policy Warning */}
+                            {duplicateResult?.exists && (
+                                <DuplicatePolicyWarning
+                                    policyNumber={formData.policy_number || ''}
+                                    policyType={duplicateResult.policyType || 'commercial'}
+                                    policyId={duplicateResult.policyId || ''}
+                                    insurerName={duplicateResult.policy?.insurer_name}
+                                />
+                            )}
                             <FormInput
                                 label="Insurer Name"
                                 name="insurer_name"

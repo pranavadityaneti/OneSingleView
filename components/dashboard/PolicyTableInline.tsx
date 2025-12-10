@@ -9,10 +9,11 @@ interface PolicyTableProps {
     policies: any[];
     policyType: 'Motor' | 'Health' | 'Commercial' | 'Travel' | 'Life' | 'Cyber';
     userId: string;
+    userRole?: string;
     onPolicyAdded?: () => void;
 }
 
-export default function PolicyTable({ policies, policyType, userId, onPolicyAdded }: PolicyTableProps) {
+export default function PolicyTable({ policies, policyType, userId, userRole, onPolicyAdded }: PolicyTableProps) {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const getStatusBadge = (status: string) => {
@@ -108,6 +109,7 @@ export default function PolicyTable({ policies, policyType, userId, onPolicyAdde
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 userId={userId}
+                userRole={userRole}
                 initialType={policyType}
                 onSuccess={() => {
                     setIsAddModalOpen(false);

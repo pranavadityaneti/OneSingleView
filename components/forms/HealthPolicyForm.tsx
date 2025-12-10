@@ -5,6 +5,8 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { HealthPolicy, HealthPolicyFormData } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import { addHealthPolicy, updateHealthPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 import { formatDateForInput } from '@/lib/utils';
@@ -16,14 +18,18 @@ import {
 
 interface HealthPolicyFormProps {
     userId: string;
+    userRole?: string;
     initialData?: HealthPolicy;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function HealthPolicyForm({ userId, initialData, onClose, onSuccess }: HealthPolicyFormProps) {
+export default function HealthPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: HealthPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
 
     const [formData, setFormData] = useState<HealthPolicyFormData>({
         company_name: initialData?.company_name || '',
@@ -65,6 +71,11 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
                 return newErrors;
             });
         }
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
+        }
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +98,11 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
         }
 
         if (!formData.insurer_name) newErrors.insurer_name = 'Insurer name is required';
-        if (!formData.company_name) newErrors.company_name = 'Company name is required';
+
+        // Company name required only for corporate users
+        if ((userRole === 'corporate_employee' || userRole === 'corporate_admin') && !formData.company_name) {
+            newErrors.company_name = 'Company name is required';
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -95,6 +110,12 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setErrors(prev => ({ ...prev, policy_number: 'This policy already exists. Please check the policy number.' }));
+            return;
+        }
 
         if (!validateForm()) return;
 
@@ -156,15 +177,17 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
                     <section>
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Policy Details</h3>
                         <div className="grid md:grid-cols-3 gap-6">
-                            <FormInput
-                                label="Company Name"
-                                name="company_name"
-                                value={formData.company_name || ''}
-                                onChange={handleChange}
-                                placeholder="e.g. Acme Corp"
-                                error={errors.company_name}
-                                required
-                            />
+                            {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                                <FormInput
+                                    label="Company Name"
+                                    name="company_name"
+                                    value={formData.company_name || ''}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Acme Corp"
+                                    error={errors.company_name}
+                                    required
+                                />
+                            )}
                             <FormInput
                                 label="Policy Number"
                                 name="policy_number"
@@ -174,6 +197,16 @@ export default function HealthPolicyForm({ userId, initialData, onClose, onSucce
                                 error={errors.policy_number}
                                 required
                             />
+
+                            {/* Duplicate Policy Warning */}
+                            {duplicateResult?.exists && (
+                                <DuplicatePolicyWarning
+                                    policyNumber={formData.policy_number || ''}
+                                    policyType={duplicateResult.policyType || 'health'}
+                                    policyId={duplicateResult.policyId || ''}
+                                    insurerName={duplicateResult.policy?.insurer_name}
+                                />
+                            )}
                             <FormInput
                                 label="Insurer Name"
                                 name="insurer_name"

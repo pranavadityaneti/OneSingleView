@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Search, ArrowDown, ArrowUp, FileText, Info } from 'lucide-react';
+import { X, Search, ArrowDown, ArrowUp, FileText, Info, RefreshCw } from 'lucide-react';
 import { MotorPolicy, HealthPolicy, CommercialPolicy } from '@/types';
+import RenewalConfirmationModal from './RenewalConfirmationModal';
 
 interface PolicyDetailModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ interface PolicyDetailModalProps {
     travelPolicies?: any[];
     lifePolicies?: any[];
     cyberPolicies?: any[];
+    onRenewPolicy?: (policy: any, policyType: string) => void; // NEW: For renewal handling
 }
 
 export default function PolicyDetailModal({
@@ -28,12 +30,18 @@ export default function PolicyDetailModal({
     commercialPolicies = [],
     travelPolicies = [],
     lifePolicies = [],
-    cyberPolicies = []
+    cyberPolicies = [],
+    onRenewPolicy // NEW
 }: PolicyDetailModalProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [sortDirection, setSortDirection] = useState<'high' | 'low' | null>(null); // null = no sort
     const [showClaimsInfo, setShowClaimsInfo] = useState(false);
+
+    // Renewal modal state
+    const [showRenewalModal, setShowRenewalModal] = useState(false);
+    const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+    const [selectedPolicyType, setSelectedPolicyType] = useState<string>('');
 
     const handlePolicyClick = (policyType: string, id: string) => {
         onClose();
@@ -45,11 +53,24 @@ export default function PolicyDetailModal({
     };
 
     const handleViewQuote = (policy: any) => {
-        // This will open the quote document if available
         if (policy.quote_document_url) {
             window.open(policy.quote_document_url, '_blank');
         } else {
             alert('No quote document available for this policy');
+        }
+    };
+
+    // NEW: Handle renew button click
+    const handleRenewClick = (policy: any, policyType: string) => {
+        setSelectedPolicy(policy);
+        setSelectedPolicyType(policyType);
+        setShowRenewalModal(true);
+    };
+
+    // NEW: Handle renewal confirmation
+    const handleRenewalConfirm = () => {
+        if (onRenewPolicy && selectedPolicy && selectedPolicyType) {
+            onRenewPolicy(selectedPolicy, selectedPolicyType);
         }
     };
 
@@ -209,6 +230,19 @@ export default function PolicyDetailModal({
                             )}
                     </div>
                 </td>
+
+                {/* Action Column - Only for expiring and expired */}
+                {(type === 'expiring' || type === 'expired') && (
+                    <td className="px-4 py-3 text-sm">
+                        <button
+                            onClick={() => handleRenewClick(policy, policyType)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Renew
+                        </button>
+                    </td>
+                )}
             </tr>
         );
     };
@@ -414,6 +448,12 @@ export default function PolicyDetailModal({
                                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                                 View Doc
                                             </th>
+                                            {/* Action Column Header */}
+                                            {(type === 'expiring' || type === 'expired') && (
+                                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                                    Action
+                                                </th>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 bg-white">
@@ -464,6 +504,15 @@ export default function PolicyDetailModal({
                     </div>
                 </div>
             )}
+
+            {/* Renewal Confirmation Modal */}
+            <RenewalConfirmationModal
+                isOpen={showRenewalModal}
+                onClose={() => setShowRenewalModal(false)}
+                onConfirm={handleRenewalConfirm}
+                policy={selectedPolicy}
+                policyType={selectedPolicyType}
+            />
         </>
     );
 }

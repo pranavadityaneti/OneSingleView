@@ -18,6 +18,7 @@ interface PolicyTableProps {
     lifePolicies?: any[];
     cyberPolicies?: any[];
     userId: string;
+    userRole?: string;
     onPolicyAdded?: () => void;
 }
 
@@ -35,6 +36,7 @@ export default function PolicyTable({
     lifePolicies = [],
     cyberPolicies = [],
     userId,
+    userRole,
     onPolicyAdded
 }: PolicyTableProps) {
     const router = useRouter();
@@ -569,6 +571,7 @@ export default function PolicyTable({
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 userId={userId}
+                userRole={userRole}
                 initialType={policyType}
                 onSuccess={() => {
                     setIsAddModalOpen(false);

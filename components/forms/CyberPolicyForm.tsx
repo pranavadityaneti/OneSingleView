@@ -2,31 +2,40 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
+import { CyberPolicy } from '@/types';
 import FormInput from './FormInput';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import FileUpload from './FileUpload';
 import { addCyberPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 
 interface CyberPolicyFormProps {
     userId: string;
+    userRole?: string;
     initialData?: any;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function CyberPolicyForm({ userId, initialData, onClose, onSuccess }: CyberPolicyFormProps) {
+export default function CyberPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: CyberPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [formData, setFormData] = useState({
-        policy_number: initialData?.policy_number || '',
-        insurer_name: initialData?.insurer_name || '',
-        premium_amount: initialData?.premium_amount || 0,
-        sum_insured: initialData?.sum_insured || 0,
-        cyber_risk_type: initialData?.cyber_risk_type || 'Personal',
-        policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
-        policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-        document_url: initialData?.document_url || '',
+    const [error, setError] = useState(''); // For general form errors like duplicate policy
+    const [formData, setFormData] = useState<Partial<CyberPolicy>>(initialData || {
+        company_name: '',
+        policy_number: '',
+        insurer_name: '',
+        premium_amount: 0,
+        sum_insured: 0,
+        cyber_risk_type: 'Personal',
+        policy_start_date: new Date(),
+        policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        document_url: '',
     });
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
 
     // Auto-calculate end date when start date changes (1 day before same date next year)
     useEffect(() => {
@@ -48,6 +57,12 @@ export default function CyberPolicyForm({ userId, initialData, onClose, onSucces
             ...prev,
             [name]: type === 'number' ? Number(value) : value
         }));
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
+            setError(''); // Clear general error when policy number changes
+        }
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +72,15 @@ export default function CyberPolicyForm({ userId, initialData, onClose, onSucces
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setError('This policy already exists. Please check the policy number.');
+            return;
+        }
+
         setLoading(true);
+        setError(''); // Clear any previous general errors
         try {
             await addCyberPolicy({
                 ...formData,
@@ -78,30 +101,49 @@ export default function CyberPolicyForm({ userId, initialData, onClose, onSucces
             <h3 className="text-lg font-semibold text-gray-900">Cyber Insurance Details</h3>
 
             <div className="grid md:grid-cols-2 gap-6">
-                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
-                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
+                {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                    <FormInput label="Company Name" name="company_name" value={(formData as any).company_name || ''} onChange={handleChange} placeholder="e.g. Acme Corp" required />
+                )}
+                <FormInput
+                    label="Policy Number"
+                    name="policy_number"
+                    value={formData.policy_number || ''}
+                    onChange={handleChange}
+                    placeholder="Enter policy number"
+                    required
+                />
+
+                {/* Duplicate Policy Warning */}
+                {duplicateResult?.exists && (
+                    <DuplicatePolicyWarning
+                        policyNumber={formData.policy_number || ''}
+                        policyType={duplicateResult.policyType || 'cyber'}
+                        policyId={duplicateResult.policyId || ''}
+                        insurerName={duplicateResult.policy?.insurer_name}
+                    />
+                )}
                 <FormInput
                     label="Insurer Name"
                     name="insurer_name"
                     type="select"
-                    value={formData.insurer_name}
+                    value={formData.insurer_name || ''}
                     onChange={handleChange}
                     options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                     required
                 />
-                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount} onChange={handleChange} required />
-                <FormInput label="Sum Insured (₹)" name="sum_insured" type="number" value={formData.sum_insured} onChange={handleChange} required />
+                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount || 0} onChange={handleChange} required />
+                <FormInput label="Sum Insured (₹)" name="sum_insured" type="number" value={formData.sum_insured || 0} onChange={handleChange} required />
                 <FormInput
                     label="Risk Type"
                     name="cyber_risk_type"
                     type="select"
-                    value={formData.cyber_risk_type}
+                    value={formData.cyber_risk_type || ''}
                     onChange={handleChange}
                     options={[{ value: 'Personal', label: 'Personal' }, { value: 'Business', label: 'Business' }]}
                     required
                 />
-                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
-                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
+                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date ? new Date(formData.policy_start_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
+                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date ? new Date(formData.policy_end_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
             </div>
 
             <FileUpload

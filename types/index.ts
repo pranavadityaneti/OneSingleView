@@ -91,7 +91,72 @@ export interface CommercialPolicy {
     sum_insured?: number;
     expiry_date: Date;
     policy_docs: string[];
-    status?: PolicyStatus; // Optional since database doesn't have this column yet
+    status?: PolicyStatus;
+    created_at: Date;
+    updated_at: Date;
+}
+
+// Travel Policy
+export interface TravelPolicy {
+    id: string;
+    user_id: string;
+    policy_number: string;
+    insurer_id?: string;
+    insurer_name: string;
+    destination: string;
+    trip_type?: 'Single' | 'Multi-Trip' | 'Annual';
+    traveler_count?: number;
+    sum_insured?: number;
+    premium_amount: number;
+    policy_start_date: Date;
+    policy_end_date: Date;
+    status?: PolicyStatus;
+    policy_docs?: string[];
+    renewed_from_policy_id?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+// Life Policy
+export interface LifePolicy {
+    id: string;
+    user_id: string;
+    policy_number: string;
+    insurer_id?: string;
+    insurer_name: string;
+    nominee_name?: string;
+    nominee_relation?: string;
+    sum_assured?: number;
+    premium_amount: number;
+    premium_frequency?: 'Monthly' | 'Quarterly' | 'Half-Yearly' | 'Yearly';
+    policy_start_date: Date;
+    policy_end_date: Date;
+    policy_term?: number;
+    status?: PolicyStatus;
+    policy_docs?: string[];
+    renewed_from_policy_id?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+// Cyber Policy
+export interface CyberPolicy {
+    id: string;
+    user_id: string;
+    policy_number: string;
+    insurer_id?: string;
+    insurer_name: string;
+    cyber_risk_type?: string;
+    coverage_type?: string;
+    data_protection_coverage?: number;
+    liability_coverage?: number;
+    sum_insured?: number;
+    premium_amount: number;
+    policy_start_date: Date;
+    policy_end_date: Date;
+    status?: PolicyStatus;
+    policy_docs?: string[];
+    renewed_from_policy_id?: string;
     created_at: Date;
     updated_at: Date;
 }
@@ -186,9 +251,10 @@ export interface DashboardSummary {
 
 // Form Data Types (for partial/draft data)
 export interface MotorPolicyFormData extends Partial<MotorPolicy> {
-    rc_files?: File[];
-    previous_policy_files?: File[];
-    dl_files?: File[];
+    company_name?: string;
+    rc_docs?: string[];
+    previous_policy_docs?: string[];
+    dl_docs?: string[];
 }
 
 export interface HealthPolicyFormData extends Partial<HealthPolicy> {
@@ -282,4 +348,19 @@ export interface RMInfo {
     name: string;
     email: string;
     mobile: string;
+}
+
+// Additional Documents
+export type DocumentType = 'aadhar_card' | 'pan_card' | 'gst_certificate' | 'cin' | 'moa' | 'aoa' | 'other';
+
+export interface AdditionalDocument {
+    id: string;
+    user_id: string;
+    document_type: DocumentType;
+    document_name: string;
+    file_name: string;
+    file_url: string;
+    file_size: number;
+    uploaded_at: Date;
+    created_at: Date;
 }

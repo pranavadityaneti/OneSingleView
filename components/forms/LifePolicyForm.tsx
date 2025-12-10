@@ -2,31 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
+import { LifePolicy } from '@/types';
 import FormInput from './FormInput';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import FileUpload from './FileUpload';
 import { addLifePolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 
 interface LifePolicyFormProps {
     userId: string;
+    userRole?: string;
     initialData?: any;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function LifePolicyForm({ userId, initialData, onClose, onSuccess }: LifePolicyFormProps) {
+export default function LifePolicyForm({ userId, userRole, initialData, onClose, onSuccess }: LifePolicyFormProps) {
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [formData, setFormData] = useState({
-        policy_number: initialData?.policy_number || '',
-        insurer_name: initialData?.insurer_name || '',
-        premium_amount: initialData?.premium_amount || 0,
-        sum_assured: initialData?.sum_assured || 0,
-        nominee_name: initialData?.nominee_name || '',
-        policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
-        policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
-        document_url: initialData?.document_url || '',
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState<Partial<LifePolicy>>(initialData || {
+        company_name: '',
+        policy_number: '',
+        insurer_name: '',
+        premium_amount: 0,
+        sum_assured: 0,
+        nominee_name: '',
+        policy_start_date: new Date(),
+        policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
+        document_url: '',
     });
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
 
     // Auto-calculate end date when start date changes (1 day before same date next year)
     useEffect(() => {
@@ -48,6 +56,11 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
             ...prev,
             [name]: type === 'number' ? Number(value) : value
         }));
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
+        }
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +70,15 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setError('This policy already exists. Please check the policy number.');
+            return;
+        }
+
         setLoading(true);
+        setError('');
         try {
             await addLifePolicy({
                 ...formData,
@@ -67,7 +88,7 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
             onSuccess();
         } catch (error) {
             console.error('Error saving life policy:', error);
-            setErrors({ submit: 'Failed to save policy' });
+            setError('Failed to save policy');
         } finally {
             setLoading(false);
         }
@@ -78,22 +99,43 @@ export default function LifePolicyForm({ userId, initialData, onClose, onSuccess
             <h3 className="text-lg font-semibold text-gray-900">Life Insurance Details</h3>
 
             <div className="grid md:grid-cols-2 gap-6">
-                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
-                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
+                {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                    <FormInput label="Company Name" name="company_name" value={(formData as any).company_name || ''} onChange={handleChange} placeholder="e.g. Acme Corp" required />
+                )}
+                <div> {/* Wrapper div for policy number and warning */}
+                    <FormInput
+                        label="Policy Number"
+                        name="policy_number"
+                        value={formData.policy_number || ''}
+                        onChange={handleChange}
+                        placeholder="Enter policy number"
+                        required
+                    />
+
+                    {/* Duplicate Policy Warning */}
+                    {duplicateResult?.exists && (
+                        <DuplicatePolicyWarning
+                            policyNumber={formData.policy_number || ''}
+                            policyType={duplicateResult.policyType || 'life'}
+                            policyId={duplicateResult.policyId || ''}
+                            insurerName={duplicateResult.policy?.insurer_name}
+                        />
+                    )}
+                </div>
                 <FormInput
                     label="Insurer Name"
                     name="insurer_name"
                     type="select"
-                    value={formData.insurer_name}
+                    value={formData.insurer_name || ''}
                     onChange={handleChange}
                     options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                     required
                 />
-                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount} onChange={handleChange} required />
-                <FormInput label="Sum Assured (₹)" name="sum_assured" type="number" value={formData.sum_assured} onChange={handleChange} required />
-                <FormInput label="Nominee Name" name="nominee_name" value={formData.nominee_name} onChange={handleChange} required />
-                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
-                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
+                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount || 0} onChange={handleChange} required />
+                <FormInput label="Sum Assured (₹)" name="sum_assured" type="number" value={formData.sum_assured || 0} onChange={handleChange} required />
+                <FormInput label="Nominee Name" name="nominee_name" value={formData.nominee_name || ''} onChange={handleChange} required />
+                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date ? new Date(formData.policy_start_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
+                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date ? new Date(formData.policy_end_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
             </div>
 
             <FileUpload

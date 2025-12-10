@@ -3,9 +3,13 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { PortfolioStats } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { useState } from 'react';
+import PremiumBreakdownModal from './PremiumBreakdownModal';
 
 interface AnalyticsDonutChartProps {
     data: PortfolioStats;
+    allPolicies?: any[];
+    userRole?: string;
 }
 
 const COLORS = {
@@ -26,7 +30,9 @@ const LABELS = {
     cyber: 'Cyber',
 };
 
-export default function AnalyticsDonutChart({ data }: AnalyticsDonutChartProps) {
+export default function AnalyticsDonutChart({ data, allPolicies = [], userRole }: AnalyticsDonutChartProps) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedPolicyType, setSelectedPolicyType] = useState<'Motor' | 'Health' | 'Commercial' | 'Travel' | 'Life' | 'Cyber' | null>(null);
     const chartData = [
         { name: LABELS.motor, value: data.motor, color: COLORS.motor },
         { name: LABELS.health, value: data.health, color: COLORS.health },
@@ -66,6 +72,19 @@ export default function AnalyticsDonutChart({ data }: AnalyticsDonutChartProps) 
                             dataKey="value"
                             cornerRadius={6}
                             stroke="none"
+                            onClick={(data) => {
+                                const policyTypeMap: Record<string, 'Motor' | 'Health' | 'Commercial' | 'Travel' | 'Life' | 'Cyber'> = {
+                                    'Motor': 'Motor',
+                                    'Health': 'Health',
+                                    'Commercial': 'Commercial',
+                                    'Travel': 'Travel',
+                                    'Life': 'Life',
+                                    'Cyber': 'Cyber'
+                                };
+                                setSelectedPolicyType(policyTypeMap[data.name]);
+                                setModalOpen(true);
+                            }}
+                            cursor="pointer"
                         >
                             {chartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -104,6 +123,30 @@ export default function AnalyticsDonutChart({ data }: AnalyticsDonutChartProps) 
                     </div>
                 ))}
             </div>
+
+            {/* Premium Breakdown Modal */}
+            {modalOpen && selectedPolicyType && (
+                <PremiumBreakdownModal
+                    isOpen={modalOpen}
+                    onClose={() => {
+                        setModalOpen(false);
+                        setSelectedPolicyType(null);
+                    }}
+                    policyType={selectedPolicyType}
+                    policies={allPolicies.filter(p => {
+                        const typeMap: Record<string, string> = {
+                            'Motor': 'motor',
+                            'Health': 'health',
+                            'Commercial': 'commercial',
+                            'Travel': 'travel',
+                            'Life': 'life',
+                            'Cyber': 'cyber'
+                        };
+                        return p.policy_type?.toLowerCase() === typeMap[selectedPolicyType];
+                    })}
+                    userRole={userRole}
+                />
+            )}
         </div>
     );
 }

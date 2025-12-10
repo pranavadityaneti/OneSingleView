@@ -36,6 +36,7 @@ export default function ExportButton({
 
     // Filter States
     const [selectedTypes, setSelectedTypes] = useState<PolicyType[]>([]);
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['Active', 'Expiring Soon', 'Expired']);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('PDF');
@@ -54,6 +55,14 @@ export default function ExportButton({
             setSelectedTypes(selectedTypes.filter(t => t !== type));
         } else {
             setSelectedTypes([...selectedTypes, type]);
+        }
+    };
+
+    const toggleStatus = (status: string) => {
+        if (selectedStatuses.includes(status)) {
+            setSelectedStatuses(selectedStatuses.filter(s => s !== status));
+        } else {
+            setSelectedStatuses([...selectedStatuses, status]);
         }
     };
 
@@ -83,13 +92,30 @@ export default function ExportButton({
             end.setHours(23, 59, 59, 999);
 
             policiesToExport = policiesToExport.filter(p => {
-                const created = new Date(p.created_at);
+                // Determine if Motor or other type
+                const isMotor = p.vehicle_number !== undefined;
+                const endDateValue = isMotor ? p.policy_end_date : p.expiry_date;
 
-                // Filter by date range only
-                const dateMatch = created >= start && created <= end;
+                if (!endDateValue) return false;
 
-                return dateMatch;
+                const policyEndDate = new Date(endDateValue);
+                const status = calculatePolicyStatus(policyEndDate);
+
+                // Filter by policy end date range
+                const dateMatch = policyEndDate >= start && policyEndDate <= end;
+
+                // Filter by selected statuses
+                const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(status);
+
+                return dateMatch && statusMatch;
             });
+
+            // Check if no policies found
+            if (policiesToExport.length === 0) {
+                alert('No policies found for this date range. Please adjust your filters and try again.');
+                setIsExporting(false);
+                return;
+            }
 
             // Generate descriptive filename
             const dateRangeStr = `${startDate}_to_${endDate}`;
@@ -183,6 +209,33 @@ export default function ExportButton({
                                 </div>
                             </div>
 
+                            {/* Policy Status Selection */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-3">Policy Status</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {['Active', 'Expiring Soon', 'Expired'].map((status) => {
+                                        const isSelected = selectedStatuses.includes(status);
+                                        const statusColors = {
+                                            'Active': 'border-green-600 bg-green-50 text-green-700 ring-1 ring-green-600',
+                                            'Expiring Soon': 'border-orange-600 bg-orange-50 text-orange-700 ring-1 ring-orange-600',
+                                            'Expired': 'border-red-600 bg-red-50 text-red-700 ring-1 ring-red-600'
+                                        };
+                                        return (
+                                            <button
+                                                key={status}
+                                                onClick={() => toggleStatus(status)}
+                                                className={`flex items-center justify-center px-3 py-2 rounded-xl border transition-all text-sm font-medium ${isSelected
+                                                    ? statusColors[status as keyof typeof statusColors]
+                                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600'
+                                                    }`}
+                                            >
+                                                {status}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Date Range */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-900 mb-3">Date Range</label>
@@ -234,6 +287,7 @@ export default function ExportButton({
                             <button
                                 onClick={() => {
                                     setSelectedTypes([]);
+                                    setSelectedStatuses(['Active', 'Expiring Soon', 'Expired']);
                                     const end = new Date();
                                     const start = new Date();
                                     start.setMonth(start.getMonth() - 1);

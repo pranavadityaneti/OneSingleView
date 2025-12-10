@@ -187,6 +187,7 @@ function PoliciesContent() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 userId={user?.id || ''}
+                userRole={user?.role}
                 onSuccess={refreshData}
             />
 

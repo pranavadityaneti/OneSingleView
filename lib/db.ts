@@ -14,6 +14,7 @@ import {
     Garage,
     UserPreferences,
     RMInfo,
+    AdditionalDocument,
 } from '@/types';
 
 // Helper to convert database rows to app types
@@ -56,6 +57,7 @@ export async function getUserMotorPolicies(userId: string): Promise<MotorPolicy[
             .from('motor_policies')
             .select('*')
             .eq('user_id', userId)
+            .neq('status', 'History') // Exclude renewed/archived policies
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -80,6 +82,7 @@ export async function getUserHealthPolicies(userId: string): Promise<HealthPolic
             .from('health_policies')
             .select('*')
             .eq('user_id', userId)
+            .neq('status', 'History') // Exclude renewed/archived policies
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -102,7 +105,8 @@ export async function getUserCommercialPolicies(
         let query = supabase
             .from('commercial_policies')
             .select('*')
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .neq('status', 'History'); // Exclude renewed/archived policies
 
         if (lobType) {
             query = query.eq('lob_type', lobType);
@@ -1035,6 +1039,7 @@ export async function getUserLifePolicies(userId: string) {
         .from('life_policies')
         .select('*')
         .eq('user_id', userId)
+        .neq('status', 'History') // Exclude renewed/archived policies
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
@@ -1059,6 +1064,7 @@ export async function getUserTravelPolicies(userId: string) {
         .from('travel_policies')
         .select('*')
         .eq('user_id', userId)
+        .neq('status', 'History') // Exclude renewed/archived policies
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
@@ -1098,6 +1104,7 @@ export async function getUserCyberPolicies(userId: string) {
         .from('cyber_policies')
         .select('*')
         .eq('user_id', userId)
+        .neq('status', 'History') // Exclude renewed/archived policies
         .order('policy_end_date', { ascending: true });
 
     if (error) throw error;
@@ -1174,5 +1181,132 @@ export async function uploadAvatar(userId: string, file: File): Promise<string |
     } catch (error: any) {
         console.error('Error uploading avatar:', error.message);
         return null;
+    }
+}
+
+// --- Additional Documents Functions ---
+
+/**
+ * Get all additional documents for a user
+ */
+export async function getUserAdditionalDocuments(userId: string): Promise<AdditionalDocument[]> {
+    try {
+        const { data, error } = await supabase
+            .from('additional_documents')
+            .select('*')
+            .eq('user_id', userId)
+            .order('uploaded_at', { ascending: false });
+
+        if (error) throw error;
+
+        return (data || []).map((row: any) => convertDates(row)) as AdditionalDocument[];
+    } catch (error: any) {
+        console.error('Error fetching additional documents:', error);
+        return [];
+    }
+}
+
+/**
+ * Add an additional document
+ */
+export async function addAdditionalDocument(doc: Omit<AdditionalDocument, 'id' | 'created_at' | 'updated_at' | 'uploaded_at'>): Promise<string> {
+    try {
+        const { data, error } = await supabase
+            .from('additional_documents')
+            .insert({
+                user_id: doc.user_id,
+                document_type: doc.document_type,
+                document_name: doc.document_name,
+                file_name: doc.file_name,
+                file_url: doc.file_url,
+                file_size: doc.file_size,
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data.id;
+    } catch (error: any) {
+        console.error('Error adding additional document:', error);
+        throw new Error(error.message || 'Failed to add document');
+    }
+}
+
+/**
+ * Delete an additional document
+ */
+export async function deleteAdditionalDocument(id: string): Promise<void> {
+    try {
+        const { error } = await supabase
+            .from('additional_documents')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    } catch (error: any) {
+        console.error('Error deleting additional document:', error);
+        throw new Error(error.message || 'Failed to delete document');
+    }
+}
+
+/**
+ * Upload file to Supabase storage
+ */
+export async function uploadAdditionalDocument(userId: string, file: File, bucket: string = 'additional-documents'): Promise<string | null> {
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}-${file.name}`;
+
+        // Upload file
+        const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(fileName, file);
+
+        if (uploadError) {
+            throw uploadError;
+        }
+
+        // Get public URL
+        const { data } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(fileName);
+
+        return data.publicUrl;
+    } catch (error: any) {
+        console.error('Error uploading document:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Update policy status (Active, Expired, History)
+ */
+export async function updatePolicyStatus(
+    policyType: 'motor' | 'health' | 'commercial' | 'travel' | 'life' | 'cyber',
+    policyId: string,
+    status: 'Active' | 'Expired' | 'History'
+): Promise<void> {
+    const tableMap = {
+        motor: 'motor_policies',
+        health: 'health_policies',
+        commercial: 'commercial_policies',
+        travel: 'travel_policies',
+        life: 'life_policies',
+        cyber: 'cyber_policies',
+    };
+
+    const tableName = tableMap[policyType];
+
+    try {
+        const { error } = await supabase
+            .from(tableName)
+            .update({ status, updated_at: new Date().toISOString() })
+            .eq('id', policyId);
+
+        if (error) throw error;
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error updating ${policyType} policy status:`, errorMessage);
+        throw new Error(errorMessage || `Failed to update ${policyType} policy status`);
     }
 }

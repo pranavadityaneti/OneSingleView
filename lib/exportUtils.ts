@@ -455,68 +455,26 @@ function prepareDataForExport(policies: any[]) {
         const expiryDate = policy.expiry_date || policy.policy_end_date;
         const status = expiryDate ? calculatePolicyStatus(new Date(expiryDate)) : 'N/A';
 
-        // Motor specific (15 fields)
+        // Motor specific - 7 columns
         if (policy.vehicle_number) {
             return {
-                'Policy Number': policy.policy_number || 'N/A',
-                'Status': status,
-                'Insurer Name': policy.insurer_name || 'N/A',
                 'Vehicle Number': policy.vehicle_number || 'N/A',
-                'Vehicle Type': policy.vehicle_type || 'N/A',
-                'Manufacturer': policy.manufacturer || 'N/A',
-                'Model': policy.model || 'N/A',
-                'Fuel Type': policy.fuel_type || 'N/A',
-                'Mfg Year': policy.manufacturing_year || 'N/A',
-                'Plate Type': policy.number_plate_type || 'N/A',
-                'Ownership': policy.ownership_type || 'N/A',
-                'Premium': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
-                'Start Date': policy.policy_start_date ? formatDate(new Date(policy.policy_start_date)) : 'N/A',
-                'End Date': policy.policy_end_date ? formatDate(new Date(policy.policy_end_date)) : 'N/A',
-                'Created On': policy.created_at ? formatDate(new Date(policy.created_at)) : 'N/A',
-            };
-        }
-
-        // Health specific (9 fields)
-        if (policy.no_of_lives !== undefined || policy.sum_insured !== undefined) {
-            return {
+                'Type of Vehicle': policy.vehicle_type || 'N/A',
                 'Policy Number': policy.policy_number || 'N/A',
-                'Status': status,
                 'Insurer Name': policy.insurer_name || 'N/A',
-                'Company Name': policy.company_name || 'N/A',
-                'Sum Insured': policy.sum_insured ? formatCurrency(policy.sum_insured) : 'N/A',
-                'No. of Lives': policy.no_of_lives || 'N/A',
-                'Premium': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
-                'Expiry Date': expiryDate ? formatDate(new Date(expiryDate)) : 'N/A',
-                'Created On': policy.created_at ? formatDate(new Date(policy.created_at)) : 'N/A',
+                'Premium Amount': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
+                'Policy End Date': policy.policy_end_date ? formatDate(new Date(policy.policy_end_date)) : 'N/A',
+                'Status': status
             };
         }
 
-        // Commercial specific (10 fields)
-        if (policy.lob_type && ['GPA', 'Fire', 'Other'].includes(policy.lob_type)) {
-            return {
-                'Policy Number': policy.policy_number || 'N/A',
-                'Status': status,
-                'LOB Type': policy.lob_type || 'N/A',
-                'Insurer Name': policy.insurer_name || 'N/A',
-                'Company Name': policy.company_name || 'N/A',
-                'Policy Holder': policy.policy_holder_name || 'N/A',
-                'Sum Insured': policy.sum_insured ? formatCurrency(policy.sum_insured) : 'N/A',
-                'Premium': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
-                'Expiry Date': expiryDate ? formatDate(new Date(expiryDate)) : 'N/A',
-                'Created On': policy.created_at ? formatDate(new Date(policy.created_at)) : 'N/A',
-            };
-        }
-
-        // Generic (Travel/Life/Cyber) - 8 fields
+        // All Other Types (Health/Travel/Commercial/Life/Cyber) - 5 columns
         return {
             'Policy Number': policy.policy_number || 'N/A',
-            'Status': status,
-            'Type': policy.lob_type || 'N/A',
             'Insurer Name': policy.insurer_name || 'N/A',
-            'Sum Insured': policy.sum_insured ? formatCurrency(policy.sum_insured) : 'N/A',
-            'Premium': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
-            'Expiry Date': expiryDate ? formatDate(new Date(expiryDate)) : 'N/A',
-            'Created On': policy.created_at ? formatDate(new Date(policy.created_at)) : 'N/A',
+            'Premium Amount': policy.premium_amount ? formatCurrency(policy.premium_amount) : 'N/A',
+            'Policy End Date': expiryDate ? formatDate(new Date(expiryDate)) : 'N/A',
+            'Status': status
         };
     });
 }

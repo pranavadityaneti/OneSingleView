@@ -6,6 +6,8 @@ import { MotorPolicy, MotorPolicyFormData } from '@/types';
 import FormInput from './FormInput';
 import FileUpload from './FileUpload';
 import { addMotorPolicy, updateMotorPolicy } from '@/lib/db';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import { INSURANCE_COMPANIES, CAR_MANUFACTURERS } from '@/lib/constants';
 import { formatDateForInput } from '@/lib/utils';
 import {
@@ -19,16 +21,18 @@ import {
 
 interface MotorPolicyFormProps {
     userId: string;
+    userRole?: string;
     initialData?: MotorPolicy;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function MotorPolicyForm({ userId, initialData, onClose, onSuccess }: MotorPolicyFormProps) {
+export default function MotorPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: MotorPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [formData, setFormData] = useState<MotorPolicyFormData>({
+        company_name: (initialData as any)?.company_name || '',
         vehicle_number: initialData?.vehicle_number || '',
         policy_number: initialData?.policy_number || '',
         vehicle_type: initialData?.vehicle_type || 'Car',
@@ -47,6 +51,9 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
         previous_policy_docs: initialData?.previous_policy_docs || [],
         dl_docs: initialData?.dl_docs || [],
     });
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate, reset } = useDuplicatePolicyCheck(userId);
 
     // Auto-calculate end date when start date changes (1 day before same date next year)
     useEffect(() => {
@@ -77,6 +84,11 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                 delete newErrors[name];
                 return newErrors;
             });
+        }
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
         }
     };
 
@@ -120,8 +132,15 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!validateForm()) return;
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setErrors(prev => ({ ...prev, duplicate_policy: 'This policy already exists. Please check the policy number.' }));
+            return;
+        }
 
+        if (!validateForm()) {
+            return;
+        }
         setLoading(true);
         try {
             const policyData = {
@@ -175,6 +194,22 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                         <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
                             {errors.submit}
                         </div>
+                    )}
+
+                    {/* Company Name for Corporate Users ONLY */}
+                    {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                        <section>
+                            <div className="grid md:grid-cols-1 gap-6">
+                                <FormInput
+                                    label="Company Name"
+                                    name="company_name"
+                                    value={formData.company_name || ''}
+                                    onChange={handleChange}
+                                    placeholder="Enter company name"
+                                    required
+                                />
+                            </div>
+                        </section>
                     )}
 
                     {/* Vehicle Details */}
@@ -241,6 +276,7 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 options={[
                                     { value: 'Comprehensive', label: 'Comprehensive' },
                                     { value: 'TP', label: 'TP (Third Party)' },
+                                    { value: 'OD', label: 'Own Damage (OD)' },
                                 ]}
                             />
                             <FormInput
@@ -303,6 +339,16 @@ export default function MotorPolicyForm({ userId, initialData, onClose, onSucces
                                 error={errors.policy_number}
                                 required
                             />
+
+                            {/* Duplicate Policy Warning */}
+                            {duplicateResult?.exists && (
+                                <DuplicatePolicyWarning
+                                    policyNumber={formData.policy_number || ''}
+                                    policyType={duplicateResult.policyType || 'motor'}
+                                    policyId={duplicateResult.policyId || ''}
+                                    insurerName={duplicateResult.policy?.insurer_name}
+                                />
+                            )}
                             <FormInput
                                 label="Insurer Name"
                                 name="insurer_name"

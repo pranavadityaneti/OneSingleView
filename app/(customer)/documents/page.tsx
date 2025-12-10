@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Search, Filter, FolderOpen } from 'lucide-react';
+import { FileText, Download, Search, Filter, FolderOpen, FilePlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getUserClaims } from '@/lib/db';
+import { getUserMotorPolicies, getUserHealthPolicies, getUserCommercialPolicies, getUserClaims, getUserAdditionalDocuments } from '@/lib/db';
+import AdditionalDocumentsModal from '@/components/documents/AdditionalDocumentsModal';
+import AdditionalDocumentsList from '@/components/documents/AdditionalDocumentsList';
+import { AdditionalDocument } from '@/types';
 
 interface DocumentItem {
     id: string;
@@ -18,9 +21,11 @@ interface DocumentItem {
 export default function DocumentsPage() {
     const { user, loading: authLoading } = useAuth();
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
+    const [additionalDocs, setAdditionalDocs] = useState<AdditionalDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('All');
+    const [isAdditionalDocsModalOpen, setIsAdditionalDocsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -32,11 +37,12 @@ export default function DocumentsPage() {
 
             setLoading(true);
             try {
-                const [motor, gmc, commercial, claims] = await Promise.all([
+                const [motor, gmc, commercial, claims, additional] = await Promise.all([
                     getUserMotorPolicies(user.id),
                     getUserHealthPolicies(user.id),
                     getUserCommercialPolicies(user.id),
-                    getUserClaims(user.id)
+                    getUserClaims(user.id),
+                    getUserAdditionalDocuments(user.id),
                 ]);
 
                 const docs: DocumentItem[] = [];
@@ -113,6 +119,7 @@ export default function DocumentsPage() {
                 });
 
                 setDocuments(docs.sort((a, b) => b.date.getTime() - a.date.getTime()));
+                setAdditionalDocs(additional);
             } catch (error) {
                 console.error('Error fetching documents:', error);
             } finally {
@@ -137,9 +144,12 @@ export default function DocumentsPage() {
                     <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
                     <p className="text-gray-500">Access all your insurance related documents in one place</p>
                 </div>
-                <button className="btn btn-primary flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4" />
-                    Add Document
+                <button
+                    onClick={() => setIsAdditionalDocsModalOpen(true)}
+                    className="btn btn-primary flex items-center gap-2"
+                >
+                    <FilePlus className="w-4 h-4" />
+                    Additional Documents {additionalDocs.length > 0 && `(${additionalDocs.length})`}
                 </button>
             </div>
 
@@ -221,6 +231,30 @@ export default function DocumentsPage() {
                     ))}
                 </div>
             )}
+
+            {/* Additional Documents Section */}
+            <AdditionalDocumentsList
+                documents={additionalDocs}
+                onDelete={async () => {
+                    if (user) {
+                        const additional = await getUserAdditionalDocuments(user.id);
+                        setAdditionalDocs(additional);
+                    }
+                }}
+            />
+
+            {/* Additional Documents Modal */}
+            <AdditionalDocumentsModal
+                isOpen={isAdditionalDocsModalOpen}
+                onClose={() => setIsAdditionalDocsModalOpen(false)}
+                userId={user?.id || ''}
+                onSuccess={async () => {
+                    if (user) {
+                        const additional = await getUserAdditionalDocuments(user.id);
+                        setAdditionalDocs(additional);
+                    }
+                }}
+            />
         </div>
     );
 }

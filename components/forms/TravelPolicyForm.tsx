@@ -2,35 +2,33 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
+import { TravelPolicy } from '@/types';
 import FormInput from './FormInput';
+import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
+import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
 import FileUpload from './FileUpload';
 import { addTravelPolicy } from '@/lib/db';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 
 interface TravelPolicyFormProps {
     userId: string;
-    initialData?: any;
+    userRole?: string;
+    initialData?: Partial<TravelPolicy>;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function TravelPolicyForm({ userId, initialData, onClose, onSuccess }: TravelPolicyFormProps) {
+export default function TravelPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: TravelPolicyFormProps) {
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [formData, setFormData] = useState({
-        policy_number: initialData?.policy_number || '',
-        insurer_name: initialData?.insurer_name || '',
-        premium_amount: initialData?.premium_amount || 0,
-        destination: initialData?.destination || '',
-        trip_type: initialData?.trip_type || 'Single Trip',
-        policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
-        policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setDate(new Date().getDate() + 7)),
-        document_url: initialData?.document_url || '',
-    });
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState<Partial<TravelPolicy>>(initialData || {});
+
+    // Duplicate policy detection
+    const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
 
     // Auto-calculate end date when start date changes (1 day before same date next year)
     useEffect(() => {
-        if (formData.policy_start_date && !initialData) {
+        if (formData.policy_start_date && !initialData && !formData.policy_end_date) {
             const startDate = new Date(formData.policy_start_date);
             const endDate = new Date(startDate);
             endDate.setFullYear(endDate.getFullYear() + 1);
@@ -40,7 +38,7 @@ export default function TravelPolicyForm({ userId, initialData, onClose, onSucce
                 policy_end_date: endDate
             }));
         }
-    }, [formData.policy_start_date, initialData]);
+    }, [formData.policy_start_date, initialData, formData.policy_end_date]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -48,6 +46,12 @@ export default function TravelPolicyForm({ userId, initialData, onClose, onSucce
             ...prev,
             [name]: type === 'number' ? Number(value) : value
         }));
+
+        // Check for duplicate policy number
+        if (name === 'policy_number' && value) {
+            checkDuplicate(value);
+            setError(''); // Clear previous error when policy number changes
+        }
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +61,16 @@ export default function TravelPolicyForm({ userId, initialData, onClose, onSucce
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check for duplicate before submission
+        if (duplicateResult?.exists) {
+            setError('This policy already exists. Please check the policy number.');
+            return;
+        }
+
         setLoading(true);
+        setError(''); // Clear any previous errors
+
         try {
             await addTravelPolicy({
                 ...formData,
@@ -67,7 +80,7 @@ export default function TravelPolicyForm({ userId, initialData, onClose, onSucce
             onSuccess();
         } catch (error) {
             console.error('Error saving travel policy:', error);
-            setErrors({ submit: 'Failed to save policy' });
+            setError('Failed to save policy');
         } finally {
             setLoading(false);
         }
@@ -78,29 +91,49 @@ export default function TravelPolicyForm({ userId, initialData, onClose, onSucce
             <h3 className="text-lg font-semibold text-gray-900">Travel Insurance Details</h3>
 
             <div className="grid md:grid-cols-2 gap-6">
-                <FormInput label="Policy Number" name="policy_number" value={formData.policy_number} onChange={handleChange} required />
+                {(userRole === 'corporate_employee' || userRole === 'corporate_admin') && (
+                    <FormInput label="Company Name" name="company_name" value={(formData as any).company_name || ''} onChange={handleChange} placeholder="e.g. Acme Corp" required />
+                )}
+                <FormInput
+                    label="Policy Number"
+                    name="policy_number"
+                    value={formData.policy_number || ''}
+                    onChange={handleChange}
+                    placeholder="Enter policy number"
+                    required
+                />
+
+                {/* Duplicate Policy Warning */}
+                {duplicateResult?.exists && (
+                    <DuplicatePolicyWarning
+                        policyNumber={formData.policy_number || ''}
+                        policyType={duplicateResult.policyType || 'travel'}
+                        policyId={duplicateResult.policyId || ''}
+                        insurerName={duplicateResult.policy?.insurer_name}
+                    />
+                )}
                 <FormInput
                     label="Insurer Name"
                     name="insurer_name"
                     type="select"
-                    value={formData.insurer_name}
+                    value={formData.insurer_name || ''}
                     onChange={handleChange}
                     options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                     required
                 />
-                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount} onChange={handleChange} required />
-                <FormInput label="Destination" name="destination" value={formData.destination} onChange={handleChange} required />
+                <FormInput label="Premium Amount (₹)" name="premium_amount" type="number" value={formData.premium_amount || 0} onChange={handleChange} required />
+                <FormInput label="Destination" name="destination" value={formData.destination || ''} onChange={handleChange} required />
                 <FormInput
                     label="Trip Type"
                     name="trip_type"
                     type="select"
-                    value={formData.trip_type}
+                    value={formData.trip_type || ''}
                     onChange={handleChange}
                     options={[{ value: 'Single Trip', label: 'Single Trip' }, { value: 'Multi Trip', label: 'Multi Trip' }]}
                     required
                 />
-                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
-                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date.toISOString().split('T')[0]} onChange={handleDateChange as any} required />
+                <FormInput label="Start Date" name="policy_start_date" type="date" value={formData.policy_start_date ? new Date(formData.policy_start_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
+                <FormInput label="End Date" name="policy_end_date" type="date" value={formData.policy_end_date ? new Date(formData.policy_end_date).toISOString().split('T')[0] : ''} onChange={handleDateChange as any} required />
             </div>
 
             <FileUpload

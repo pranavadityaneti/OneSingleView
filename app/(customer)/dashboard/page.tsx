@@ -31,7 +31,7 @@ import ReportsModal from '@/components/dashboard/ReportsModal';
 import PolicyDetailModal from '@/components/dashboard/PolicyDetailModal';
 import StickyAddPolicy from '@/components/dashboard/StickyAddPolicy';
 import ExportButton from '@/components/dashboard/ExportButton';
-import AddPolicyModal from '@/components/policies/AddPolicyModal';
+import AddPolicyModal, { PolicyType } from '@/components/policies/AddPolicyModal';
 import PolicyTable from '@/components/dashboard/PolicyTable';
 
 export default function DashboardPage() {
@@ -44,9 +44,14 @@ export default function DashboardPage() {
     const [isReportsOpen, setIsReportsOpen] = useState(false);
 
     // Policy Detail Modal State
-    const [isPolicyDetailOpen, setIsPolicyDetailOpen] = useState(false);
-    const [policyDetailType, setPolicyDetailType] = useState<'total' | 'premium' | 'expiring' | 'expired'>('total');
-    const [policyDetailTitle, setPolicyDetailTitle] = useState('');
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedDetailType, setSelectedDetailType] = useState<'total' | 'premium' | 'expiring' | 'expired'>('total');
+    const [detailModalTitle, setDetailModalTitle] = useState('');
+
+    // Renewal workflow state
+    const [isRenewalMode, setIsRenewalMode] = useState(false);
+    const [renewalPolicyData, setRenewalPolicyData] = useState<any>(null);
+    const [renewalPolicyType, setRenewalPolicyType] = useState<PolicyType | undefined>(undefined);
 
     // Add Policy Modal State
     const [selectedType, setSelectedType] = useState<'total' | 'premium' | 'expiring'>('total');
@@ -68,8 +73,8 @@ export default function DashboardPage() {
     });
 
     // Selected Policy Type for Table
-    type PolicyType = 'Motor' | 'Health' | 'Travel' | 'Commercial' | 'Life' | 'Cyber' | null;
-    const [selectedPolicyType, setSelectedPolicyType] = useState<PolicyType>('Motor'); // Default to Motor
+    type TablePolicyType = 'Motor' | 'Health' | 'Travel' | 'Commercial' | 'Life' | 'Cyber' | null;
+    const [selectedPolicyType, setSelectedPolicyType] = useState<TablePolicyType>('Motor'); // Default to Motor
 
     useEffect(() => {
         const loadData = async () => {
@@ -245,27 +250,36 @@ export default function DashboardPage() {
 
     // Click handlers for dashboard cards
     const handleTotalPoliciesClick = () => {
-        setPolicyDetailType('total');
-        setPolicyDetailTitle('All Policies');
-        setIsPolicyDetailOpen(true);
+        setSelectedDetailType('total');
+        setDetailModalTitle('All Policies');
+        setShowDetailModal(true);
     };
 
-    const handleTotalPremiumClick = () => {
-        setPolicyDetailType('premium');
-        setPolicyDetailTitle('Premium Breakdown');
-        setIsPolicyDetailOpen(true);
+    const handlePremiumClick = () => {
+        setSelectedDetailType('premium');
+        setDetailModalTitle('Policies by Premium');
+        setShowDetailModal(true);
     };
 
     const handleExpiringClick = () => {
-        setPolicyDetailType('expiring');
-        setPolicyDetailTitle('Expiring Soon');
-        setIsPolicyDetailOpen(true);
+        setSelectedDetailType('expiring');
+        setDetailModalTitle('Expiring Soon');
+        setShowDetailModal(true);
     };
 
     const handleExpiredClick = () => {
-        setPolicyDetailType('expired');
-        setPolicyDetailTitle('Expired Policies');
-        setIsPolicyDetailOpen(true);
+        setSelectedDetailType('expired');
+        setDetailModalTitle('Expired Policies');
+        setShowDetailModal(true);
+    };
+
+    // NEW: Handle renewal - opens Add Policy modal with pre-filled data
+    const handleRenewPolicy = async (policy: any, policyType: string) => {
+        setRenewalPolicyData(policy);
+        setRenewalPolicyType(policyType as PolicyType);
+        setIsRenewalMode(true);
+        setShowDetailModal(false); // Close detail modal
+        setIsHealthModalOpen(true); // Open add policy modal (using existing state)
     };
 
     return (
@@ -286,16 +300,17 @@ export default function DashboardPage() {
             </div>
             <ReportsModal isOpen={isReportsOpen} onClose={() => setIsReportsOpen(false)} />
             <PolicyDetailModal
-                isOpen={isPolicyDetailOpen}
-                onClose={() => setIsPolicyDetailOpen(false)}
-                title={policyDetailTitle}
-                type={policyDetailType}
+                isOpen={showDetailModal}
+                onClose={() => setShowDetailModal(false)}
+                title={detailModalTitle}
+                type={selectedDetailType}
                 motorPolicies={motorPolicies}
                 healthPolicies={healthPolicies}
                 commercialPolicies={commercialPolicies}
                 travelPolicies={travelPolicies}
                 lifePolicies={lifePolicies}
                 cyberPolicies={cyberPolicies}
+                onRenewPolicy={handleRenewPolicy} // NEW: Pass renewal handler
             />
 
             {/* Portfolio Overview */}
@@ -321,7 +336,7 @@ export default function DashboardPage() {
 
                 {/* Total Premium - Clickable */}
                 <div
-                    onClick={handleTotalPremiumClick}
+                    onClick={handlePremiumClick}
                     className="bg-white rounded-2xl p-6 shadow-soft hover:shadow-lg transition-all cursor-pointer border border-transparent hover:border-primary-200"
                 >
                     <div className="flex justify-between items-start">
@@ -444,8 +459,8 @@ export default function DashboardPage() {
                     lifePolicies={lifePolicies}
                     cyberPolicies={cyberPolicies}
                     userId={user?.id || ''}
+                    userRole={user.role}
                     onPolicyAdded={async () => {
-                        // Reload dashboard data when a policy is added
                         if (user) {
                             await loadDashboardData(user.id);
                         }
@@ -487,15 +502,27 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                     {/* Source of Premium - Donut Chart */}
                     <div className="h-[400px]">
-                        <AnalyticsDonutChart data={summary.portfolio_by_lob} />
+                        <AnalyticsDonutChart
+                            data={summary.portfolio_by_lob}
+                            allPolicies={[
+                                ...motorPolicies.map(p => ({ ...p, policy_type: 'motor' })),
+                                ...healthPolicies.map(p => ({ ...p, policy_type: 'health' })),
+                                ...commercialPolicies.map(p => ({ ...p, policy_type: 'commercial' })),
+                                ...travelPolicies.map(p => ({ ...p, policy_type: 'travel' })),
+                                ...lifePolicies.map(p => ({ ...p, policy_type: 'life' })),
+                                ...cyberPolicies.map(p => ({ ...p, policy_type: 'cyber' })),
+                            ]}
+                            userRole={user.role}
+                        />
                     </div>
 
                     {/* Protect Family Card and Coverage Gap Card - Stacked */}
                     <div className="h-[320px] flex flex-col gap-3">
-                        <div className="flex-1">
+                        {/* Protect Family - Half height of container */}
+                        <div className="h-[160px] flex-shrink-0">
                             <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
                         </div>
-                        {/* Coverage Gap Card - Only show if Health policies are missing */}
+                        {/* Coverage Gap Card - Takes remaining space */}
                         {healthPolicies.length === 0 && (
                             <div className="flex-1">
                                 <CoverageGapCard
@@ -513,11 +540,31 @@ export default function DashboardPage() {
 
             <AddPolicyModal
                 isOpen={isHealthModalOpen}
-                onClose={() => setIsHealthModalOpen(false)}
+                onClose={() => {
+                    setIsHealthModalOpen(false);
+                    setIsRenewalMode(false);
+                    setRenewalPolicyData(null);
+                }}
                 userId={user.id}
-                initialType="Health"
+                userRole={user.role}
+                initialType={isRenewalMode ? renewalPolicyType : 'Health'}
+                isRenewalMode={isRenewalMode}
+                renewalData={renewalPolicyData}
+                onRenewalComplete={async (oldPolicyId: string) => {
+                    // Update old policy status to History
+                    if (renewalPolicyType) {
+                        const { updatePolicyStatus } = await import('@/lib/db');
+                        await updatePolicyStatus(
+                            renewalPolicyType.toLowerCase() as 'motor' | 'health' | 'commercial' | 'travel' | 'life' | 'cyber',
+                            oldPolicyId,
+                            'History'
+                        );
+                    }
+                }}
                 onSuccess={async () => {
                     setIsHealthModalOpen(false);
+                    setIsRenewalMode(false);
+                    setRenewalPolicyData(null);
                     if (user) {
                         await loadDashboardData(user.id);
                     }

@@ -205,18 +205,41 @@ export async function signOut(): Promise<void> {
 
 /**
  * Get current authenticated user's data from database
+ * Includes 10-second timeout to prevent hanging on Supabase connection issues
  */
 export async function getCurrentUser(): Promise<User | null> {
     try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
+        // Create a timeout promise to prevent hanging
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Auth check timed out - please check your network connection')), 10000);
+        });
+
+        // Race the auth call against the timeout
+        const authResult = await Promise.race([
+            supabase.auth.getUser(),
+            timeoutPromise
+        ]);
+
+        const authUser = authResult.data?.user;
 
         if (!authUser) return null;
 
-        const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', authUser.id)
-            .maybeSingle();
+        // Create another timeout for database query
+        const dbTimeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Database query timed out')), 10000);
+        });
+
+        const dbResult = await Promise.race([
+            supabase
+                .from('users')
+                .select('*')
+                .eq('id', authUser.id)
+                .maybeSingle(),
+            dbTimeoutPromise
+        ]);
+
+        const userData = dbResult.data;
+        const error = dbResult.error;
 
         if (error) {
             console.error('Error fetching user data:', error);
@@ -241,6 +264,12 @@ export async function getCurrentUser(): Promise<User | null> {
             customer_id: userData.customer_id,
         };
     } catch (error) {
+        // Re-throw timeout errors so the caller can show appropriate UI
+        if (error instanceof Error && error.message.includes('timed out')) {
+            // Don't log timeout errors to console - they're expected network issues
+            throw error;
+        }
+        // For other errors, return null to trigger login redirect
         console.error('Error getting current user:', error);
         return null;
     }

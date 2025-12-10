@@ -14,13 +14,28 @@ interface AddPolicyModalProps {
     isOpen: boolean;
     onClose: () => void;
     userId: string;
+    userRole?: string;
     onSuccess: () => void;
     initialType?: PolicyType;
+    // NEW: Renewal mode props
+    isRenewalMode?: boolean;
+    renewalData?: any;
+    onRenewalComplete?: (oldPolicyId: string) => void;
 }
 
 export type PolicyType = 'Motor' | 'Health' | 'Commercial' | 'Life' | 'Travel' | 'Cyber';
 
-export default function AddPolicyModal({ isOpen, onClose, userId, onSuccess, initialType = undefined }: AddPolicyModalProps) {
+export default function AddPolicyModal({
+    isOpen,
+    onClose,
+    userId,
+    userRole,
+    onSuccess,
+    initialType = undefined,
+    isRenewalMode = false,
+    renewalData = null,
+    onRenewalComplete
+}: AddPolicyModalProps) {
     const [selectedType, setSelectedType] = useState<PolicyType | undefined>(initialType);
 
     // Reset selected type when modal opens/closes or initialType changes
@@ -32,26 +47,40 @@ export default function AddPolicyModal({ isOpen, onClose, userId, onSuccess, ini
 
     if (!isOpen) return null;
 
-    const handleSuccess = () => {
+    const handleSuccess = async () => {
+        // If renewal mode, handle the old policy status update
+        if (isRenewalMode && renewalData && onRenewalComplete) {
+            await onRenewalComplete(renewalData.id); // Wait for status update to complete
+        }
         onSuccess();
         onClose();
         setSelectedType(undefined);
     };
 
     const renderForm = () => {
+        // Prepare initial data for renewal mode
+        const formInitialData = isRenewalMode && renewalData ? {
+            ...renewalData,
+            id: undefined, // Clear ID so it creates a new policy
+            policy_number: '', // Clear for new input
+            policy_start_date: new Date(), // Start from today
+            policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year
+            renewed_from_policy_id: renewalData.id, // Track renewal
+        } : undefined;
+
         switch (selectedType) {
             case 'Motor':
-                return <MotorPolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <MotorPolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             case 'Health':
-                return <HealthPolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <HealthPolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             case 'Commercial':
-                return <CommercialPolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <CommercialPolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             case 'Life':
-                return <LifePolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <LifePolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             case 'Travel':
-                return <TravelPolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <TravelPolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             case 'Cyber':
-                return <CyberPolicyForm userId={userId} onClose={onClose} onSuccess={handleSuccess} />;
+                return <CyberPolicyForm userId={userId} userRole={userRole} initialData={formInitialData} onClose={onClose} onSuccess={handleSuccess} />;
             default:
                 return null;
         }
@@ -71,7 +100,9 @@ export default function AddPolicyModal({ isOpen, onClose, userId, onSuccess, ini
                                     Select Type
                                 </button>
                                 <ChevronRight className="w-4 h-4 text-gray-400" />
-                                <h3 className="text-lg font-bold text-gray-900">Add {selectedType} Policy</h3>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    {isRenewalMode ? `Renew ${selectedType} Policy` : `Add ${selectedType} Policy`}
+                                </h3>
                             </div>
                             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-500" />
