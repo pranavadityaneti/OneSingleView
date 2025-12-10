@@ -19,9 +19,7 @@ import { Car, Heart, Briefcase, Plane, Shield, Umbrella, FileText, TrendingUp, A
 import PortfolioPieChart from '@/components/dashboard/PortfolioPieChart';
 import PolicyCategoryCard from '@/components/dashboard/PolicyCategoryCard';
 import ClaimsOverview from '@/components/dashboard/ClaimsOverview';
-import UpsellCard from '@/components/dashboard/UpsellCard';
 import OffersCard from '@/components/dashboard/OffersCard';
-import AdvertisingBanner from '@/components/dashboard/AdvertisingBanner';
 import AnalyticsAreaChart from '@/components/dashboard/AnalyticsAreaChart';
 import AnalyticsDonutChart from '@/components/dashboard/AnalyticsDonutChart';
 import PolicyRenewalReminder from '@/components/dashboard/PolicyRenewalReminder';
@@ -510,18 +508,6 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Exclusive Offers & Rewards Section - Added margin-top to prevent overlap */}
-            <div className="mt-8">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Exclusive Offers & Rewards</h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                    {/* Offers content would go here */}
-                </div>
-            </div>
-
-            {/* Advertising */}
-            <div>
-                <AdvertisingBanner />
-            </div>
 
             {/* StickyAddPolicy moved to header */}
 
