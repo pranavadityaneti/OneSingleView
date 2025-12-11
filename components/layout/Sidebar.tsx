@@ -45,7 +45,7 @@ type NavGroup = {
 export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const [openGroups, setOpenGroups] = useState<string[]>(['Overview', 'Policies', 'Claims', 'Documents', 'Community', 'Admin']);
+    const [openGroups, setOpenGroups] = useState<string[]>(['Overview', 'Policies', 'Claims', 'Quick Actions', 'Documents', 'Community', 'Admin']);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
     const toggleGroup = (label: string) => {
