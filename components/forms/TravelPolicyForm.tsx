@@ -21,7 +21,39 @@ interface TravelPolicyFormProps {
 export default function TravelPolicyForm({ userId, userRole, initialData, onClose, onSuccess }: TravelPolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState<Partial<TravelPolicy>>(initialData || {});
+
+    // Only use valid Travel policy fields from initialData (exclude policyType, id, etc.)
+    const getInitialFormData = () => {
+        if (!initialData) {
+            return {
+                policy_number: '',
+                insurer_name: '',
+                premium_amount: 0,
+                sum_insured: 0,
+                destination: '',
+                trip_type: 'Single',
+                traveler_count: 1,
+                policy_start_date: new Date(),
+                policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                policy_docs: [],
+            };
+        }
+        return {
+            policy_number: initialData.policy_number || '',
+            insurer_name: initialData.insurer_name || '',
+            premium_amount: initialData.premium_amount || 0,
+            sum_insured: initialData.sum_insured || 0,
+            destination: initialData.destination || '',
+            trip_type: initialData.trip_type || 'Single',
+            traveler_count: initialData.traveler_count || 1,
+            policy_start_date: initialData.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
+            policy_end_date: initialData.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+            policy_docs: initialData.policy_docs || [],
+            renewed_from_policy_id: initialData.renewed_from_policy_id,
+        };
+    };
+
+    const [formData, setFormData] = useState<Partial<TravelPolicy>>(getInitialFormData() as Partial<TravelPolicy>);
 
     // Duplicate policy detection
     const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);

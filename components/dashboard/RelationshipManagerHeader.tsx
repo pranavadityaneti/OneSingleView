@@ -5,10 +5,10 @@ import { Phone, Mail, MessageCircle, User } from 'lucide-react';
 
 export default function RelationshipManagerHeader() {
     const rm = {
-        name: "Anjali Menon",
+        name: "Naveen Venigalla",
         role: "Your Dedicated Advisor",
-        phone: "+91 98765 43210",
-        email: "anjali.m@onesingleview.com"
+        phone: "+91 70754 22949",
+        email: "naveen@onesingleview.com"
     };
 
     return (

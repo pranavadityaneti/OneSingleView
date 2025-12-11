@@ -166,7 +166,7 @@ export async function getUserQuoteRequests(userId: string): Promise<QuoteRequest
 /**
  * Add a motor policy
  */
-export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
+export async function addMotorPolicy(policy: any): Promise<string> {
     try {
         await checkDuplicatePolicy('motor_policies', policy.user_id, policy.policy_number);
 
@@ -182,6 +182,8 @@ export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_a
                 fuel_type: policy.fuel_type,
                 manufacturing_year: policy.manufacturing_year,
                 number_plate_type: policy.number_plate_type,
+                ownership_type: policy.ownership_type,
+                policy_type: policy.policy_type,
                 insurer_name: policy.insurer_name,
                 premium_amount: policy.premium_amount,
                 policy_start_date: policy.policy_start_date,
@@ -189,6 +191,8 @@ export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_a
                 rc_docs: policy.rc_docs || [],
                 previous_policy_docs: policy.previous_policy_docs || [],
                 dl_docs: policy.dl_docs || [],
+                status: policy.status || 'Active',
+                renewed_from_policy_id: policy.renewed_from_policy_id,
             })
             .select()
             .single();
@@ -204,7 +208,7 @@ export async function addMotorPolicy(policy: Omit<MotorPolicy, 'id' | 'created_a
 /**
  * Add a GMC policy
  */
-export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
+export async function addHealthPolicy(policy: any): Promise<string> {
     try {
         await checkDuplicatePolicy('health_policies', policy.user_id, policy.policy_number);
 
@@ -220,6 +224,8 @@ export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created
                 expiry_date: policy.expiry_date,
                 policy_docs: policy.policy_docs || [],
                 no_of_lives: policy.no_of_lives,
+                status: policy.status || 'Active',
+                renewed_from_policy_id: policy.renewed_from_policy_id,
             })
             .select()
             .single();
@@ -235,7 +241,7 @@ export async function addHealthPolicy(policy: Omit<HealthPolicy, 'id' | 'created
 /**
  * Add a commercial policy
  */
-export async function addCommercialPolicy(policy: Omit<CommercialPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
+export async function addCommercialPolicy(policy: any): Promise<string> {
     try {
         await checkDuplicatePolicy('commercial_policies', policy.user_id, policy.policy_number);
 
@@ -252,6 +258,8 @@ export async function addCommercialPolicy(policy: Omit<CommercialPolicy, 'id' | 
                 sum_insured: policy.sum_insured,
                 expiry_date: policy.expiry_date,
                 policy_docs: policy.policy_docs || [],
+                status: policy.status || 'Active',
+                renewed_from_policy_id: policy.renewed_from_policy_id,
             })
             .select()
             .single();
@@ -921,18 +929,18 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
         if (userError) {
             // If user not found or error, return default RM for demo
             return {
-                name: 'Amit Sharma',
-                email: 'amit.sharma@onesingleview.com',
-                mobile: '+91 98765 43210'
+                name: 'Naveen Venigalla',
+                email: 'naveen@onesingleview.com',
+                mobile: '+91 70754 22949'
             };
         }
 
         if (!user?.rm_id) {
             // Return default RM if none assigned
             return {
-                name: 'Amit Sharma',
-                email: 'amit.sharma@onesingleview.com',
-                mobile: '+91 98765 43210'
+                name: 'Naveen Venigalla',
+                email: 'naveen@onesingleview.com',
+                mobile: '+91 70754 22949'
             };
         }
 
@@ -949,9 +957,9 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
         console.error('Error fetching user RM:', error);
         // Return default RM on error to ensure UI shows something
         return {
-            name: 'Amit Sharma',
-            email: 'amit.sharma@onesingleview.com',
-            mobile: '+91 98765 43210'
+            name: 'Naveen Venigalla',
+            email: 'naveen@onesingleview.com',
+            mobile: '+91 70754 22949'
         };
     }
 }
@@ -1048,13 +1056,43 @@ export async function getUserLifePolicies(userId: string) {
 
 export async function addLifePolicy(policy: any) {
     await checkDuplicatePolicy('life_policies', policy.user_id, policy.policy_number);
+
+    // DEBUG: Log what we receive
+    console.log('🔍 addLifePolicy - RECEIVED policy:', policy);
+    console.log('🔍 Has policyType?', 'policyType' in policy, policy.policyType);
+
+    // Sanitize: only include valid database columns
+    const sanitizedPolicy = {
+        user_id: policy.user_id,
+        policy_number: policy.policy_number,
+        insurer_name: policy.insurer_name,
+        premium_amount: policy.premium_amount,
+        sum_assured: policy.sum_assured,
+        nominee_name: policy.nominee_name,
+        nominee_relation: policy.nominee_relation,
+        premium_frequency: policy.premium_frequency,
+        policy_term: policy.policy_term,
+        policy_start_date: policy.policy_start_date,
+        policy_end_date: policy.policy_end_date,
+        policy_docs: policy.policy_docs || [],
+        status: policy.status || 'Active',
+        renewed_from_policy_id: policy.renewed_from_policy_id,
+    };
+
+    // DEBUG: Log what we're sending to Supabase
+    console.log('✅ addLifePolicy - SANITIZED policy:', sanitizedPolicy);
+    console.log('✅ Has policyType?', 'policyType' in sanitizedPolicy);
+
     const { data, error } = await supabase
         .from('life_policies')
-        .insert([policy])
+        .insert([sanitizedPolicy])
         .select()
         .single();
 
-    if (error) throw error;
+    if (error) {
+        console.error('❌ Supabase insert error:', error);
+        throw error;
+    }
     return data;
 }
 
@@ -1073,9 +1111,27 @@ export async function getUserTravelPolicies(userId: string) {
 
 export async function addTravelPolicy(policy: any) {
     await checkDuplicatePolicy('travel_policies', policy.user_id, policy.policy_number);
+
+    // Sanitize: only include valid database columns
+    const sanitizedPolicy = {
+        user_id: policy.user_id,
+        policy_number: policy.policy_number,
+        insurer_name: policy.insurer_name,
+        premium_amount: policy.premium_amount,
+        sum_insured: policy.sum_insured,
+        destination: policy.destination,
+        trip_type: policy.trip_type,
+        traveler_count: policy.traveler_count,
+        policy_start_date: policy.policy_start_date,
+        policy_end_date: policy.policy_end_date,
+        policy_docs: policy.policy_docs || [],
+        status: policy.status || 'Active',
+        renewed_from_policy_id: policy.renewed_from_policy_id,
+    };
+
     const { data, error } = await supabase
         .from('travel_policies')
-        .insert([policy])
+        .insert([sanitizedPolicy])
         .select()
         .single();
 
@@ -1113,9 +1169,27 @@ export async function getUserCyberPolicies(userId: string) {
 
 export async function addCyberPolicy(policy: any) {
     await checkDuplicatePolicy('cyber_policies', policy.user_id, policy.policy_number);
+
+    // Sanitize: only include valid database columns
+    const sanitizedPolicy = {
+        user_id: policy.user_id,
+        policy_number: policy.policy_number,
+        insurer_name: policy.insurer_name,
+        premium_amount: policy.premium_amount,
+        sum_insured: policy.sum_insured,
+        cyber_risk_type: policy.cyber_risk_type,
+        data_protection_coverage: policy.data_protection_coverage,
+        liability_coverage: policy.liability_coverage,
+        policy_start_date: policy.policy_start_date,
+        policy_end_date: policy.policy_end_date,
+        policy_docs: policy.policy_docs || [],
+        status: policy.status || 'Active',
+        renewed_from_policy_id: policy.renewed_from_policy_id,
+    };
+
     const { data, error } = await supabase
         .from('cyber_policies')
-        .insert([policy])
+        .insert([sanitizedPolicy])
         .select()
         .single();
 

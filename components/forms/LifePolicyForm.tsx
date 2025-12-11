@@ -21,17 +21,38 @@ interface LifePolicyFormProps {
 export default function LifePolicyForm({ userId, userRole, initialData, onClose, onSuccess }: LifePolicyFormProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState<Partial<LifePolicy>>(initialData || {
-        company_name: '',
-        policy_number: '',
-        insurer_name: '',
-        premium_amount: 0,
-        sum_assured: 0,
-        nominee_name: '',
-        policy_start_date: new Date(),
-        policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
-        document_url: '',
-    });
+
+    // Only use valid Life policy fields from initialData (exclude policyType, id, etc.)
+    const getInitialFormData = () => {
+        if (!initialData) {
+            return {
+                policy_number: '',
+                insurer_name: '',
+                premium_amount: 0,
+                sum_assured: 0,
+                nominee_name: '',
+                policy_start_date: new Date(),
+                policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
+                policy_docs: [],
+            };
+        }
+        return {
+            policy_number: initialData.policy_number || '',
+            insurer_name: initialData.insurer_name || '',
+            premium_amount: initialData.premium_amount || 0,
+            sum_assured: initialData.sum_assured || 0,
+            nominee_name: initialData.nominee_name || '',
+            nominee_relation: initialData.nominee_relation || '',
+            premium_frequency: initialData.premium_frequency || '',
+            policy_term: initialData.policy_term || '',
+            policy_start_date: initialData.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
+            policy_end_date: initialData.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 20)),
+            policy_docs: initialData.policy_docs || [],
+            renewed_from_policy_id: initialData.renewed_from_policy_id,
+        };
+    };
+
+    const [formData, setFormData] = useState<Partial<LifePolicy>>(getInitialFormData());
 
     // Duplicate policy detection
     const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);

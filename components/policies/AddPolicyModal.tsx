@@ -59,14 +59,18 @@ export default function AddPolicyModal({
 
     const renderForm = () => {
         // Prepare initial data for renewal mode
-        const formInitialData = isRenewalMode && renewalData ? {
-            ...renewalData,
-            id: undefined, // Clear ID so it creates a new policy
-            policy_number: '', // Clear for new input
-            policy_start_date: new Date(), // Start from today
-            policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year
-            renewed_from_policy_id: renewalData.id, // Track renewal
-        } : undefined;
+        // Remove fields that shouldn't be passed to database (policyType is added by PolicyDetailModal for display)
+        const formInitialData = isRenewalMode && renewalData ? (() => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { policyType, id, created_at, updated_at, status, ...cleanData } = renewalData;
+            return {
+                ...cleanData,
+                policy_number: '', // Clear for new input
+                policy_start_date: new Date(), // Start from today
+                policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year
+                renewed_from_policy_id: renewalData.id, // Track renewal
+            };
+        })() : undefined;
 
         switch (selectedType) {
             case 'Motor':

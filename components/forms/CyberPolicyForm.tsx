@@ -22,17 +22,39 @@ export default function CyberPolicyForm({ userId, userRole, initialData, onClose
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [error, setError] = useState(''); // For general form errors like duplicate policy
-    const [formData, setFormData] = useState<Partial<CyberPolicy>>(initialData || {
-        company_name: '',
-        policy_number: '',
-        insurer_name: '',
-        premium_amount: 0,
-        sum_insured: 0,
-        cyber_risk_type: 'Personal',
-        policy_start_date: new Date(),
-        policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-        document_url: '',
-    });
+
+    // Only use valid Cyber policy fields from initialData (exclude policyType, id, etc.)
+    const getInitialFormData = () => {
+        if (!initialData) {
+            return {
+                policy_number: '',
+                insurer_name: '',
+                premium_amount: 0,
+                sum_insured: 0,
+                cyber_risk_type: 'Personal',
+                data_protection_coverage: 0,
+                liability_coverage: 0,
+                policy_start_date: new Date(),
+                policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                policy_docs: [],
+            };
+        }
+        return {
+            policy_number: initialData.policy_number || '',
+            insurer_name: initialData.insurer_name || '',
+            premium_amount: initialData.premium_amount || 0,
+            sum_insured: initialData.sum_insured || 0,
+            cyber_risk_type: initialData.cyber_risk_type || 'Personal',
+            data_protection_coverage: initialData.data_protection_coverage || 0,
+            liability_coverage: initialData.liability_coverage || 0,
+            policy_start_date: initialData.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
+            policy_end_date: initialData.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+            policy_docs: initialData.policy_docs || [],
+            renewed_from_policy_id: initialData.renewed_from_policy_id,
+        };
+    };
+
+    const [formData, setFormData] = useState<Partial<CyberPolicy>>(getInitialFormData());
 
     // Duplicate policy detection
     const { duplicateResult, checking, checkDuplicate } = useDuplicatePolicyCheck(userId);
