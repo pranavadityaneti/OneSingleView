@@ -162,13 +162,25 @@ export default function DashboardPage() {
                 ...processedMotor, ...processedHealth, ...processedCommercial, ...processedTravel, ...processedLife, ...processedCyber
             ].filter(p => p.status === 'Expired').length;
 
-            // Calculate portfolio summary
-            const motorPremium = motor.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const healthPremium = healthData.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const travelPremium = travel.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const commercialPremium = commercial.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const lifePremium = life.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
-            const cyberPremium = cyber.reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            // Calculate portfolio summary - ONLY for Active and Expiring Soon policies (exclude Expired)
+            const motorPremium = processedMotor
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const healthPremium = processedHealth
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const travelPremium = processedTravel
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const commercialPremium = processedCommercial
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const lifePremium = processedLife
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
+            const cyberPremium = processedCyber
+                .filter((p: any) => p.status !== 'Expired')
+                .reduce((sum: number, p: any) => sum + Number(p.premium_amount), 0);
 
             const allPolicies = [...processedMotor, ...processedHealth, ...processedCommercial, ...processedTravel, ...processedLife, ...processedCyber];
 

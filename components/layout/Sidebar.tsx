@@ -18,7 +18,8 @@ import {
     Files,
     MessageSquare,
     Calculator,
-    UserCircle
+    UserCircle,
+    Bell
 } from 'lucide-react';
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
@@ -87,6 +88,12 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             items: [
                 { href: '/documents', icon: FolderOpen, label: 'Documents' },
                 { href: '/history', icon: History, label: 'History' }
+            ]
+        },
+        {
+            label: 'Notifications',
+            items: [
+                { href: '/notifications', icon: Bell, label: 'Notifications' }
             ]
         }
     ];
