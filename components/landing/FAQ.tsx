@@ -34,7 +34,7 @@ export default function FAQ() {
         {
             question: 'Is OneSingleView free to use?',
             answer:
-                'We offer a free plan that lets you manage up to 5 policies with basic features. For unlimited policies and premium features like dedicated RM support and priority claims assistance, check our pricing plans.',
+                'Yes! OneSingleView is completely free to use. Manage all your policies with full features including dedicated RM support and priority claims assistance.',
         },
     ];
 

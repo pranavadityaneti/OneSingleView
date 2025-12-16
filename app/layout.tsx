@@ -19,7 +19,16 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${redHatDisplay.variable} font-sans`} suppressHydrationWarning>{children}</body>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+            </head>
+            <body className={`${redHatDisplay.variable} font-sans pb-16 md:pb-0`} suppressHydrationWarning>
+                {children}
+                <MobileNavWrapper />
+            </body>
         </html>
     );
 }
+
+// Separate wrapper to avoid 'use client' in Layout
+import MobileNavWrapper from "../components/layout/MobileNavWrapper";

@@ -4,7 +4,8 @@ import {
     LayoutDashboard,
     BellRing,
     HeadphonesIcon,
-    CheckCircle
+    CheckCircle,
+    TrendingDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -54,6 +55,21 @@ export default function Benefits() {
             iconBg: 'bg-indigo-100',
             iconColor: 'text-indigo-600',
             reversed: false,
+        },
+        {
+            eyebrow: 'BEST PRICES',
+            title: 'Get New Quotes at Best Prices',
+            description:
+                'Looking for new coverage or better rates? Get instant quotes from top insurers and secure the best prices in the market — all without the hassle.',
+            features: [
+                'Compare quotes from 50+ insurers instantly',
+                'Exclusive deals not available elsewhere',
+                'Expert advice on best coverage options',
+            ],
+            icon: TrendingDown,
+            iconBg: 'bg-emerald-100',
+            iconColor: 'text-emerald-600',
+            reversed: true,
         },
     ];
 

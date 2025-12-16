@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 
 export default function CTASection() {
     const benefits = [
-        'Free forever for up to 5 policies',
-        'No credit card required',
         'Set up in under 2 minutes',
+        'Zero paperwork required',
+        '100% digital experience',
     ];
 
     const containerVariants = {

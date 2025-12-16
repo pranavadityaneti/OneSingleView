@@ -103,7 +103,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
     }
 
     return (
-        <aside className="w-72 h-full bg-white border-r border-gray-100 flex flex-col overflow-y-auto">
+        <aside className="w-72 h-full bg-white border-r border-gray-100 hidden md:flex flex-col overflow-y-auto">
             {/* Logo */}
             <div className="flex items-center flex-shrink-0 px-6 py-6 border-b border-gray-50">
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">

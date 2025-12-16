@@ -59,11 +59,23 @@ export default function Hero() {
                 >
                     {/* Eyebrow */}
                     <motion.div
-                        className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full mb-6"
+                        className="inline-flex items-center gap-3 mb-6 flex-wrap justify-center"
                         variants={itemVariants}
                     >
-                        <span className="text-blue-700 text-sm font-medium">
-                            India&apos;s Policy Management Platform
+                        <span className="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full">
+                            <span className="text-blue-700 text-sm font-medium">
+                                India&apos;s Policy Management Platform
+                            </span>
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1.5 bg-green-100 rounded-full">
+                            <span className="text-green-700 text-sm font-medium">
+                                ✓ Zero Paperwork
+                            </span>
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1.5 bg-green-100 rounded-full">
+                            <span className="text-green-700 text-sm font-medium">
+                                ✓ 100% Digital
+                            </span>
                         </span>
                     </motion.div>
 

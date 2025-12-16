@@ -161,11 +161,9 @@ export async function exportPoliciesByDate(
     filename?: string
 ): Promise<void> {
     try {
-        // Filter policies by creation date
-        const filteredPolicies = allPolicies.filter(policy => {
-            const createdAt = new Date(policy.created_at);
-            return createdAt >= startDate && createdAt <= endDate;
-        });
+        // Use the already-filtered policies directly
+        // (filtering is already done by ExportButton.tsx based on policy end date and status)
+        const filteredPolicies = allPolicies;
 
         const jsPDF = await loadJsPDF();
         const pdf = new jsPDF();

@@ -44,17 +44,17 @@ export default function TrustBar() {
     const stats = [
         {
             icon: FileCheck,
-            value: '10,000+',
+            value: '4,877+',
             label: 'Policies Managed',
         },
         {
             icon: Users,
-            value: '5,000+',
+            value: '3,800+',
             label: 'Happy Users',
         },
         {
             icon: Shield,
-            value: '50+',
+            value: '38+',
             label: 'Insurance Partners',
         },
     ];

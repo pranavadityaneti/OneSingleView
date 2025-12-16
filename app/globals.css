@@ -178,6 +178,11 @@
     .alert-error {
         @apply alert bg-red-50 text-red-700;
     }
+
+    /* Safe Area Utilities */
+    .pb-safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
 @layer utilities {
