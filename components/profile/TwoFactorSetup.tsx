@@ -26,13 +26,22 @@ export default function TwoFactorSetup({ userId }: TwoFactorSetupProps) {
     const checkMFAStatus = async () => {
         try {
             const { data, error } = await supabase.auth.mfa.listFactors();
-            if (error) throw error;
+
+            if (error) {
+                // Check for specific MFA-not-enabled error
+                if (error.message?.includes('MFA') || error.message?.includes('factor') || error.status === 422) {
+                    setError('Two-Factor Authentication is not enabled for this project. Please contact the administrator to enable MFA in Supabase settings.');
+                } else {
+                    throw error;
+                }
+                return;
+            }
 
             const totpFactor = data?.totp?.[0];
             setIsEnabled(totpFactor?.status === 'verified');
         } catch (err: any) {
             console.error('Error checking MFA status:', err);
-            setError('Unable to check 2FA status. This feature may not be enabled for your account.');
+            setError('Two-Factor Authentication is not available. The administrator needs to enable MFA in Supabase Dashboard → Authentication → Multi-Factor Authentication.');
         } finally {
             setLoading(false);
         }

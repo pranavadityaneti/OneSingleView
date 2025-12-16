@@ -222,10 +222,18 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
                             onClick={async () => {
                                 try {
                                     await signOut();
-                                    router.push('/');
-                                    router.refresh();
+                                    // Clear any cached auth state
+                                    if (typeof window !== 'undefined') {
+                                        // Clear localStorage items that might cache auth
+                                        localStorage.removeItem('supabase.auth.token');
+                                        sessionStorage.clear();
+                                    }
+                                    // Use hard navigation to fully reset app state
+                                    window.location.href = '/';
                                 } catch (error) {
                                     console.error('Error signing out:', error);
+                                    // Force redirect even on error
+                                    window.location.href = '/';
                                 }
                             }}
                             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
