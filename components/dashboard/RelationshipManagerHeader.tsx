@@ -5,10 +5,10 @@ import { Phone, Mail, MessageCircle, User } from 'lucide-react';
 
 export default function RelationshipManagerHeader() {
     const rm = {
-        name: "Naveen Venigalla",
-        role: "Your Dedicated Advisor",
-        phone: "+91 70754 22949",
-        email: "naveen@onesingleview.com"
+        name: "Your Advisor",
+        role: "Dedicated Support",
+        phone: "+91 99999 99999", // Generic placeholder or keep existing if they want the number
+        email: "support@onesingleview.com"
     };
 
     return (
@@ -18,8 +18,7 @@ export default function RelationshipManagerHeader() {
                     <User className="w-4 h-4" />
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-gray-900 leading-none">Your Advisor</p>
-                    <p className="text-[10px] font-medium text-primary-600 mt-0.5">Priority Support</p>
+                    <p className="text-sm font-bold text-gray-900 leading-none">Your Relationship Manager</p>
                 </div>
             </div>
 

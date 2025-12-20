@@ -3,10 +3,12 @@
 import React from 'react';
 import { Phone, Mail, MessageCircle, User } from 'lucide-react';
 
+// Interface props might not be needed if we hardcode or fetch generic info, 
+// but keeping for compatibility if passed from parent
 interface RelationshipManagerCardProps {
-    name: string;
-    phone: string;
-    email: string;
+    name?: string;
+    phone?: string;
+    email?: string;
 }
 
 export default function RelationshipManagerCard({ name, phone, email }: RelationshipManagerCardProps) {
@@ -17,7 +19,7 @@ export default function RelationshipManagerCard({ name, phone, email }: Relation
                     <div className="p-2 bg-primary-50 rounded-lg">
                         <User className="w-5 h-5 text-primary-600" />
                     </div>
-                    <h3 className="font-bold text-gray-900 text-lg">Relationship Manager</h3>
+                    <h3 className="font-bold text-gray-900 text-lg">Support</h3>
                 </div>
             </div>
 
@@ -53,7 +55,7 @@ export default function RelationshipManagerCard({ name, phone, email }: Relation
                     Call
                 </a>
                 <a
-                    href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`}
+                    href={`https://wa.me/${(phone || '').replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center px-4 py-2 bg-[#25D366] text-white rounded-xl text-sm font-bold hover:bg-[#20bd5a] shadow-lg shadow-[#25D366]/20 transition-all hover:-translate-y-0.5"

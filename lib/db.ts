@@ -929,8 +929,8 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
         if (userError) {
             // If user not found or error, return default RM for demo
             return {
-                name: 'Naveen Venigalla',
-                email: 'naveen@onesingleview.com',
+                name: 'Your Relationship Manager',
+                email: 'support@onesingleview.com',
                 mobile: '+91 70754 22949'
             };
         }
@@ -938,8 +938,8 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
         if (!user?.rm_id) {
             // Return default RM if none assigned
             return {
-                name: 'Naveen Venigalla',
-                email: 'naveen@onesingleview.com',
+                name: 'Your Relationship Manager',
+                email: 'support@onesingleview.com',
                 mobile: '+91 70754 22949'
             };
         }
@@ -957,8 +957,8 @@ export async function getUserRM(userId: string): Promise<RMInfo | null> {
         console.error('Error fetching user RM:', error);
         // Return default RM on error to ensure UI shows something
         return {
-            name: 'Naveen Venigalla',
-            email: 'naveen@onesingleview.com',
+            name: 'Your Relationship Manager',
+            email: 'support@onesingleview.com',
             mobile: '+91 70754 22949'
         };
     }

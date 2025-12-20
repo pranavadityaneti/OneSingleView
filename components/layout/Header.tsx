@@ -76,9 +76,8 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
                         </div>
 
                         {/* RM Name Section */}
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide leading-tight">Relationship Manager</span>
-                            <span className="text-sm font-semibold text-gray-900 leading-tight">{rmInfo.name}</span>
+                        <div className="flex flex-col justify-center">
+                            <span className="text-sm font-bold text-gray-900 leading-tight">{rmInfo.name}</span>
                         </div>
 
                         {/* Phone Number with Pipes */}

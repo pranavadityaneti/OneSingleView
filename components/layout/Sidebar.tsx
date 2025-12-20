@@ -12,14 +12,13 @@ import {
     AlertCircle,
     Shield,
     LogOut,
-    ChevronDown,
-    ChevronRight,
     PieChart,
     Files,
     MessageSquare,
     Calculator,
     UserCircle,
-    Bell
+    Bell,
+    HelpCircle
 } from 'lucide-react';
 import { User } from '@/types';
 import { cn } from '@/lib/utils';
@@ -46,16 +45,7 @@ type NavGroup = {
 export default function Sidebar({ user, onClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const [openGroups, setOpenGroups] = useState<string[]>(['Overview', 'Policies', 'Claims', 'Quick Actions', 'Documents', 'Community', 'Admin']);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-
-    const toggleGroup = (label: string) => {
-        setOpenGroups(prev =>
-            prev.includes(label)
-                ? prev.filter(g => g !== label)
-                : [...prev, label]
-        );
-    };
 
     const navGroups: NavGroup[] = [
         {
@@ -79,8 +69,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         {
             label: 'Quick Actions',
             items: [
-                { href: '/quotes', icon: Calculator, label: 'Get Quote' },
-                { href: '/claims', icon: Shield, label: 'File Claim' }
+                { href: '/quotes', icon: Calculator, label: 'Get Quote' }
             ]
         },
         {
@@ -94,6 +83,12 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             label: 'Notifications',
             items: [
                 { href: '/notifications', icon: Bell, label: 'Notifications' }
+            ]
+        },
+        {
+            label: 'Support',
+            items: [
+                { href: '/support', icon: HelpCircle, label: 'Help & Support' }
             ]
         }
     ];
@@ -246,48 +241,34 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto scrollbar-hide">
+            <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto scrollbar-hide">
                 {navGroups.map((group) => (
-                    <div key={group.label}>
-                        <button
-                            onClick={() => toggleGroup(group.label)}
-                            className="flex items-center justify-between w-full px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
-                        >
-                            <span>{group.label}</span>
-                            {openGroups.includes(group.label) ? (
-                                <ChevronDown className="w-3 h-3" />
-                            ) : (
-                                <ChevronRight className="w-3 h-3" />
-                            )}
-                        </button>
+                    <div key={group.label} className="contents">
+                        <div className="contents">
+                            {group.items.map((item) => {
+                                const isActive = pathname === item.href;
+                                const Icon = item.icon;
 
-                        {openGroups.includes(group.label) && (
-                            <div className="space-y-0.5">
-                                {group.items.map((item) => {
-                                    const isActive = pathname === item.href;
-                                    const Icon = item.icon;
-
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            className={cn(
-                                                'flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 group',
-                                                isActive
-                                                    ? 'bg-primary-50 text-primary-700'
-                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                            )}
-                                        >
-                                            <Icon className={cn(
-                                                "w-4 h-4 mr-3 transition-colors",
-                                                isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
-                                            )} />
-                                            {item.label}
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex items-center px-3 py-2.5 text-base font-medium rounded-lg transition-all duration-200 group',
+                                            isActive
+                                                ? 'bg-primary-50 text-primary-700'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                        )}
+                                    >
+                                        <Icon className={cn(
+                                            "w-5 h-5 mr-3 transition-colors",
+                                            isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
+                                        )} />
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 ))}
             </nav>
@@ -297,6 +278,6 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
             {/* <div className="mt-auto">
                 <InsuranceTipsCarousel />
             </div> */}
-        </aside>
+        </aside >
     );
 }

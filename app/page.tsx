@@ -38,8 +38,8 @@ export default function LandingPage() {
             {/* 8. FAQ */}
             <FAQ />
 
-            {/* 9. CTA Section */}
-            <CTASection />
+            {/* 9. CTA Section - Removed per user request */}
+            {/* <CTASection /> */}
 
             {/* 10. Footer */}
             <Footer />

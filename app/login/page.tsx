@@ -3,22 +3,26 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Mail, Lock } from 'lucide-react';
-import { signIn } from '@/lib/auth';
+import { Shield, Mail, Lock, Phone, ArrowRight } from 'lucide-react';
+import { signIn, signInWithPhone, verifyOtp } from '@/lib/auth';
 
 function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const type = searchParams.get('type') || 'individual';
 
+    const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        phone: '',
+        otp: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
@@ -26,16 +30,66 @@ function LoginForm() {
         try {
             const user = await signIn(formData.email, formData.password);
 
-
-            // Redirect based on user role
             if (user.role === 'admin') {
                 router.push('/admin/dashboard');
             } else {
-                // All other roles (individual, corporate_employee, corporate_admin) go to main dashboard
                 router.push('/dashboard');
             }
         } catch (err: any) {
             setError(err.message || 'Failed to sign in. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSendOtp = async () => {
+        if (!formData.phone || formData.phone.length < 10) {
+            setError('Please enter a valid phone number');
+            return;
+        }
+
+        setError('');
+        setLoading(true);
+
+        try {
+            // Format phone with country code if not present
+            const phoneNumber = formData.phone.startsWith('+')
+                ? formData.phone
+                : `+91${formData.phone}`;
+
+            await signInWithPhone(phoneNumber);
+            setOtpSent(true);
+        } catch (err: any) {
+            setError(err.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.otp || formData.otp.length !== 6) {
+            setError('Please enter the 6-digit OTP');
+            return;
+        }
+
+        setError('');
+        setLoading(true);
+
+        try {
+            const phoneNumber = formData.phone.startsWith('+')
+                ? formData.phone
+                : `+91${formData.phone}`;
+
+            const user = await verifyOtp(phoneNumber, formData.otp);
+
+            if (user?.role === 'admin') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/dashboard');
+            }
+        } catch (err: any) {
+            setError(err.message || 'Invalid OTP. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -82,63 +136,175 @@ function LoginForm() {
                     </Link>
                 </div>
 
+                {/* Login Method Toggle */}
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setLoginMethod('email');
+                            setOtpSent(false);
+                            setError('');
+                        }}
+                        className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${loginMethod === 'email'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        <Mail className="w-4 h-4" />
+                        Email
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setLoginMethod('phone');
+                            setError('');
+                        }}
+                        className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${loginMethod === 'phone'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        <Phone className="w-4 h-4" />
+                        Phone
+                    </button>
+                </div>
+
                 {/* Login Form */}
                 <div className="card">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {error && (
-                            <div className="alert-error">
-                                {error}
+                    {error && (
+                        <div className="alert-error mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    {loginMethod === 'email' ? (
+                        <form onSubmit={handleEmailSubmit} className="space-y-6">
+                            <div>
+                                <label className="label">
+                                    <Mail className="w-4 h-4 inline mr-2" />
+                                    Email address
+                                </label>
+                                <input
+                                    type="email"
+                                    required
+                                    className="input"
+                                    placeholder="you@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
                             </div>
-                        )}
 
-                        <div>
-                            <label className="label">
-                                <Mail className="w-4 h-4 inline mr-2" />
-                                Email address
-                            </label>
-                            <input
-                                type="email"
-                                required
-                                className="input"
-                                placeholder="you@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
+                            <div>
+                                <label className="label">
+                                    <Lock className="w-4 h-4 inline mr-2" />
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    required
+                                    className="input"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <label className="flex items-center">
+                                    <input type="checkbox" className="rounded border-gray-300 text-primary-600 mr-2" />
+                                    <span className="text-sm text-gray-600">Remember me</span>
+                                </label>
+                                <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+                                    Forgot password?
+                                </Link>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn-primary w-full"
+                            >
+                                {loading ? 'Signing in...' : 'Sign In'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="space-y-6">
+                            {!otpSent ? (
+                                <>
+                                    <div>
+                                        <label className="label">
+                                            <Phone className="w-4 h-4 inline mr-2" />
+                                            Phone Number
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <div className="flex items-center px-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-600 text-sm">
+                                                +91
+                                            </div>
+                                            <input
+                                                type="tel"
+                                                required
+                                                className="input flex-1"
+                                                placeholder="9876543210"
+                                                maxLength={10}
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSendOtp}
+                                        disabled={loading || formData.phone.length < 10}
+                                        className="btn-primary w-full flex items-center justify-center gap-2"
+                                    >
+                                        {loading ? 'Sending OTP...' : (
+                                            <>
+                                                Send OTP
+                                                <ArrowRight className="w-4 h-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                                    <div>
+                                        <label className="label">
+                                            Enter OTP sent to +91 {formData.phone}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="input text-center text-2xl tracking-widest"
+                                            placeholder="000000"
+                                            maxLength={6}
+                                            value={formData.otp}
+                                            onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading || formData.otp.length !== 6}
+                                        className="btn-primary w-full"
+                                    >
+                                        {loading ? 'Verifying...' : 'Verify & Login'}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOtpSent(false);
+                                            setFormData({ ...formData, otp: '' });
+                                        }}
+                                        className="text-sm text-primary-600 hover:text-primary-700 w-full text-center"
+                                    >
+                                        Change phone number
+                                    </button>
+                                </form>
+                            )}
                         </div>
-
-                        <div>
-                            <label className="label">
-                                <Lock className="w-4 h-4 inline mr-2" />
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                required
-                                className="input"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center">
-                                <input type="checkbox" className="rounded border-gray-300 text-primary-600 mr-2" />
-                                <span className="text-sm text-gray-600">Remember me</span>
-                            </label>
-                            <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
-                                Forgot password?
-                            </Link>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full"
-                        >
-                            {loading ? 'Signing in...' : 'Sign In'}
-                        </button>
-                    </form>
+                    )}
 
                     <div className="mt-6 text-center">
                         <p className="text-sm text-gray-600">

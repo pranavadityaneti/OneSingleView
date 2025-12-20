@@ -27,6 +27,9 @@ function PoliciesContent() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
 
+    // Check if user is corporate
+    const isCorporate = user?.role === 'corporate_employee' || user?.role === 'corporate_admin';
+
     const refreshData = async () => {
         if (!user) return;
         setLoading(true);
@@ -56,7 +59,7 @@ function PoliciesContent() {
         }
     }, [user]);
 
-    // Filter logic
+    // Filter logic - show ALL policies including expired
     const filteredPolicies = allPolicies.filter(policy => {
         const matchesSearch = searchQuery === '' ||
             policy.policy_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,74 +115,136 @@ function PoliciesContent() {
                     <p className="text-gray-500 mt-1">Try adjusting your search or add a new policy</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPolicies.map((policy: any) => {
-                        const isMotor = policy.type === 'Motor';
-                        const isHealth = policy.type === 'Health';
-                        const Icon = isMotor ? Car : isHealth ? Heart : Briefcase;
-                        const colorClass = isMotor ? 'text-blue-600 bg-blue-50' : isHealth ? 'text-green-600 bg-green-50' : 'text-purple-600 bg-purple-50';
-                        const expiryDate = new Date(isHealth || policy.type === 'Commercial' ? policy.expiry_date : policy.policy_end_date);
-                        const status = calculatePolicyStatus(expiryDate);
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                                    {isCorporate && (
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
+                                    )}
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vehicle/Policy #</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Insurer</th>
+                                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Premium</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Start Date</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">End Date</th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Details</th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {filteredPolicies.map((policy: any) => {
+                                    const isMotor = policy.type === 'Motor';
+                                    const isHealth = policy.type === 'Health';
+                                    const Icon = isMotor ? Car : isHealth ? Heart : Briefcase;
+                                    const colorClass = isMotor ? 'text-blue-600 bg-blue-50' : isHealth ? 'text-green-600 bg-green-50' : 'text-purple-600 bg-purple-50';
+                                    const expiryDate = new Date(isHealth || policy.type === 'Commercial' ? policy.expiry_date : policy.policy_end_date);
+                                    const startDate = isMotor ? new Date(policy.policy_start_date) : null;
+                                    const status = calculatePolicyStatus(expiryDate);
+                                    const identifier = isMotor ? (policy as MotorPolicy).vehicle_number : policy.policy_number;
+                                    const detailHref = `/policies/${isMotor ? 'motor' : isHealth ? 'health' : 'commercial'}/${policy.id}`;
 
-                        return (
-                            <div
-                                key={policy.id}
-                                className="bg-white rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all p-5 relative"
-                            >
-                                {/* Edit Button */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedPolicy(policy);
-                                        setIsEditModalOpen(true);
-                                    }}
-                                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors z-10"
-                                    title="Edit Policy"
-                                >
-                                    <Pencil className="w-4 h-4" />
-                                </button>
+                                    // Build details string based on policy type
+                                    let details = '';
+                                    if (isMotor) {
+                                        const mp = policy as MotorPolicy;
+                                        details = `${mp.vehicle_type || ''} • ${mp.manufacturer || ''} ${mp.model || ''}`.trim();
+                                    } else if (isHealth) {
+                                        const hp = policy as HealthPolicy;
+                                        details = hp.sum_insured ? `₹${(hp.sum_insured / 100000).toFixed(1)}L SI` : '';
+                                        if (hp.no_of_lives) details += ` • ${hp.no_of_lives} lives`;
+                                    } else {
+                                        const cp = policy as CommercialPolicy;
+                                        details = cp.lob_type || '';
+                                        if (cp.sum_insured) details += ` • ₹${(cp.sum_insured / 100000).toFixed(1)}L SI`;
+                                    }
 
-                                {/* Clickable area for viewing */}
-                                <Link
-                                    href={`/policies/${isMotor ? 'motor' : isHealth ? 'health' : 'commercial'}/${policy.id}`}
-                                    className="block"
-                                >
-                                    <div className="flex justify-between items-start mb-4 pr-8">
-                                        <div className={`p-2 rounded-lg ${colorClass}`}>
-                                            <Icon className="w-6 h-6" />
-                                        </div>
-                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'Active' ? 'bg-green-100 text-green-800' :
-                                            status === 'Expiring Soon' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}>
-                                            {status}
-                                        </span>
-                                    </div>
+                                    return (
+                                        <tr key={policy.id} className="hover:bg-gray-50 transition-colors">
+                                            {/* Type */}
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`p-1.5 rounded-md ${colorClass}`}>
+                                                        <Icon className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-900">{policy.type}</span>
+                                                </div>
+                                            </td>
 
-                                    <h3 className="font-bold text-gray-900 mb-1">{policy.insurer_name}</h3>
-                                    <p className="text-sm text-gray-500 mb-1">{policy.policy_number}</p>
-                                    <p className="text-xs font-medium text-gray-600 mb-3">{policy.type} Insurance</p>
+                                            {/* Company Name (Corporate only) */}
+                                            {isCorporate && (
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                    {policy.company_name || '—'}
+                                                </td>
+                                            )}
 
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">Premium</span>
-                                            <span className="font-medium">{formatCurrency(policy.premium_amount)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">Valid Till</span>
-                                            <span className="font-medium">{expiryDate.toLocaleDateString()}</span>
-                                        </div>
-                                        {isMotor && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">Vehicle</span>
-                                                <span className="font-medium">{(policy as MotorPolicy).vehicle_number}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </Link>
-                            </div>
-                        );
-                    })}
+                                            {/* Vehicle/Policy Number (Clickable) */}
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <Link
+                                                    href={detailHref}
+                                                    className="text-sm font-semibold text-primary-600 hover:text-primary-800 hover:underline"
+                                                >
+                                                    {identifier}
+                                                </Link>
+                                            </td>
+
+                                            {/* Insurer */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                {policy.insurer_name}
+                                            </td>
+
+                                            {/* Premium */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                                                {formatCurrency(policy.premium_amount)}
+                                            </td>
+
+                                            {/* Start Date */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                {startDate ? startDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                                            </td>
+
+                                            {/* End Date */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                {expiryDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${status === 'Active' ? 'bg-green-100 text-green-800' :
+                                                    status === 'Expiring Soon' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {status}
+                                                </span>
+                                            </td>
+
+                                            {/* Details */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 max-w-[200px] truncate" title={details}>
+                                                {details || '—'}
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedPolicy(policy);
+                                                        setIsEditModalOpen(true);
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                                    title="Edit Policy"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 

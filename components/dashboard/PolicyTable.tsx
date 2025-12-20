@@ -75,7 +75,7 @@ export default function PolicyTable({
     const filteredAndSortedPolicies = useMemo(() => {
         let result = allPolicies;
 
-        // Filter: Show Active, Expiring Soon, and Expired policies
+        // Filter: Show Active and Expiring Soon policies only (exclude Expired)
         result = result.filter(p => {
             const isMotor = p.type === 'Motor';
             const isHealth = p.type === 'Health';
@@ -84,7 +84,7 @@ export default function PolicyTable({
                     (p as any).expiry_date;
             const endDate = endDateValue ? new Date(endDateValue) : null;
             const status = calculatePolicyStatus(endDate);
-            return status === 'Active' || status === 'Expiring Soon' || status === 'Expired';
+            return status === 'Active' || status === 'Expiring Soon';
         });
 
         // Search

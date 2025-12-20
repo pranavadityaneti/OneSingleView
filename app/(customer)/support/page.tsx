@@ -106,7 +106,7 @@ const faqCategories = [
             },
             {
                 question: 'Is my data secure?',
-                answer: 'Absolutely! We use bank-level encryption for all data. Your documents are stored securely, and we never share your information with third parties without consent.'
+                answer: 'Your data is protected with AES-256 encryption (the same standard used by banks) and transmitted securely over HTTPS. We use Row Level Security to ensure you can only access your own data, and we never share your information with third parties without consent.'
             }
         ]
     }
@@ -136,8 +136,32 @@ export default function SupportPage() {
         <div className="max-w-5xl mx-auto space-y-8">
             {/* Header */}
             <div className="text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Support & FAQs</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Need help?</h1>
                 <p className="text-gray-600">Find answers to commonly asked questions about your insurance policies</p>
+            </div>
+
+            {/* Contact Support - Moved to Top */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8 text-center border border-green-100">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Still have questions?</h2>
+                <p className="text-gray-600 mb-6">Our support team is here to help you</p>
+                <div className="flex flex-wrap justify-center gap-4">
+                    <a
+                        href="https://wa.me/917075422949"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white rounded-lg shadow-lg shadow-green-200 hover:shadow-green-300 transition-all hover:-translate-y-0.5 font-bold"
+                    >
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Chat on WhatsApp</span>
+                    </a>
+                    <a
+                        href="mailto:support@onesingleview.com"
+                        className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100 font-medium"
+                    >
+                        <Mail className="w-5 h-5 text-gray-500" />
+                        <span>Email Support</span>
+                    </a>
+                </div>
             </div>
 
             {/* Search Bar */}
@@ -191,28 +215,6 @@ export default function SupportPage() {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* Contact Support */}
-            <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-xl p-8 text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Still have questions?</h2>
-                <p className="text-gray-600 mb-6">Our support team is here to help you</p>
-                <div className="flex flex-wrap justify-center gap-4">
-                    <a
-                        href="mailto:support@onesingleview.com"
-                        className="flex items-center gap-2 px-6 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <Mail className="w-5 h-5 text-primary-600" />
-                        <span className="font-medium">Email Support</span>
-                    </a>
-                    <a
-                        href="tel:+919876543210"
-                        className="flex items-center gap-2 px-6 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <Phone className="w-5 h-5 text-green-600" />
-                        <span className="font-medium">Call Us</span>
-                    </a>
-                </div>
             </div>
 
             {/* No Results */}

@@ -33,6 +33,8 @@ const LABELS = {
 export default function AnalyticsDonutChart({ data, allPolicies = [], userRole }: AnalyticsDonutChartProps) {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedPolicyType, setSelectedPolicyType] = useState<'Motor' | 'Health' | 'Commercial' | 'Travel' | 'Life' | 'Cyber' | null>(null);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
     const chartData = [
         { name: LABELS.motor, value: data.motor, color: COLORS.motor },
         { name: LABELS.health, value: data.health, color: COLORS.health },
@@ -84,23 +86,20 @@ export default function AnalyticsDonutChart({ data, allPolicies = [], userRole }
                                 setSelectedPolicyType(policyTypeMap[data.name]);
                                 setModalOpen(true);
                             }}
+                            onMouseEnter={(_, index) => setHoveredIndex(index)}
+                            onMouseLeave={() => setHoveredIndex(null)}
                             cursor="pointer"
                         >
                             {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                    opacity={hoveredIndex === index ? 0.8 : 1}
+                                    stroke={hoveredIndex === index ? entry.color : 'none'}
+                                    strokeWidth={hoveredIndex === index ? 4 : 0}
+                                />
                             ))}
                         </Pie>
-                        <Tooltip
-                            formatter={(value: number) => formatCurrency(value)}
-                            contentStyle={{
-                                backgroundColor: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 12px',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                            }}
-                            itemStyle={{ color: '#1F293B', fontSize: '12px', fontWeight: 600 }}
-                        />
                     </PieChart>
                 </ResponsiveContainer>
 
@@ -109,6 +108,17 @@ export default function AnalyticsDonutChart({ data, allPolicies = [], userRole }
                     <span className="text-2xl font-bold text-gray-900">100%</span>
                     <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Distribution</span>
                 </div>
+
+                {/* Custom Floating Tooltip - Positioned below the rings */}
+                {hoveredIndex !== null && chartData[hoveredIndex] && (
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="bg-gray-900 text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: chartData[hoveredIndex].color }}></span>
+                            <span>{chartData[hoveredIndex].name}:</span>
+                            <span className="font-bold">{formatCurrency(chartData[hoveredIndex].value)}</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Custom Legend - Compact 2-column grid */}
