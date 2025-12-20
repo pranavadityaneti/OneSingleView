@@ -141,12 +141,20 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
 
         setLoading(true);
         try {
+            // Map 'Health' lob_type correctly if needed (in case DB expects GMC but we use Health UI)
+            // But we are migrating DB to allow Health.
+            // Ensure lob_type is valid based on selected policy
+            let lobType = formData.lob_type || 'Motor';
+
+            // Just in case existing data has old values, force standard types
+            if ((lobType as string) === 'GMC') lobType = 'Health';
+
             const claimData = {
                 ...formData,
                 user_id: userId,
                 incident_date: new Date(formData.incident_date!),
                 policy_id: formData.policy_id || '',
-                lob_type: formData.lob_type || 'Motor',
+                lob_type: lobType,
                 claim_type: formData.claim_type || 'Accident',
                 description: formData.description || '',
                 supporting_docs: formData.supporting_docs || [],
@@ -162,9 +170,12 @@ export default function ClaimForm({ userId, initialData, onClose, onSuccess }: C
 
             onSuccess();
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving claim:', error);
-            setErrors(prev => ({ ...prev, submit: 'Failed to save claim. Please try again.' }));
+            setErrors(prev => ({
+                ...prev,
+                submit: error.message || 'Failed to save claim. Please try again.'
+            }));
         } finally {
             setLoading(false);
         }

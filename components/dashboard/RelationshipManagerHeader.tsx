@@ -15,11 +15,11 @@ export default function RelationshipManagerHeader() {
         <div className="hidden lg:flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-soft border border-gray-100 mr-2">
             <div className="flex items-center gap-3 border-r border-gray-100 pr-4">
                 <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary-600/20">
-                    {rm.name.charAt(0)}
+                    <User className="w-4 h-4" />
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-gray-900 leading-none">{rm.name}</p>
-                    <p className="text-[10px] font-medium text-primary-600 mt-0.5">{rm.role}</p>
+                    <p className="text-sm font-bold text-gray-900 leading-none">Your Advisor</p>
+                    <p className="text-[10px] font-medium text-primary-600 mt-0.5">Priority Support</p>
                 </div>
             </div>
 

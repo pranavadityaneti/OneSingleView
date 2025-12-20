@@ -23,12 +23,12 @@ export default function RelationshipManagerCard({ name, phone, email }: Relation
 
             <div className="flex items-center gap-4 mt-4 mb-4">
                 <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-600/20">
-                    {name.charAt(0)}
+                    <User className="w-6 h-6" />
                 </div>
                 <div>
-                    <p className="font-bold text-base text-gray-900">{name}</p>
+                    <p className="font-bold text-base text-gray-900">Your Advisor</p>
                     <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                        Your Dedicated Advisor
+                        Dedicated Support
                     </span>
                 </div>
             </div>

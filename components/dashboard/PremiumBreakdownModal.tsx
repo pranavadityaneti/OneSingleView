@@ -35,10 +35,11 @@ export default function PremiumBreakdownModal({
 
     if (!isOpen) return null;
 
-    // Filter policies by selected company
-    const filteredPolicies = selectedCompany === 'all'
+    // Filter policies by selected company AND exclude Expired policies
+    const filteredPolicies = (selectedCompany === 'all'
         ? policies
-        : policies.filter(p => p.company_name === selectedCompany);
+        : policies.filter(p => p.company_name === selectedCompany)
+    ).filter(p => p.status !== 'Expired');
 
     // Calculate breakdown based on policy type
     const getBreakdown = () => {

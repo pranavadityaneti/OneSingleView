@@ -69,6 +69,7 @@ export default function AddPolicyModal({
                 policy_start_date: new Date(), // Start from today
                 policy_end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year
                 renewed_from_policy_id: renewalData.id, // Track renewal
+                rc_docs: renewalData.rc_docs || [], // Explicitly ensure RC docs are carried over
             };
         })() : undefined;
 
