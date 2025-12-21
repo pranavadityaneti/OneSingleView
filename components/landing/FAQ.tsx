@@ -7,12 +7,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function FAQ() {
     const faqs = [
         {
-            question: 'How does OneSingleView connect to my existing policies?',
+            question: 'How does 1SingleView connect to my existing policies?',
             answer:
                 'You can easily add your policies by uploading policy documents or entering basic details. Our system extracts key information automatically. You can also connect with your insurer if they support digital policy sync.',
         },
         {
-            question: 'Is my data secure with OneSingleView?',
+            question: 'Is my data secure with 1SingleView?',
             answer:
                 'Absolutely. We use bank-grade encryption (AES-256) to protect your data. Your documents are stored securely in the cloud with multi-factor authentication. We never share your data with third parties without your consent.',
         },
@@ -32,9 +32,9 @@ export default function FAQ() {
                 'Yes! Our dedicated relationship managers assist you throughout the claim process. You can register a claim through the app, upload required documents, and track the claim status in real-time.',
         },
         {
-            question: 'Is OneSingleView free to use?',
+            question: 'Is 1SingleView free to use?',
             answer:
-                'Yes! OneSingleView is completely free to use. Manage all your policies with full features including dedicated RM support and priority claims assistance.',
+                'Yes! 1SingleView is completely free to use. Manage all your policies with full features including dedicated RM support and priority claims assistance.',
         },
     ];
 

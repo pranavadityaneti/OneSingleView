@@ -10,7 +10,7 @@ export default function Testimonials() {
             name: 'Rahul Sharma',
             role: 'Business Owner, Mumbai',
             content:
-                'OneSingleView has transformed how I manage my family\'s insurance. I used to forget renewals all the time. Now everything is in one place with timely alerts.',
+                '1SingleView has transformed how I manage my family\'s insurance. I used to forget renewals all the time. Now everything is in one place with timely alerts.',
             rating: 5,
             avatar: 'RS',
         },
@@ -26,7 +26,7 @@ export default function Testimonials() {
             name: 'Amit Verma',
             role: 'Doctor, Delhi',
             content:
-                'Managing health policies for my clinic staff was a nightmare. OneSingleView made it simple. I can see all 20+ policies in one dashboard.',
+                'Managing health policies for my clinic staff was a nightmare. 1SingleView made it simple. I can see all 20+ policies in one dashboard.',
             rating: 5,
             avatar: 'AV',
         },

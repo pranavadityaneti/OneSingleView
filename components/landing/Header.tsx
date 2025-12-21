@@ -8,7 +8,7 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navLinks = [
-        { label: 'Why OneSingleView', href: '#benefits' },
+        { label: 'Why 1SingleView', href: '#benefits' },
         { label: 'Features', href: '#features' },
         { label: 'FAQs', href: '#faq' },
     ];

@@ -84,8 +84,10 @@ export default function Hero() {
                         className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6"
                         variants={itemVariants}
                     >
-                        All Your Insurance Policies,{' '}
-                        <span className="text-blue-600">One Single View</span>
+                        Smart Insurance Starts Here.{' '}
+                        <span className="text-blue-600">Compare & Purchase!</span>
+                        <br />
+                        <span className="text-2xl md:text-3xl lg:text-4xl text-green-600 font-semibold">Save Up to 20%</span>
                     </motion.h1>
 
                     {/* Subtext */}

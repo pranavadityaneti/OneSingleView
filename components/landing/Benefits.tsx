@@ -5,12 +5,28 @@ import {
     BellRing,
     HeadphonesIcon,
     CheckCircle,
-    TrendingDown
+    TrendingDown,
+    BadgePercent
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Benefits() {
     const benefits = [
+        {
+            eyebrow: 'EXCLUSIVE SAVINGS',
+            title: 'Up to 20% Discount on Premium',
+            description:
+                'Save more on your insurance renewals. Our partnerships with leading insurers help you unlock exclusive discounts that you won\'t find anywhere else.',
+            features: [
+                'Exclusive renewal discounts up to 20%',
+                'No-claim bonus preservation',
+                'Special rates from partner insurers',
+            ],
+            icon: BadgePercent,
+            iconBg: 'bg-amber-100',
+            iconColor: 'text-amber-600',
+            reversed: false,
+        },
         {
             eyebrow: 'UNIFIED VIEW',
             title: 'All Your Policies in One Place',
@@ -24,7 +40,7 @@ export default function Benefits() {
             icon: LayoutDashboard,
             iconBg: 'bg-blue-100',
             iconColor: 'text-blue-600',
-            reversed: false,
+            reversed: true,
         },
         {
             eyebrow: 'SMART ALERTS',
@@ -39,7 +55,7 @@ export default function Benefits() {
             icon: BellRing,
             iconBg: 'bg-teal-100',
             iconColor: 'text-teal-600',
-            reversed: true,
+            reversed: false,
         },
         {
             eyebrow: 'DEDICATED SUPPORT',
@@ -54,7 +70,7 @@ export default function Benefits() {
             icon: HeadphonesIcon,
             iconBg: 'bg-indigo-100',
             iconColor: 'text-indigo-600',
-            reversed: false,
+            reversed: true,
         },
         {
             eyebrow: 'BEST PRICES',
@@ -69,7 +85,7 @@ export default function Benefits() {
             icon: TrendingDown,
             iconBg: 'bg-emerald-100',
             iconColor: 'text-emerald-600',
-            reversed: true,
+            reversed: false,
         },
     ];
 
@@ -112,7 +128,7 @@ export default function Benefits() {
                     variants={headerVariants}
                 >
                     <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider">
-                        Why OneSingleView
+                        Why 1SingleView
                     </span>
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
                         Simplify Your Insurance Journey

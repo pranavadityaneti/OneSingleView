@@ -59,7 +59,7 @@ export default function Footer() {
                         <div className="space-y-2 text-sm text-gray-400">
                             <div className="flex items-center space-x-2">
                                 <Mail size={16} />
-                                <span>support@onesingleview.com</span>
+                                <span>support@1singleview.com</span>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Phone size={16} />
@@ -67,7 +67,7 @@ export default function Footer() {
                             </div>
                             <div className="flex items-center space-x-2">
                                 <MapPin size={16} />
-                                <span>Mumbai, India</span>
+                                <span>Jubilee Hills, Hyderabad, India</span>
                             </div>
                         </div>
                     </div>
@@ -127,7 +127,7 @@ export default function Footer() {
                 {/* Bottom Bar */}
                 <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                     <p className="text-gray-500 text-sm">
-                        © {currentYear} OneSingleView. All rights reserved.
+                        © {currentYear} 1SingleView. All rights reserved.
                     </p>
                     <div className="flex items-center space-x-4">
                         {socialLinks.map((social) => (

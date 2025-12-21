@@ -2,7 +2,7 @@
 
 import {
     LayoutDashboard,
-    Bell,
+    Cloud,
     ClipboardCheck,
     FolderOpen,
     HeadphonesIcon,
@@ -18,9 +18,9 @@ export default function Features() {
             description: 'All your policies from multiple insurers in one beautiful view',
         },
         {
-            icon: Bell,
-            title: 'Expiry Alerts',
-            description: 'Timely reminders before your policies expire, never miss a renewal',
+            icon: Cloud,
+            title: '100% Digital',
+            description: 'Completely paperless experience. Store, access, and manage all your insurance documents digitally — anytime, anywhere',
         },
         {
             icon: ClipboardCheck,
