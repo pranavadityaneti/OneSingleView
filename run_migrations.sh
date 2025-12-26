@@ -158,8 +158,10 @@ DROP TRIGGER IF EXISTS update_user_preferences_updated_at ON user_preferences;
 
 CREATE TRIGGER update_user_preferences_updated_at
     BEFORE UPDATE ON user_preferences
-    FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Migration 3: Add intermediary column to motor_policies
+ALTER TABLE motor_policies ADD COLUMN IF NOT EXISTS intermediary TEXT;
 EOF
 
 echo "📝 Combined migration file created at: /tmp/combined_migration.sql"

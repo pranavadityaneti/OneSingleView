@@ -55,6 +55,7 @@ export interface MotorPolicy {
     rc_docs: string[];
     previous_policy_docs: string[];
     dl_docs?: string[];
+    intermediary?: string;
     created_at: Date;
     updated_at: Date;
 }

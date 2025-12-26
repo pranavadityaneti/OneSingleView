@@ -44,6 +44,7 @@ export default function MotorPolicyForm({ userId, userRole, initialData, onClose
         ownership_type: initialData?.ownership_type || 'Individual',
         policy_type: initialData?.policy_type || 'Comprehensive',
         insurer_name: initialData?.insurer_name || '',
+        intermediary: initialData?.intermediary || '',
         premium_amount: initialData?.premium_amount || 0,
         policy_start_date: initialData?.policy_start_date ? new Date(initialData.policy_start_date) : new Date(),
         policy_end_date: initialData?.policy_end_date ? new Date(initialData.policy_end_date) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
@@ -358,6 +359,13 @@ export default function MotorPolicyForm({ userId, userRole, initialData, onClose
                                 options={INSURANCE_COMPANIES.map(c => ({ value: c, label: c }))}
                                 error={errors.insurer_name}
                                 required
+                            />
+                            <FormInput
+                                label="Intermediary (Broker/Agent)"
+                                name="intermediary"
+                                value={formData.intermediary || ''}
+                                onChange={handleChange}
+                                placeholder="Enter intermediary name"
                             />
                             <FormInput
                                 label="Premium Amount (₹)"

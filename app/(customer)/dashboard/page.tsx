@@ -33,6 +33,7 @@ import StickyAddPolicy from '@/components/dashboard/StickyAddPolicy';
 import ExportButton from '@/components/dashboard/ExportButton';
 import AddPolicyModal, { PolicyType } from '@/components/policies/AddPolicyModal';
 import PolicyTable from '@/components/dashboard/PolicyTable';
+import ClientLogos from '@/components/dashboard/ClientLogos';
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -493,7 +494,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Claims Overview and Policy Renewal Reminder - Side by side on desktop, stacked on mobile */}
-                    <div className="grid md:grid-cols-2 gap-6 h-[320px]">
+                    <div className="grid md:grid-cols-2 gap-6 h-[340px]">
                         <ClaimsOverview
                             activeCount={activeClaims}
                             settledCount={settledClaims}
@@ -529,14 +530,14 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Protect Family Card and Coverage Gap Card - Stacked */}
-                    <div className="h-[320px] flex flex-col gap-3">
-                        {/* Protect Family - Half height of container */}
-                        <div className="h-[160px] flex-shrink-0">
+                    <div className="flex flex-col gap-3">
+                        {/* Protect Family - Full height to match Claims Overview (340px) */}
+                        <div className="h-[340px] flex-shrink-0">
                             <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
                         </div>
-                        {/* Coverage Gap Card - Takes remaining space */}
+                        {/* Coverage Gap Card - Takes remaining space or fixed height */}
                         {healthPolicies.length === 0 && (
-                            <div className="flex-1">
+                            <div className="h-[160px]">
                                 <CoverageGapCard
                                     missingPolicyType="Health"
                                     onExplore={() => setIsHealthModalOpen(true)}
@@ -546,6 +547,10 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Client Logos Section */}
+            <ClientLogos />
+
 
 
             {/* StickyAddPolicy moved to header */}
