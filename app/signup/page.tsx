@@ -91,10 +91,8 @@ function SignupForm() {
     };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center py-12 px-4 overflow-hidden">
-            <AuthBackground />
-
-            <div className="max-w-md w-full space-y-8 relative z-10">
+        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center py-12 px-4">
+            <div className="max-w-md w-full space-y-8">
                 {/* Header */}
                 <div className="text-center">
                     <Link href="/" className="inline-flex items-center justify-center mb-6">
