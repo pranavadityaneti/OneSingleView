@@ -108,12 +108,7 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         <aside className="w-72 h-full bg-white border-r border-gray-100 hidden md:flex flex-col overflow-y-auto">
             {/* Logo */}
             <div className="flex items-center flex-shrink-0 px-6 py-6 border-b border-gray-50">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
-                    <Shield className="w-5 h-5 text-white" />
-                </div>
-                <span className="ml-3 text-lg font-bold text-gray-900 tracking-tight">
-                    PolicyPilot
-                </span>
+                <img src="/images/brand-logo.png" alt="1SingleView" className="h-10 w-auto" />
             </div>
 
             {/* User Profile Section (Top) */}

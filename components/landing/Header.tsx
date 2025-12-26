@@ -19,12 +19,7 @@ export default function Header() {
                 <div className="flex items-center justify-between h-16 md:h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">O</span>
-                        </div>
-                        <span className="text-xl font-bold text-gray-900">
-                            One<span className="text-blue-600">Single</span>View
-                        </span>
+                        <img src="/images/brand-logo.png" alt="1SingleView" className="h-14 w-auto" />
                     </Link>
 
                     {/* Desktop Navigation */}

@@ -3,15 +3,16 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Mail, Lock, Phone, ArrowRight } from 'lucide-react';
-import { signIn, signInWithPhone, verifyOtp } from '@/lib/auth';
+import { Shield, Mail, Lock, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { signIn, signInWithPhone, verifyOtp, signInWithEmailOtp, verifyEmailOtp } from '@/lib/auth';
 
 function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const type = searchParams.get('type') || 'individual';
 
-    const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+    const [loginMethod, setLoginMethod] = useState<'email' | 'emailOtp' | 'phone'>('email');
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -37,6 +38,50 @@ function LoginForm() {
             }
         } catch (err: any) {
             setError(err.message || 'Failed to sign in. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSendEmailOtp = async () => {
+        if (!formData.email || !formData.email.includes('@')) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        setError('');
+        setLoading(true);
+
+        try {
+            await signInWithEmailOtp(formData.email);
+            setEmailOtpSent(true);
+        } catch (err: any) {
+            setError(err.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyEmailOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.otp || formData.otp.length !== 6) {
+            setError('Please enter the 6-digit OTP');
+            return;
+        }
+
+        setError('');
+        setLoading(true);
+
+        try {
+            const user = await verifyEmailOtp(formData.email, formData.otp);
+
+            if (user?.role === 'admin') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/dashboard');
+            }
+        } catch (err: any) {
+            setError(err.message || 'Invalid OTP. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -100,11 +145,8 @@ function LoginForm() {
             <div className="max-w-md w-full space-y-8">
                 {/* Header */}
                 <div className="text-center">
-                    <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-                        <Shield className="w-10 h-10 text-primary-600" />
-                        <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                            One Single View
-                        </span>
+                    <Link href="/" className="inline-flex items-center justify-center mb-6">
+                        <img src="/images/brand-logo.png" alt="1SingleView" className="h-16 w-auto" />
                     </Link>
                     <h2 className="text-3xl font-bold text-gray-900">
                         {type === 'corporate' ? 'Corporate Login' : 'Individual Login'}
@@ -143,25 +185,45 @@ function LoginForm() {
                         onClick={() => {
                             setLoginMethod('email');
                             setOtpSent(false);
+                            setEmailOtpSent(false);
                             setError('');
                         }}
                         className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${loginMethod === 'email'
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
-                        <Mail className="w-4 h-4" />
-                        Email
+                        <Lock className="w-4 h-4" />
+                        Password
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setLoginMethod('emailOtp');
+                            setEmailOtpSent(false);
+                            setOtpSent(false);
+                            setError('');
+                            setFormData({ ...formData, otp: '' });
+                        }}
+                        className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${loginMethod === 'emailOtp'
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Email OTP
                     </button>
                     <button
                         type="button"
                         onClick={() => {
                             setLoginMethod('phone');
+                            setOtpSent(false);
+                            setEmailOtpSent(false);
                             setError('');
                         }}
                         className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${loginMethod === 'phone'
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
                         <Phone className="w-4 h-4" />
@@ -227,6 +289,77 @@ function LoginForm() {
                                 {loading ? 'Signing in...' : 'Sign In'}
                             </button>
                         </form>
+                    ) : loginMethod === 'emailOtp' ? (
+                        <div className="space-y-6">
+                            {!emailOtpSent ? (
+                                <>
+                                    <div>
+                                        <label className="label">
+                                            <Mail className="w-4 h-4 inline mr-2" />
+                                            Email address
+                                        </label>
+                                        <input
+                                            type="email"
+                                            required
+                                            className="input"
+                                            placeholder="you@example.com"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSendEmailOtp}
+                                        disabled={loading || !formData.email.includes('@')}
+                                        className="btn-primary w-full flex items-center justify-center gap-2"
+                                    >
+                                        {loading ? 'Sending OTP...' : (
+                                            <>
+                                                Send OTP to Email
+                                                <Sparkles className="w-4 h-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                </>
+                            ) : (
+                                <form onSubmit={handleVerifyEmailOtp} className="space-y-6">
+                                    <div>
+                                        <label className="label">
+                                            Enter OTP sent to {formData.email}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="input text-center text-2xl tracking-widest"
+                                            placeholder="000000"
+                                            maxLength={6}
+                                            value={formData.otp}
+                                            onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading || formData.otp.length !== 6}
+                                        className="btn-primary w-full"
+                                    >
+                                        {loading ? 'Verifying...' : 'Verify & Login'}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEmailOtpSent(false);
+                                            setFormData({ ...formData, otp: '' });
+                                        }}
+                                        className="text-sm text-primary-600 hover:text-primary-700 w-full text-center"
+                                    >
+                                        Change email address
+                                    </button>
+                                </form>
+                            )}
+                        </div>
                     ) : (
                         <div className="space-y-6">
                             {!otpSent ? (

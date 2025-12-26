@@ -91,18 +91,17 @@ function SignupForm() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center py-12 px-4">
-            <div className="max-w-md w-full space-y-8">
+        <div className="min-h-screen relative flex items-center justify-center py-12 px-4 overflow-hidden">
+            <AuthBackground />
+
+            <div className="max-w-md w-full space-y-8 relative z-10">
                 {/* Header */}
                 <div className="text-center">
-                    <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-                        <Shield className="w-10 h-10 text-primary-600" />
-                        <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                            One Single View
-                        </span>
+                    <Link href="/" className="inline-flex items-center justify-center mb-6">
+                        <img src="/images/brand-logo.png" alt="1SingleView" className="h-16 w-auto drop-shadow-sm" />
                     </Link>
                     <h2 className="text-3xl font-bold text-gray-900">Create an Account</h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-gray-600 font-medium">
                         {type === 'corporate' ? 'Corporate Account' : 'Individual Account'}
                     </p>
                 </div>
@@ -112,8 +111,8 @@ function SignupForm() {
                     <Link
                         href="/signup?type=individual"
                         className={`flex-1 py-2 px-4 text-center rounded-lg font-medium transition-all ${type === 'individual'
-                            ? 'bg-primary-600 text-white shadow-sm'
-                            : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                            : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:bg-white border border-gray-200'
                             }`}
                     >
                         Individual
@@ -121,8 +120,8 @@ function SignupForm() {
                     <Link
                         href="/signup?type=corporate"
                         className={`flex-1 py-2 px-4 text-center rounded-lg font-medium transition-all ${type === 'corporate'
-                            ? 'bg-secondary-600 text-white shadow-sm'
-                            : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                            ? 'bg-secondary-600 text-white shadow-lg shadow-secondary-500/30'
+                            : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:bg-white border border-gray-200'
                             }`}
                     >
                         Corporate
@@ -130,7 +129,7 @@ function SignupForm() {
                 </div>
 
                 {/* Signup Form */}
-                <div className="card">
+                <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl p-8 border border-white/20">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
                             <div className="alert-error">
@@ -146,7 +145,7 @@ function SignupForm() {
                             <input
                                 type="text"
                                 required
-                                className="input"
+                                className="input bg-white/50"
                                 placeholder="John Doe"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -162,7 +161,7 @@ function SignupForm() {
                                 <input
                                     type="text"
                                     required
-                                    className="input"
+                                    className="input bg-white/50"
                                     placeholder="Acme Corporation"
                                     value={formData.company_name}
                                     onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
@@ -178,7 +177,7 @@ function SignupForm() {
                             <input
                                 type="email"
                                 required
-                                className="input"
+                                className="input bg-white/50"
                                 placeholder="you@example.com"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -193,7 +192,7 @@ function SignupForm() {
                             <input
                                 type="tel"
                                 required
-                                className="input"
+                                className="input bg-white/50"
                                 placeholder="+91 98765 43210"
                                 value={formData.mobile}
                                 onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
@@ -208,7 +207,7 @@ function SignupForm() {
                             <input
                                 type="password"
                                 required
-                                className="input"
+                                className="input bg-white/50"
                                 placeholder="••••••••"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -224,7 +223,7 @@ function SignupForm() {
                             <input
                                 type="password"
                                 required
-                                className="input"
+                                className="input bg-white/50"
                                 placeholder="••••••••"
                                 value={formData.confirmPassword}
                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}

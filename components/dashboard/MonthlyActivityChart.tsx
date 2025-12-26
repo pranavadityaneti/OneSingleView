@@ -117,7 +117,7 @@ export default function MonthlyActivityChart({ data: initialData, allPolicies }:
     const getBarColor = (value: number, maxValue: number) => {
         if (value === 0) return '#e5e7eb'; // Gray for empty
         const intensity = value / maxValue;
-        if (intensity > 0.7) return '#3b82f6'; // Blue for high
+        if (intensity > 0.7) return '#1057a9'; // Blue for high
         if (intensity > 0.4) return '#60a5fa'; // Light blue for medium
         return '#93c5fd'; // Very light blue for low
     };

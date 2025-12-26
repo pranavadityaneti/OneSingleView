@@ -36,8 +36,8 @@ export default function AnalyticsAreaChart({ data = [] }: AnalyticsAreaChartProp
                     <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1} />
-                                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#1057a9" stopOpacity={0.1} />
+                                <stop offset="95%" stopColor="#1057a9" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <CartesianGrid vertical={false} stroke="#F1F5F9" strokeDasharray="3 3" />
@@ -64,12 +64,12 @@ export default function AnalyticsAreaChart({ data = [] }: AnalyticsAreaChartProp
                             itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 600 }}
                             labelStyle={{ display: 'none' }}
                             formatter={(value: number) => [`₹${value}`, 'Premium']}
-                            cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            cursor={{ stroke: '#1057a9', strokeWidth: 1, strokeDasharray: '4 4' }}
                         />
                         <Area
                             type="monotone"
                             dataKey="value"
-                            stroke="#3B82F6"
+                            stroke="#1057a9"
                             strokeWidth={3}
                             fillOpacity={1}
                             fill="url(#colorValue)"

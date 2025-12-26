@@ -13,7 +13,7 @@ interface AnalyticsDonutChartProps {
 }
 
 const COLORS = {
-    motor: '#3B82F6',      // Blue
+    motor: '#1057a9',      // Blue
     health: '#8b5cf6',     // Purple
     travel: '#06B6D4',     // Cyan
     commercial: '#F59E0B', // Orange

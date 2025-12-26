@@ -182,8 +182,8 @@ export default function PremiumTrendWidget() {
                     <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#1057a9" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#1057a9" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -212,7 +212,7 @@ export default function PremiumTrendWidget() {
                         <Area
                             type="monotone"
                             dataKey="total"
-                            stroke="#3B82F6"
+                            stroke="#1057a9"
                             strokeWidth={2}
                             fillOpacity={1}
                             fill="url(#colorTotal)"

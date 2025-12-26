@@ -10,18 +10,18 @@ const config: Config = {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#3B82F6', // True Blue (Tailwind Blue 500)
-                    50: '#EFF6FF',
-                    100: '#DBEAFE',
-                    200: '#BFDBFE',
-                    300: '#93C5FD',
-                    400: '#60A5FA',
-                    500: '#3B82F6',
-                    600: '#2563EB',
-                    700: '#1D4ED8',
-                    800: '#1E40AF',
-                    900: '#1E3A8A',
-                    950: '#172554',
+                    DEFAULT: '#1057a9',
+                    50: '#f0f7ff',
+                    100: '#e0effe',
+                    200: '#bae0fd',
+                    300: '#7cc5fb',
+                    400: '#36a6f6',
+                    500: '#1089e8',
+                    600: '#1057a9', // Brand color
+                    700: '#0e468a',
+                    800: '#0f3c71',
+                    900: '#11335a',
+                    950: '#0b203c',
                 },
                 secondary: {
                     DEFAULT: '#64748B', // Slate (Cool Gray)

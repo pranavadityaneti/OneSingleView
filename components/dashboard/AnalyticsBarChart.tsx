@@ -49,7 +49,7 @@ export default function AnalyticsBarChart({ data = [] }: AnalyticsBarChartProps)
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={entry.value === maxVal ? '#3B82F6' : '#E2E8F0'}
+                                    fill={entry.value === maxVal ? '#1057a9' : '#E2E8F0'}
                                 />
                             ))}
                         </Bar>

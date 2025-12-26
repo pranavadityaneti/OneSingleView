@@ -42,18 +42,15 @@ export default function Footer() {
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-                    {/* Brand Column */}
-                    <div className="lg:col-span-2">
-                        <Link href="/" className="flex items-center space-x-2 mb-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">O</span>
+                    {/* Brand Info */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <Link href="/" className="inline-block">
+                            <div className="flex items-center space-x-2">
+                                <img src="/images/brand-logo-white.png" alt="1SingleView" className="h-14 w-auto" />
                             </div>
-                            <span className="text-xl font-bold">
-                                One<span className="text-blue-500">Single</span>View
-                            </span>
                         </Link>
-                        <p className="text-gray-400 text-sm mb-6 max-w-sm">
-                            India&apos;s trusted platform for managing all your insurance policies in one place.
+                        <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                            Simplifying insurance management for modern businesses. One platform, complete visibility.
                             Track, renew, and claim with ease.
                         </p>
                         <div className="space-y-2 text-sm text-gray-400">

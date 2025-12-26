@@ -291,7 +291,7 @@ export async function getPoliciesByLOB() {
 
 
         return [
-            { name: 'Motor', value: motor || 0, fill: '#3B82F6' },
+            { name: 'Motor', value: motor || 0, fill: '#1057a9' },
             { name: 'Health', value: health || 0, fill: '#10B981' },
             { name: 'Commercial', value: commercial || 0, fill: '#F59E0B' },
             { name: 'Others', value: 0, fill: '#6366F1' }
@@ -446,7 +446,7 @@ export async function getPremiumByLOB(): Promise<PremiumBreakdown[]> {
                 name: 'Motor',
                 value: motorTotal,
                 percentage: grandTotal > 0 ? Math.round((motorTotal / grandTotal) * 100) : 0,
-                fill: '#3B82F6'
+                fill: '#1057a9'
             },
             {
                 name: 'Health',

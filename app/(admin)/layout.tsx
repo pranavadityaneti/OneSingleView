@@ -76,9 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <aside className="w-64 bg-white border-r border-gray-200 fixed h-full z-10 hidden md:flex flex-col">
                 <div className="p-6 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            1
-                        </div>
+                        <img src="/images/brand-logo.png" alt="1SingleView" className="h-10 w-auto" />
                         <span className="text-xl font-bold text-gray-900">Admin</span>
                     </div>
                 </div>

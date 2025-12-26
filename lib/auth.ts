@@ -206,6 +206,90 @@ export async function signInWithPhone(phone: string): Promise<void> {
 }
 
 /**
+ * Sign in with email - sends OTP to email (Magic Code)
+ */
+export async function signInWithEmailOtp(email: string): Promise<void> {
+    try {
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                shouldCreateUser: false, // Only allow existing users
+            },
+        });
+        if (error) throw error;
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to send OTP';
+        throw new Error(message);
+    }
+}
+
+/**
+ * Verify Email OTP and sign in
+ */
+export async function verifyEmailOtp(email: string, token: string): Promise<User> {
+    try {
+        const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'email',
+        });
+
+        if (authError) throw authError;
+        if (!authData.user) throw new Error('No user returned from OTP verification');
+
+        // Fetch user data from database
+        const { data: userData, error: dbError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .maybeSingle();
+
+        if (dbError) throw dbError;
+
+        // If no profile found by email, try by auth ID
+        if (!userData) {
+            const { data: userById, error: byIdError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', authData.user.id)
+                .maybeSingle();
+
+            if (byIdError) throw byIdError;
+            if (!userById) throw new Error('User profile not found. Please sign up first.');
+
+            return {
+                id: userById.id,
+                email: userById.email,
+                mobile: userById.mobile,
+                name: userById.name,
+                company_name: userById.company_name,
+                role: userById.role,
+                created_at: new Date(userById.created_at),
+                updated_at: new Date(userById.updated_at),
+                rm_id: userById.rm_id,
+                customer_id: userById.customer_id,
+            };
+        }
+
+        return {
+            id: userData.id,
+            email: userData.email,
+            mobile: userData.mobile,
+            name: userData.name,
+            company_name: userData.company_name,
+            role: userData.role,
+            created_at: new Date(userData.created_at),
+            updated_at: new Date(userData.updated_at),
+            rm_id: userData.rm_id,
+            customer_id: userData.customer_id,
+        };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to verify OTP';
+        throw new Error(message);
+    }
+}
+
+/**
  * Verify OTP and sign in
  */
 export async function verifyOtp(phone: string, token: string): Promise<User> {
