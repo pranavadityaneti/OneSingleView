@@ -34,6 +34,7 @@ import ExportButton from '@/components/dashboard/ExportButton';
 import AddPolicyModal, { PolicyType } from '@/components/policies/AddPolicyModal';
 import PolicyTable from '@/components/dashboard/PolicyTable';
 import ClientLogos from '@/components/dashboard/ClientLogos';
+import QuoteRequestForm from '@/components/forms/QuoteRequestForm';
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -57,6 +58,9 @@ export default function DashboardPage() {
     // Add Policy Modal State
     const [selectedType, setSelectedType] = useState<'total' | 'premium' | 'expiring'>('total');
     const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+
+    // Quote Request Modal State
+    const [showQuoteModal, setShowQuoteModal] = useState(false);
 
     // Store actual policy data
     const [motorPolicies, setMotorPolicies] = useState<MotorPolicy[]>([]);
@@ -533,7 +537,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col gap-3">
                         {/* Protect Family - Full height to match Claims Overview (340px) */}
                         <div className="h-[340px] flex-shrink-0">
-                            <ProtectFamilyCard onGetQuote={() => setIsHealthModalOpen(true)} />
+                            <ProtectFamilyCard onGetQuote={() => setShowQuoteModal(true)} />
                         </div>
                         {/* Coverage Gap Card - Takes remaining space or fixed height */}
                         {healthPolicies.length === 0 && (
@@ -587,6 +591,18 @@ export default function DashboardPage() {
                     }
                 }}
             />
+
+            {/* Request Quote Form Modal */}
+            {showQuoteModal && (
+                <QuoteRequestForm
+                    userId={user.id}
+                    onClose={() => setShowQuoteModal(false)}
+                    onSuccess={() => {
+                        // Optional: Refresh dashboard data if quote request affects any counts (it likely doesn't for the main summary yet)
+                        setShowQuoteModal(false);
+                    }}
+                />
+            )}
         </div>
     );
 }
