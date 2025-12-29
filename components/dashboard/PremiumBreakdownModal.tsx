@@ -190,7 +190,7 @@ export default function PremiumBreakdownModal({
         if (selectedCompany !== 'all' || !isCorporate) return null;
 
         const grouped: Record<string, any[]> = {};
-        policies.forEach(policy => {
+        filteredPolicies.forEach(policy => {
             const company = policy.company_name || 'Unknown';
             if (!grouped[company]) grouped[company] = [];
             grouped[company].push(policy);

@@ -44,3 +44,20 @@ export const CAR_MANUFACTURERS = [
     'Volvo',
     'Others'
 ] as const;
+
+// Commercial Vehicle Manufacturers List
+export const COMMERCIAL_VEHICLE_MANUFACTURERS = [
+    'Tata Motors',
+    'Isuzu',
+    'Eicher Motors',
+    'Maruti Suzuki',
+    'Mahindra',
+    'Ashok Leyland',
+    'JCB',
+    'Tata Hitachi',
+    'CAT',
+    'Sonalika',
+    'John Deere',
+    'Swaraj',
+    'Others'
+] as const;

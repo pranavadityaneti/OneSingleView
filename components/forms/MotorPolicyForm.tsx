@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 import { addMotorPolicy, updateMotorPolicy } from '@/lib/db';
 import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
 import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
-import { INSURANCE_COMPANIES, CAR_MANUFACTURERS } from '@/lib/constants';
+import { INSURANCE_COMPANIES, CAR_MANUFACTURERS, COMMERCIAL_VEHICLE_MANUFACTURERS } from '@/lib/constants';
 import { formatDateForInput } from '@/lib/utils';
 import {
     validateVehicleNumber,
@@ -70,8 +70,44 @@ export default function MotorPolicyForm({ userId, userRole, initialData, onClose
         }
     }, [formData.policy_start_date, initialData]);
 
+    // Helper to check if vehicle type is commercial
+    const isCommercialVehicle = (vehicleType: string) => {
+        return ['Misc', 'GCV', 'Bus'].includes(vehicleType);
+    };
+
+    // Get the appropriate manufacturer list based on vehicle type
+    const getManufacturerList = () => {
+        return isCommercialVehicle(formData.vehicle_type || '')
+            ? COMMERCIAL_VEHICLE_MANUFACTURERS
+            : CAR_MANUFACTURERS;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
+
+        // Check if vehicle type is changing between commercial and non-commercial
+        if (name === 'vehicle_type') {
+            const wasCommercial = isCommercialVehicle(formData.vehicle_type || '');
+            const isNowCommercial = isCommercialVehicle(value);
+
+            // Reset manufacturer if switching between commercial and non-commercial
+            if (wasCommercial !== isNowCommercial) {
+                setFormData(prev => ({
+                    ...prev,
+                    vehicle_type: value as any,
+                    manufacturer: '' // Reset manufacturer
+                }));
+                // Also clear manufacturer error when resetting
+                if (errors.manufacturer) {
+                    setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.manufacturer;
+                        return newErrors;
+                    });
+                }
+                return;
+            }
+        }
 
         setFormData(prev => ({
             ...prev,
@@ -286,7 +322,7 @@ export default function MotorPolicyForm({ userId, userRole, initialData, onClose
                                 type="select"
                                 value={formData.manufacturer || ''}
                                 onChange={handleChange}
-                                options={CAR_MANUFACTURERS.map(m => ({ value: m, label: m }))}
+                                options={getManufacturerList().map(m => ({ value: m, label: m }))}
                                 error={errors.manufacturer}
                                 required
                             />
