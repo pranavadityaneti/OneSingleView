@@ -45,6 +45,21 @@ export const CAR_MANUFACTURERS = [
     'Others'
 ] as const;
 
+// Bike Manufacturers List
+export const BIKE_MANUFACTURERS = [
+    'Hero MotoCorp',
+    'Bajaj Auto',
+    'TVS Motor Company',
+    'Royal Enfield',
+    'KTM India',
+    'Yamaha Motors',
+    'Suzuki Motorcycle India',
+    'Piaggio India',
+    'Honda Motorcycle',
+    'Mahindra Two Wheelers',
+    'Others'
+] as const;
+
 // Commercial Vehicle Manufacturers List
 export const COMMERCIAL_VEHICLE_MANUFACTURERS = [
     'Tata Motors',

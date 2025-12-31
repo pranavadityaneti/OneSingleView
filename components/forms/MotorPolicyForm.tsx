@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 import { addMotorPolicy, updateMotorPolicy } from '@/lib/db';
 import { useDuplicatePolicyCheck } from '@/hooks/useDuplicatePolicyCheck';
 import DuplicatePolicyWarning from '@/components/policies/DuplicatePolicyWarning';
-import { INSURANCE_COMPANIES, CAR_MANUFACTURERS, COMMERCIAL_VEHICLE_MANUFACTURERS } from '@/lib/constants';
+import { INSURANCE_COMPANIES, CAR_MANUFACTURERS, COMMERCIAL_VEHICLE_MANUFACTURERS, BIKE_MANUFACTURERS } from '@/lib/constants';
 import { formatDateForInput } from '@/lib/utils';
 import {
     validateVehicleNumber,
@@ -77,9 +77,13 @@ export default function MotorPolicyForm({ userId, userRole, initialData, onClose
 
     // Get the appropriate manufacturer list based on vehicle type
     const getManufacturerList = () => {
-        return isCommercialVehicle(formData.vehicle_type || '')
-            ? COMMERCIAL_VEHICLE_MANUFACTURERS
-            : CAR_MANUFACTURERS;
+        if (isCommercialVehicle(formData.vehicle_type || '')) {
+            return COMMERCIAL_VEHICLE_MANUFACTURERS;
+        }
+        if (formData.vehicle_type === 'Bike') {
+            return BIKE_MANUFACTURERS;
+        }
+        return CAR_MANUFACTURERS;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
