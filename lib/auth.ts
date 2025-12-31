@@ -1,5 +1,8 @@
-import { supabase } from './supabase';
+import { createClient } from '@/lib/supabase/client';
 import { User, UserRole } from '@/types';
+
+// Create a client instance for auth operations
+const supabase = createClient();
 
 /**
  * Sign up a new user with email and password
